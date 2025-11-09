@@ -99,9 +99,9 @@ export class SocketService implements GameService {
     this.socket?.emit('stopGame');
   }
 
-  submitAnswer(questionId: string, answer: string) {
+  submitAnswer(questionId: string, answer: string, userId: string) {
     if (!this.isConnected()) throw new Error('Socket not connected');
-    this.socket?.emit('answer', { questionId, answer });
+    this.socket?.emit('answer', { questionId, answer, userId });
   }
 
   on<T>(event: string, callback: (data: T) => void) {

@@ -43,7 +43,7 @@ const LoginScreen = () => {
 
       // Credenciales de user
       if (email.toLowerCase() === "user" && password === "user") {
-        navigation.navigate("GameScreen" as never);
+        navigation.navigate("UserDashboardScreen" as never);
         return;
       }
 

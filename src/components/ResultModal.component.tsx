@@ -1,43 +1,32 @@
 // components/ResultModal.component.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, Modal, StyleSheet } from 'react-native';
-import Button from './Button.component';
 
 interface ResultModalProps {
   visible: boolean;
   isCorrect: boolean;
   correctAnswer?: string;
-  timeRemaining?: number; // tiempo restante para la siguiente pregunta en segundos
   onClose: () => void;
+    timeRemaining: number
 }
+
 
 const ResultModal: React.FC<ResultModalProps> = ({
   visible,
   isCorrect,
   correctAnswer,
-  timeRemaining,
-  onClose
+  onClose,
+  timeRemaining = 2000
 }) => {
-  const [counter, setCounter] = useState(timeRemaining ?? 0);
-
   useEffect(() => {
-    if (!visible || !timeRemaining) return;
+    if (!visible) return;
 
-    setCounter(timeRemaining);
+    const timer = setTimeout(() => {
+      onClose(); // cerrar automáticamente después de 2s
+    }, timeRemaining);
 
-    const interval = setInterval(() => {
-      setCounter(prev => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          onClose(); // cerrar automáticamente
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [visible, timeRemaining, onClose]);
+    return () => clearTimeout(timer);
+  }, [visible, onClose]);
 
   if (!visible) return null;
 
@@ -60,19 +49,7 @@ const ResultModal: React.FC<ResultModalProps> = ({
             {isCorrect ? 'Excellent answer!' : `The correct answer was: ${correctAnswer}`}
           </Text>
 
-          {timeRemaining && (
-            <Text style={styles.timer}>
-              Next question in {counter} {counter === 1 ? 'second' : 'seconds'}...
-            </Text>
-          )}
-
-          <Button
-            title="Continue"
-            variant="primary"
-            onPress={onClose}
-            style={styles.button}
-            disabled={counter > 0} // bloquea botón hasta que pase el tiempo
-          />
+          <Text style={styles.timer}>Next question coming...</Text>
         </View>
       </View>
     </Modal>
@@ -100,8 +77,7 @@ const styles = StyleSheet.create({
   correctTitle: { color: '#10b981' },
   incorrectTitle: { color: '#ef4444' },
   answer: { fontSize: 16, color: '#64748b', textAlign: 'center', marginBottom: 15, lineHeight: 22 },
-  timer: { fontSize: 16, color: '#334155', marginBottom: 20 },
-  button: { width: '100%' },
+  timer: { fontSize: 16, color: '#334155', marginTop: 10 },
 });
 
 export default ResultModal;

@@ -130,10 +130,10 @@ export const useGame = () => {
     try { socketService.stopGame(); } catch (err) { console.error(err); }
   }, []);
 
-  const submitAnswer = useCallback((answer: string) => {
+  const submitAnswer = useCallback((answer: string, userId: string) => {
     if (!gameState.currentQuestion) return;
     try {
-      socketService.submitAnswer(gameState.currentQuestion.id, answer);
+      socketService.submitAnswer(gameState.currentQuestion.id, answer, userId);
       stopTimer();
     } catch (err) { console.error(err); }
   }, [gameState.currentQuestion, stopTimer]);

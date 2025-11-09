@@ -101,6 +101,6 @@ export interface GameService {
   joinGame(userId: string): void;
   startGame(): void;
   stopGame(): void;
-  submitAnswer(questionId: string, answer: string): void;
+  submitAnswer(questionId: string, answer: string, userId: string): void;
   isConnected(): boolean;
 }
