@@ -62,31 +62,14 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
         <Switch
           value={category.active}
           onValueChange={() => onToggleActive(category.id)}
-          trackColor={{ false: '#767577', true: '#81b0ff' }}
-          thumbColor={category.active ? '#FF0000' : '#f4f3f4'}
+          trackColor={{ false: '#767577', true: '#767577' }}
+          thumbColor={category.active ? '#ff0000ff' : '#f4f3f4'}
         />
       </View>
       
       <Text style={styles.questionsCount}>
-        Preguntas: {category.questions?.length || 0}
+        Questions: {category.questions?.length || 0}
       </Text>
-      
-      <View style={styles.actions}>
-        <Button
-          title="Editar"
-          variant="secondary"
-          size="small"
-          onPress={() => onEdit(category)}
-          style={styles.editButton}
-        />
-        <Button
-          title="Eliminar"
-          variant="outlined"
-          size="small"
-          onPress={() => onDelete(category.id)}
-          style={styles.deleteButton}
-        />
-      </View>
     </View>
   );
 

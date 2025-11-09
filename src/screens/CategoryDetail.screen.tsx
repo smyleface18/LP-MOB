@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     marginBottom: 15,
-    backgroundColor: '#FF4444',
+    backgroundColor: '#ffffffff',
   },
   saveActions: {
     flexDirection: 'row',

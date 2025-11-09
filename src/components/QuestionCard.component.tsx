@@ -48,7 +48,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       <View style={styles.header}>
         <View style={styles.info}>
           <Text style={styles.questionText} numberOfLines={2}>
-            {question.questionText || 'Pregunta con imagen'}
+            {question.questionText || `Image question: ${question.correctAnswer}`}
           </Text>
           <View style={styles.tagsContainer}>
             {category?.level && (
@@ -63,7 +63,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             )}
             {(!category?.level || !category?.type) && (
               <View style={[styles.tag, { backgroundColor: '#666666' }]}>
-                <Text style={styles.tagText}>Sin categoría</Text>
+                <Text style={styles.tagText}>No category</Text>
               </View>
             )}
           </View>
@@ -71,23 +71,23 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         <Switch
           value={question.active}
           onValueChange={() => onToggleActive(question.id)}
-          trackColor={{ false: '#767577', true: '#81b0ff' }}
-          thumbColor={question.active ? '#FF0000' : '#f4f3f4'}
+          trackColor={{ false: '#767577', true: '#767577' }}
+          thumbColor={question.active ? '#ff0000ff' : '#f4f3f4'}
         />
       </View>
       
       {category && (
         <Text style={styles.categoryText}>
-          Categoría: {category.descriptionCategory}
+          Category: {category.descriptionCategory}
         </Text>
       )}
       
       <Text style={styles.optionsText}>
-        Opciones: {question.options.join(', ')}
+        Options: {question.options.join(', ')}
       </Text>
       
       <Text style={styles.correctAnswer}>
-        Respuesta correcta: {question.correctAnswer}
+        Correct answer: {question.correctAnswer}
       </Text>
     </View>
   );
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 12,
     borderLeftWidth: 4,
-    borderLeftColor: '#FF0000',
+    borderLeftColor: '#000000',
     overflow: 'hidden',
   },
   cardContent: {

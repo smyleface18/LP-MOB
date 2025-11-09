@@ -41,9 +41,66 @@ export interface Question extends CoreEntity {
   categoryId: string;
 }
 
+export interface GameQuestion  {
+  questionText?: string;
+  questionImage?: string;
+  options: string[];
+}
+
 export interface PaginationInfo {
   currentPage: number;
   totalPages: number;
   totalItems: number;
   itemsPerPage: number;
+}
+
+// types/game.types.ts
+export interface GameQuestion extends Question {
+  // Hereda de Question pero podemos extender si es necesario
+}
+
+export interface GameState {
+  connected: boolean;
+  gameStarted: boolean;
+  currentQuestion: GameQuestion | null;
+  questionNumber: number;
+  totalQuestions: number;
+  timeRemaining: number;
+  score: number;
+  userId: string;
+}
+
+export interface SocketEvents {
+  // Emit events (cliente -> servidor)
+  'joinGame': (data: { userId: string }) => void;
+  'startGame': () => void;
+  'stopGame': () => void;
+  'answer': (data: { questionId: string; userId: string; answer: string }) => void;
+  
+  // Listen events (servidor -> cliente)
+  'connect': () => void;
+  'disconnect': () => void;
+  'newQuestion': (data: {
+    question: GameQuestion;
+    questionNumber: number;
+    totalQuestions: number;
+    timeLimit: number;
+  }) => void;
+  'answerResult': (data: {
+    correct: boolean;
+    correctAnswer: string;
+    questionId: string;
+  }) => void;
+  'gameEnded': (data: { totalQuestions: number }) => void;
+  'gameStopped': () => void;
+}
+
+export interface GameService {
+  connect(): void;
+  disconnect(): void;
+  joinGame(userId: string): void;
+  startGame(): void;
+  stopGame(): void;
+  submitAnswer(questionId: string, answer: string): void;
+  isConnected(): boolean;
 }

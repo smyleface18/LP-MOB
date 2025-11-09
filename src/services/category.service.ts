@@ -1,4 +1,4 @@
-import { apiService } from './apiService';
+import { apiService } from './api.service';
 import { API_ENDPOINTS } from './apiConfig';
 import { CategoryQuestion } from '../types/type';
 

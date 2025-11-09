@@ -35,13 +35,13 @@ const ManageCategoriesScreen = () => {
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
 
-  // Contar filtros activos
+  // Count active filters
   const activeFiltersCount = [
     selectedLevel !== 'all', 
     selectedType !== 'all'
   ].filter(Boolean).length;
 
-  // Filtrar categorías
+  // Filter categories
   const filteredCategories = categories.filter(category => {
     const matchesSearch = category.descriptionCategory.toLowerCase().includes(searchText.toLowerCase());
     const matchesLevel = selectedLevel === 'all' || category.level === selectedLevel;
@@ -55,7 +55,7 @@ const ManageCategoriesScreen = () => {
   };
 
   const handleCategoryPress = (category: CategoryQuestion) => {
-    navigation.navigate({name :'CategoryDetail', params : {
+    navigation.navigate({name :'CreateCategoryScreen', params : {
       categoryId: category.id,
       category: category
     }} as never);
@@ -63,19 +63,19 @@ const ManageCategoriesScreen = () => {
 
   const handleDeleteCategory = async (categoryId: string) => {
     Alert.alert(
-      'Eliminar Categoría',
-      '¿Estás seguro de que quieres eliminar esta categoría?',
+      'Delete Category',
+      'Are you sure you want to delete this category?',
       [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Cancel', style: 'cancel' },
         { 
-          text: 'Eliminar', 
+          text: 'Delete', 
           style: 'destructive',
           onPress: async () => {
             try {
               await deleteCategory(categoryId);
-              Alert.alert('Éxito', 'Categoría eliminada correctamente');
+              Alert.alert('Success', 'Category deleted successfully');
             } catch (err) {
-              Alert.alert('Error', 'No se pudo eliminar la categoría');
+              Alert.alert('Error', 'Failed to delete category');
             }
           }
         }
@@ -90,7 +90,7 @@ const ManageCategoriesScreen = () => {
         await updateCategory(categoryId, { active: !category.active });
       }
     } catch (err) {
-      Alert.alert('Error', 'No se pudo actualizar la categoría');
+      Alert.alert('Error', 'Failed to update category');
     }
   };
 
@@ -120,24 +120,24 @@ const ManageCategoriesScreen = () => {
     />
   );
 
-  // Mostrar loading mientras se cargan los datos
+  // Show loading while data is being loaded
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#FF0000" />
-        <Text style={styles.loadingText}>Cargando categorías...</Text>
+        <Text style={styles.loadingText}>Loading categories...</Text>
       </View>
     );
   }
 
-  // Mostrar error si hay problema cargando los datos
+  // Show error if there's a problem loading data
   if (error) {
     return (
       <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Error al cargar las categorías</Text>
+        <Text style={styles.errorText}>Error loading categories</Text>
         <Text style={styles.errorSubtext}>{error}</Text>
         <Button
-          title="Reintentar"
+          title="Retry"
           variant="primary"
           onPress={loadCategories}
           style={styles.retryButton}
@@ -150,16 +150,16 @@ const ManageCategoriesScreen = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Gestión de Categorías</Text>
+        <Text style={styles.title}>Category Management</Text>
         <Text style={styles.subtitle}>
-          Total: {filteredCategories.length} categorías
+          Total: {filteredCategories.length} categories
         </Text>
       </View>
 
-      {/* Búsqueda y Filtros */}
+      {/* Search and Filters */}
       <View style={styles.searchContainer}>
         <Input
-          placeholder="Buscar categorías..."
+          placeholder="Search categories..."
           value={searchText}
           onChangeText={setSearchText}
           variant="outlined"
@@ -171,19 +171,19 @@ const ManageCategoriesScreen = () => {
           onPress={() => setFiltersModalVisible(true)}
         >
           <Text style={styles.filtersButtonText}>
-            Filtros {activeFiltersCount > 0 && `(${activeFiltersCount})`}
+            Filters {activeFiltersCount > 0 && `(${activeFiltersCount})`}
           </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Lista de Categorías */}
+      {/* Categories List */}
       {filteredCategories.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No se encontraron categorías</Text>
+          <Text style={styles.emptyText}>No categories found</Text>
           <Text style={styles.emptySubtext}>
             {searchText || selectedLevel !== 'all' || selectedType !== 'all' 
-              ? 'Intenta ajustar los filtros de búsqueda' 
-              : 'No hay categorías disponibles'
+              ? 'Try adjusting your search filters' 
+              : 'No categories available'
             }
           </Text>
         </View>
@@ -204,10 +204,10 @@ const ManageCategoriesScreen = () => {
         />
       )}
 
-      {/* Botón Crear Categoría */}
+      {/* Create Category Button */}
       <View style={styles.createButtonContainer}>
         <Button
-          title="+ Crear Nueva Categoría"
+          title="+ Create New Category"
           variant="primary"
           size="large"
           onPress={handleCreateCategoryRedirect}
@@ -215,7 +215,7 @@ const ManageCategoriesScreen = () => {
         />
       </View>
 
-      {/* Modal de Filtros */}
+      {/* Filters Modal */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -225,7 +225,7 @@ const ManageCategoriesScreen = () => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Filtros</Text>
+              <Text style={styles.modalTitle}>Filters</Text>
               <TouchableOpacity 
                 style={styles.closeButton}
                 onPress={() => setFiltersModalVisible(false)}
@@ -236,14 +236,14 @@ const ManageCategoriesScreen = () => {
 
             <ScrollView style={styles.filtersScroll} showsVerticalScrollIndicator={false}>
               <FilterSection
-                title="Niveles"
+                title="Levels"
                 options={levelOptions}
                 selectedValue={selectedLevel}
                 onValueChange={setSelectedLevel}
               />
 
               <FilterSection
-                title="Tipos"
+                title="Types"
                 options={typeOptions}
                 selectedValue={selectedType}
                 onValueChange={setSelectedType}
@@ -252,13 +252,13 @@ const ManageCategoriesScreen = () => {
 
             <View style={styles.modalActions}>
               <Button
-                title="Limpiar Filtros"
+                title="Clear Filters"
                 variant="outlined"
                 onPress={handleClearFilters}
                 style={styles.clearButton}
               />
               <Button
-                title="Aplicar Filtros"
+                title="Apply Filters"
                 variant="primary"
                 onPress={() => setFiltersModalVisible(false)}
                 style={styles.applyButton}

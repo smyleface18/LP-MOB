@@ -39,14 +39,14 @@ const ManageQuestionsScreen = () => {
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
 
-  // Contar filtros activos
+  // Count active filters
   const activeFiltersCount = [
     selectedCategory !== 'all',
     selectedLevel !== 'all', 
     selectedType !== 'all'
   ].filter(Boolean).length;
 
-  // Filtrar preguntas
+  // Filter questions
   const filteredQuestions = questions.filter(question => {
     const matchesCategory = selectedCategory === 'all' || question.categoryId === selectedCategory;
     const matchesLevel = selectedLevel === 'all' || question.category?.level === selectedLevel;
@@ -68,21 +68,22 @@ const ManageQuestionsScreen = () => {
       }
     } as never);
   };
+
   const handleDeleteQuestion = async (questionId: string) => {
     Alert.alert(
-      'Eliminar Pregunta',
-      '¿Estás seguro de que quieres eliminar esta pregunta?',
+      'Delete Question',
+      'Are you sure you want to delete this question?',
       [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Cancel', style: 'cancel' },
         { 
-          text: 'Eliminar', 
+          text: 'Delete', 
           style: 'destructive',
           onPress: async () => {
             try {
               await deleteQuestion(questionId);
-              Alert.alert('Éxito', 'Pregunta eliminada correctamente');
+              Alert.alert('Success', 'Question deleted successfully');
             } catch (err) {
-              Alert.alert('Error', 'No se pudo eliminar la pregunta');
+              Alert.alert('Error', 'Failed to delete question');
             }
           }
         }
@@ -97,7 +98,7 @@ const ManageQuestionsScreen = () => {
         await updateQuestion(questionId, { active: !question.active });
       }
     } catch (err) {
-      Alert.alert('Error', 'No se pudo actualizar la pregunta');
+      Alert.alert('Error', 'Failed to update question');
     }
   };
 
@@ -133,24 +134,24 @@ const ManageQuestionsScreen = () => {
     />
   );
 
-  // Mostrar loading mientras se cargan los datos
+  // Show loading while data is being loaded
   if (loading || categoriesLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#FF0000" />
-        <Text style={styles.loadingText}>Cargando preguntas...</Text>
+        <Text style={styles.loadingText}>Loading questions...</Text>
       </View>
     );
   }
 
-  // Mostrar error si hay problema cargando los datos
+  // Show error if there's a problem loading data
   if (error) {
     return (
       <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Error al cargar las preguntas</Text>
+        <Text style={styles.errorText}>Error loading questions</Text>
         <Text style={styles.errorSubtext}>{error}</Text>
         <Button
-          title="Reintentar"
+          title="Retry"
           variant="primary"
           onPress={loadQuestions}
           style={styles.retryButton}
@@ -163,16 +164,16 @@ const ManageQuestionsScreen = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Gestión de Preguntas</Text>
+        <Text style={styles.title}>Question Management</Text>
         <Text style={styles.subtitle}>
-          Total: {filteredQuestions.length} preguntas
+          Total: {filteredQuestions.length} questions
         </Text>
       </View>
 
-      {/* Búsqueda y Filtros */}
+      {/* Search and Filters */}
       <View style={styles.searchContainer}>
         <Input
-          placeholder="Buscar preguntas..."
+          placeholder="Search questions..."
           value={searchText}
           onChangeText={setSearchText}
           variant="outlined"
@@ -184,19 +185,19 @@ const ManageQuestionsScreen = () => {
           onPress={() => setFiltersModalVisible(true)}
         >
           <Text style={styles.filtersButtonText}>
-            Filtros {activeFiltersCount > 0 && `(${activeFiltersCount})`}
+            Filters {activeFiltersCount > 0 && `(${activeFiltersCount})`}
           </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Lista de Preguntas */}
+      {/* Questions List */}
       {filteredQuestions.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No se encontraron preguntas</Text>
+          <Text style={styles.emptyText}>No questions found</Text>
           <Text style={styles.emptySubtext}>
             {searchText || selectedCategory !== 'all' || selectedLevel !== 'all' || selectedType !== 'all' 
-              ? 'Intenta ajustar los filtros de búsqueda' 
-              : 'No hay preguntas disponibles'
+              ? 'Try adjusting your search filters' 
+              : 'No questions available'
             }
           </Text>
         </View>
@@ -217,10 +218,10 @@ const ManageQuestionsScreen = () => {
         />
       )}
 
-      {/* Botón Crear Pregunta - CORREGIDO */}
+      {/* Create Question Button */}
       <View style={styles.createButtonContainer}>
         <Button
-          title="+ Crear Nueva Pregunta"
+          title="+ Create New Question"
           variant="primary"
           size="large"
           onPress={handleCreateQuestionRedirect}
@@ -228,7 +229,7 @@ const ManageQuestionsScreen = () => {
         />
       </View>
 
-      {/* Modal de Filtros */}
+      {/* Filters Modal */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -238,7 +239,7 @@ const ManageQuestionsScreen = () => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Filtros</Text>
+              <Text style={styles.modalTitle}>Filters</Text>
               <TouchableOpacity 
                 style={styles.closeButton}
                 onPress={() => setFiltersModalVisible(false)}
@@ -249,21 +250,21 @@ const ManageQuestionsScreen = () => {
 
             <ScrollView style={styles.filtersScroll} showsVerticalScrollIndicator={false}>
               <FilterSection
-                title="Categorías"
+                title="Categories"
                 options={categoryOptions}
                 selectedValue={selectedCategory}
                 onValueChange={setSelectedCategory}
               />
 
               <FilterSection
-                title="Niveles"
+                title="Levels"
                 options={levelOptions}
                 selectedValue={selectedLevel}
                 onValueChange={setSelectedLevel}
               />
 
               <FilterSection
-                title="Tipos"
+                title="Types"
                 options={typeOptions}
                 selectedValue={selectedType}
                 onValueChange={setSelectedType}
@@ -272,13 +273,13 @@ const ManageQuestionsScreen = () => {
 
             <View style={styles.modalActions}>
               <Button
-                title="Limpiar Filtros"
+                title="Clear Filters"
                 variant="outlined"
                 onPress={handleClearFilters}
                 style={styles.clearButton}
               />
               <Button
-                title="Aplicar Filtros"
+                title="Apply Filters"
                 variant="primary"
                 onPress={() => setFiltersModalVisible(false)}
                 style={styles.applyButton}
@@ -298,7 +299,7 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 20,
-    backgroundColor: '#FF0000',
+    backgroundColor: '#000000',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },

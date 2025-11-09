@@ -39,104 +39,104 @@ const AdminDashboardScreen = () => {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Dashboard Admin</Text>
-        <Text style={styles.subtitle}>Resumen general de LinguaPlay</Text>
+        <Text style={styles.title}>Admin Dashboard</Text>
+        <Text style={styles.subtitle}>LinguaPlay Overview</Text>
       </View>
 
-      {/* Métricas Principales */}
+      {/* Main Metrics */}
       <View style={styles.metricsGrid}>
         <MetricCard
           value={metricsData.totalQuestions}
-          label="Preguntas"
-          subLabel="+12 esta semana"
+          label="Questions"
+          subLabel="+12 this week"
         />
         <MetricCard
           value={metricsData.totalCategories}
-          label="Categorías"
-          subLabel="3 niveles"
+          label="Categories"
+          subLabel="3 levels"
         />
         <MetricCard
           value={metricsData.totalUsers}
-          label="Usuarios"
-          subLabel="Total registrados"
+          label="Users"
+          subLabel="Total registered"
         />
         <MetricCard
           value={metricsData.activeUsers}
-          label="Activos"
-          subLabel="Últimos 7 días"
+          label="Active"
+          subLabel="Last 7 days"
         />
       </View>
 
-      {/* Gráficas de Rendimiento */}
+      {/* Performance Charts */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Rendimiento General</Text>
+        <Text style={styles.sectionTitle}>Overall Performance</Text>
         <View style={styles.chartsRow}>
           <CircularChart
             percentage={metricsData.averageScore}
-            label="Puntuación Promedio"
+            label="Average Score"
             color="#FF0000"
           />
           <CircularChart
             percentage={85}
-            label="Tasa de Finalización"
+            label="Completion Rate"
             color="#000000"
           />
           <CircularChart 
             percentage={72} 
-            label="Retención" 
+            label="Retention" 
             color="#FF4444" 
           />
         </View>
       </View>
 
-      {/* Estadísticas de Uso */}
+      {/* Usage Statistics */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Estadísticas de Uso</Text>
+        <Text style={styles.sectionTitle}>Usage Statistics</Text>
         <View style={styles.statsContainer}>
-          <ProgressBar percentage={65} label="Principiantes" color="#FF0000" />
-          <ProgressBar percentage={25} label="Intermedios" color="#000000" />
-          <ProgressBar percentage={10} label="Avanzados" color="#CC0000" />
+          <ProgressBar percentage={65} label="Beginners" color="#FF0000" />
+          <ProgressBar percentage={25} label="Intermediate" color="#000000" />
+          <ProgressBar percentage={10} label="Advanced" color="#CC0000" />
         </View>
 
         <View style={styles.additionalStats}>
           <StatItem
             value={metricsData.totalGames}
-            label="Juegos Completados"
+            label="Games Completed"
           />
           <StatItem
             value={metricsData.questionsAnswered}
-            label="Preguntas Respondidas"
+            label="Questions Answered"
           />
           <StatItem
             value={metricsData.newUsersThisWeek}
-            label="Nuevos Esta Semana"
+            label="New This Week"
           />
         </View>
       </View>
 
-      {/* Distribución de Categorías */}
+      {/* Category Distribution */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Distribución por Categoría</Text>
+        <Text style={styles.sectionTitle}>Category Distribution</Text>
         <View style={styles.categoryDistribution}>
-          <CategoryItem color="#FF0000" text="Vocabulario (35%)" />
-          <CategoryItem color="#000000" text="Gramática (25%)" />
+          <CategoryItem color="#FF0000" text="Vocabulary (35%)" />
+          <CategoryItem color="#000000" text="Grammar (25%)" />
           <CategoryItem color="#CC0000" text="Listening (20%)" />
           <CategoryItem color="#990000" text="Speaking (15%)" />
-          <CategoryItem color="#660000" text="Otros (5%)" />
+          <CategoryItem color="#660000" text="Others (5%)" />
         </View>
       </View>
 
-      {/* Botones de Acción */}
+      {/* Action Buttons */}
       <View style={styles.actionsSection}>
         <Button
-          title="Gestionar Preguntas"
+          title="Manage Questions"
           variant="primary"
           size="large"
           onPress={handleNavigateToQuestions}
           style={styles.actionButton}
         />
         <Button
-          title="Gestionar Categorías"
+          title="Manage Categories"
           variant="primary"
           size="large"
           onPress={handleNavigateToCategories}
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   header: {
     padding: 20,
     paddingTop: 40,
-    backgroundColor: "#FF0000",
+    backgroundColor: "#000000ff",
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },

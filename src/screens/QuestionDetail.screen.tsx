@@ -14,7 +14,7 @@ import Button from '../components/Button.component';
 import Input from '../components/Input.component';
 import FilterSection from '../components/FilterSection.component';
 import { useCategories } from '../hooks/useCategories';
-import { questionService } from '../services/questionService';
+import { questionService } from '../services/question.service';
 
 interface RouteParams {
   questionId: string;
@@ -452,7 +452,7 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 20,
-    backgroundColor: '#FF0000',
+    backgroundColor: '#000000ff',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },

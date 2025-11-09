@@ -12,6 +12,8 @@ import CreateQuestionScreen from './src/screens/CreateQuestion.screen';
 import QuestionDetailScreen from './src/screens/QuestionDetail.screen';
 import ManageCategoriesScreen from './src/screens/ManageCategories.screen';
 import CategoryDetailScreen from './src/screens/CategoryDetail.screen';
+import CreateCategoryScreen from './src/screens/CreateCategory.screen';
+import GameScreen from './src/screens/Game.screen';
 
 const Stack = createStackNavigator();
 
@@ -41,6 +43,8 @@ export default function App() {
             <Stack.Screen name="QuestionDetail" component={QuestionDetailScreen} />
             <Stack.Screen name="ManageCategoriesScreen" component={ManageCategoriesScreen} />
             <Stack.Screen name="CategoryDetailScreen" component={CategoryDetailScreen} />
+            <Stack.Screen name="CreateCategoryScreen" component={CreateCategoryScreen} />
+            <Stack.Screen name="GameScreen" component={GameScreen} />
           </Stack.Navigator>
         </NavigationContainer>
       </SafeAreaView>
