@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -10,12 +10,47 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import Input from "../components/Input.component";
 import Button from "../components/Button.component";
+import { useAuth } from "../hooks/useAuth";
+import { SignUpDto } from "../types/type";
 
 const SignupScreen = () => {
   const navigation = useNavigation();
 
   const handleLoginRedirect = () => {
     navigation.navigate("Login" as never);
+  };
+
+  const { signUp, loading, error, signUpForm, setSignUpForm } = useAuth();
+
+  const validatePassword = (password: string) => {
+    const regex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
+    return regex.test(password);
+  };
+
+  const handleSignUp = async () => {
+    if (signUpForm.password != signUpForm.confirmPassword) {
+      alert("las constraseñas no coinciden");
+      return;
+    }
+
+    if (!validatePassword(signUpForm.password)) {
+      alert(
+        `La contraseña debe contener mayúsculas, minúsculas,
+         números y caracteres especiales, la contraseña debe tener 8 caracteres o más de largo.`
+      );
+      return;
+    }
+    const signUpDto: SignUpDto = {
+      email: signUpForm.email,
+      username: signUpForm.nickname,
+      password: signUpForm.password,
+    };
+
+    const result = await signUp(signUpDto);
+
+    alert(result);
+    console.log(result);
   };
 
   return (
@@ -37,6 +72,21 @@ const SignupScreen = () => {
           autoCapitalize="none"
           variant="outlined"
           style={styles.input}
+          value={signUpForm.email}
+          onChangeText={(text) => setSignUpForm({ ...signUpForm, email: text })}
+        />
+
+        {/* Input de nickname */}
+        <Input
+          placeholder="nickname"
+          keyboardType="twitter"
+          autoCapitalize="none"
+          variant="outlined"
+          style={styles.input}
+          value={signUpForm.nickname}
+          onChangeText={(text) =>
+            setSignUpForm({ ...signUpForm, nickname: text })
+          }
         />
 
         {/* Input de Contraseña */}
@@ -46,6 +96,10 @@ const SignupScreen = () => {
           autoCapitalize="none"
           variant="outlined"
           style={styles.input}
+          value={signUpForm.password}
+          onChangeText={(text) =>
+            setSignUpForm({ ...signUpForm, password: text })
+          }
         />
 
         {/* Input de Confirmación de Contraseña */}
@@ -55,14 +109,20 @@ const SignupScreen = () => {
           autoCapitalize="none"
           variant="outlined"
           style={styles.input}
+          value={signUpForm.confirmPassword}
+          onChangeText={(text) =>
+            setSignUpForm({ ...signUpForm, confirmPassword: text })
+          }
         />
 
         {/* Botón de Registro */}
         <Button
-          title="Registrarse"
+          title={loading ? "Registrando..." : "Registrarse"}
           variant="primary"
           size="medium"
-          style={styles.signupButton}
+          style={[styles.signupButton, loading && styles.buttonDisabled]}
+          onPress={handleSignUp}
+          disabled={loading}
         />
 
         {/* Link de Login */}
@@ -89,6 +149,9 @@ const styles = StyleSheet.create({
   formContainer: {
     width: "80%",
     alignItems: "center",
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
   logo: {
     width: 300,
