@@ -117,5 +117,5 @@ export interface SignUpDto {
 export interface ResponseApi<T> {
   ok: boolean;
   message: string;
-  data: T;
+  data: T | null;
 }

@@ -1,3 +1,4 @@
+import { ResponseApi } from "../types/type";
 import { API_BASE_URL } from "./apiConfig";
 
 class ApiService {
@@ -10,7 +11,7 @@ class ApiService {
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
-  ): Promise<T> {
+  ): Promise<ResponseApi<T>> {
     const url = `${this.baseURL}${endpoint}`;
     const config: RequestInit = {
       headers: {
@@ -26,37 +27,43 @@ class ApiService {
 
       if (!response.ok) {
         console.error("API error body:", responseBody);
-        throw new Error(
-          responseBody.message || `HTTP error! status: ${response.status}`
-        );
+        return {
+          ok: false,
+          data: null,
+          message: responseBody.message,
+        };
       }
 
-      return responseBody;
+      return {
+        ok: true,
+        data: responseBody.userSub,
+        message: responseBody.message,
+      };
     } catch (error) {
       console.error("API request failed:", error);
       throw error;
     }
   }
 
-  async get<T>(endpoint: string): Promise<T> {
+  async get<T>(endpoint: string): Promise<ResponseApi<T>> {
     return this.request<T>(endpoint, { method: "GET" });
   }
 
-  async post<T>(endpoint: string, data: any): Promise<T> {
+  async post<T>(endpoint: string, data: any): Promise<ResponseApi<T>> {
     return this.request<T>(endpoint, {
       method: "POST",
       body: JSON.stringify(data),
     });
   }
 
-  async patch<T>(endpoint: string, data: any): Promise<T> {
+  async patch<T>(endpoint: string, data: any): Promise<ResponseApi<T>> {
     return this.request<T>(endpoint, {
       method: "PATCH",
       body: JSON.stringify(data),
     });
   }
 
-  async delete<T>(endpoint: string): Promise<T> {
+  async delete<T>(endpoint: string): Promise<ResponseApi<T>> {
     return this.request<T>(endpoint, { method: "DELETE" });
   }
 }

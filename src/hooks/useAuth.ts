@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AuthService } from "../services/auth.service";
-import { SignUpDto } from "../types/type";
+import { ResponseApi, SignUpDto } from "../types/type";
 
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);
@@ -13,12 +13,11 @@ export const useAuth = () => {
     confirmPassword: "",
   });
 
-  const signUp = async (dto: SignUpDto) => {
+  const signUp = async (dto: SignUpDto): Promise<ResponseApi<null> | null> => {
     setLoading(true);
     setError(null);
 
     const response = await AuthService.signUp(dto);
-
     if (!response.ok) {
       setError(response.message);
       setLoading(false);
@@ -26,7 +25,7 @@ export const useAuth = () => {
     }
 
     setLoading(false);
-    return response.data;
+    return response;
   };
 
   return {

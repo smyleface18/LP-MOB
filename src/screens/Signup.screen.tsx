@@ -49,8 +49,24 @@ const SignupScreen = () => {
 
     const result = await signUp(signUpDto);
 
-    alert(result);
-    console.log(result);
+    if (!result) {
+      alert(error);
+      setSignUpForm({
+        confirmPassword: "",
+        email: "",
+        nickname: "",
+        password: "",
+      });
+    } else {
+      alert(result.message);
+      setSignUpForm({
+        confirmPassword: "",
+        email: "",
+        nickname: "",
+        password: "",
+      });
+      handleLoginRedirect();
+    }
   };
 
   return (
