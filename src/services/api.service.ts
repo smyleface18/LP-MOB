@@ -36,7 +36,7 @@ class ApiService {
 
       return {
         ok: true,
-        data: responseBody.userSub,
+        data: responseBody,
         message: responseBody.message,
       };
     } catch (error) {

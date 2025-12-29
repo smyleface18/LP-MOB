@@ -6,54 +6,34 @@ import {
   KeyboardAvoidingView,
   Platform,
   Image,
-  Alert
+  Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import Input from "../components/Input.component";
 import Button from "../components/Button.component";
+import { useAuth } from "../hooks/useAuth";
 
 const LoginScreen = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { signIn, error, loading } = useAuth();
 
   const handleSignupRedirect = () => {
     navigation.navigate("Signup" as never);
   };
 
   const handleLogin = async () => {
-    // Validar campos vacíos
     if (!email.trim() || !password.trim()) {
       Alert.alert("Error", "Por favor ingresa correo y contraseña");
       return;
     }
 
-    setLoading(true);
-
-    // Simular una petición de login
-    setTimeout(() => {
-      setLoading(false);
-      
-      // Credenciales de admin
-      if (email.toLowerCase() === "admin" && password === "admin") {
-        navigation.navigate("AdminDashboard" as never);
-        return;
-      }
-
-      // Credenciales de user
-      if (email.toLowerCase() === "user" && password === "user") {
-        navigation.navigate("UserDashboardScreen" as never);
-        return;
-      }
-
-      // Credenciales incorrectas
-      Alert.alert(
-        "Error de autenticación",
-        "El usuario no existe o las credenciales son incorrectas",
-        [{ text: "OK" }]
-      );
-    }, 1000);
+    const response = await signIn(email, password);
+    if (!response) {
+      alert(error);
+    }
+    console.log(response?.data?.accessToken);
   };
 
   return (
@@ -93,7 +73,6 @@ const LoginScreen = () => {
           onChangeText={setPassword}
           onSubmitEditing={handleLogin}
         />
-
 
         {/* Botón de Login */}
         <Button

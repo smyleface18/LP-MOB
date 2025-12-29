@@ -119,3 +119,9 @@ export interface ResponseApi<T> {
   message: string;
   data: T | null;
 }
+
+export interface Authenticated {
+  accessToken: string;
+  idToken: string;
+  refreshToken: string;
+}
