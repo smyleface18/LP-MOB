@@ -13,7 +13,7 @@ import Input from "../components/Input.component";
 import Button from "../components/Button.component";
 import { useAuth } from "../hooks/useAuth";
 
-const LoginScreen = () => {
+const SignInScreen = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -162,4 +162,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LoginScreen;
+export default SignInScreen;
