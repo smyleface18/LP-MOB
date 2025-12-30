@@ -8,7 +8,6 @@ import StatItem from "../components/Statitem.component";
 import Button from "../components/Button.component";
 import { useGame } from "../hooks/useGame";
 import { useCategories } from "../hooks/useCategories";
-import { socketService } from "../services/socket.service";
 
 const UserDashboardScreen = () => {
   const navigation = useNavigation();

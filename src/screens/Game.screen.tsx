@@ -1,16 +1,16 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from "react";
 import {
   View,
   Text,
   ScrollView,
   StyleSheet,
   ActivityIndicator,
-} from 'react-native';
-import { useGame } from '../hooks/useGame';
-import Button from '../components/Button.component';
-import OptionButton from '../components/OptionButton.component';
-import ResultModal from '../components/ResultModal.component';
-import QuestionView from '../components/QuestionView.component';
+} from "react-native";
+import { useGame } from "../hooks/useGame";
+import Button from "../components/Button.component";
+import OptionButton from "../components/OptionButton.component";
+import ResultModal from "../components/ResultModal.component";
+import QuestionView from "../components/QuestionView.component";
 
 const GameScreen: React.FC = () => {
   const {
@@ -31,20 +31,22 @@ const GameScreen: React.FC = () => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
-  const [correctAnswer, setCorrectAnswer] = useState('');
+  const [correctAnswer, setCorrectAnswer] = useState("");
 
   /** 🧠 Manejador cuando el usuario selecciona una opción */
   const handleOptionPress = useCallback(
-    (option: string) => {
+    (optionId: string) => {
       if (selectedOption || timeRemaining <= 0 || !currentQuestion) return;
 
-      const correct = option === currentQuestion.correctAnswer;
-      setSelectedOption(option);
-      setIsCorrect(correct);
-      setCorrectAnswer(currentQuestion.correctAnswer);
+      const correct = currentQuestion.options.find(
+        (op) => op.id === optionId
+      )?.isCorrect;
+      setSelectedOption(optionId);
+      setIsCorrect(correct!);
+      setCorrectAnswer("oe");
 
       // Enviar al servidor
-      submitAnswer(option, userId);
+      submitAnswer(optionId, userId);
 
       // Mostrar feedback visual
       setShowResult(true);
@@ -61,11 +63,11 @@ const GameScreen: React.FC = () => {
   /** 🎨 Determinar color/estilo de cada opción */
   const getOptionVariant = useCallback(
     (option: string) => {
-      if (!selectedOption || !currentQuestion) return 'default';
-      if (option === currentQuestion.correctAnswer) return 'correct';
-      if (option === selectedOption && option !== currentQuestion.correctAnswer)
-        return 'incorrect';
-      return 'default';
+      if (!selectedOption || !currentQuestion) return "default";
+      if (option === currentQuestion.id) return "correct";
+      if (option === selectedOption && option !== currentQuestion.id)
+        return "incorrect";
+      return "default";
     },
     [selectedOption, currentQuestion]
   );
@@ -114,10 +116,10 @@ const GameScreen: React.FC = () => {
               {currentQuestion.options.map((option, i) => (
                 <OptionButton
                   key={i}
-                  option={option}
-                  variant={getOptionVariant(option)}
+                  option={option.text!}
+                  variant={getOptionVariant(option.text!)}
                   disabled={!!selectedOption || timeRemaining <= 0}
-                  onPress={() => handleOptionPress(option)}
+                  onPress={() => handleOptionPress(option.id)}
                 />
               ))}
             </View>
@@ -178,7 +180,13 @@ const GameScreen: React.FC = () => {
 
 /* ---------------------- 🔹 COMPONENTES AUXILIARES ---------------------- */
 
-const Header = ({ connected, score }: { connected: boolean; score: number }) => (
+const Header = ({
+  connected,
+  score,
+}: {
+  connected: boolean;
+  score: number;
+}) => (
   <View style={styles.header}>
     <Text style={styles.title}>🎮 LinguaPlay Trivia</Text>
     <View style={styles.statusContainer}>
@@ -189,7 +197,7 @@ const Header = ({ connected, score }: { connected: boolean; score: number }) => 
         ]}
       />
       <Text style={styles.statusText}>
-        {connected ? 'Connected' : 'Disconnected'}
+        {connected ? "Connected" : "Disconnected"}
       </Text>
       <Text style={styles.score}>Score: {score}</Text>
     </View>
@@ -202,17 +210,22 @@ const CenteredContainer: React.FC<{ children: React.ReactNode }> = ({
 
 /* --------------------------- 🎨 ESTILOS --------------------------- */
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1, backgroundColor: "#FFFFFF" },
   centered: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 40,
   },
-  loadingText: { marginTop: 10, fontSize: 16, color: '#666', textAlign: 'center' },
-  userId: { marginTop: 5, fontSize: 12, color: '#999', textAlign: 'center' },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+  },
+  userId: { marginTop: 5, fontSize: 12, color: "#999", textAlign: "center" },
   header: {
-    backgroundColor: '#667eea',
+    backgroundColor: "#667eea",
     padding: 20,
     paddingTop: 40,
     borderBottomLeftRadius: 20,
@@ -220,38 +233,43 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFF',
-    textAlign: 'center',
+    fontWeight: "bold",
+    color: "#FFF",
+    textAlign: "center",
     marginBottom: 10,
   },
   statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   statusIndicator: { width: 8, height: 8, borderRadius: 4 },
-  connected: { backgroundColor: '#4ade80' },
-  disconnected: { backgroundColor: '#ef4444' },
-  statusText: { color: '#FFF', fontSize: 14, flex: 1, marginLeft: 8 },
-  score: { color: '#FFF', fontSize: 14, fontWeight: '600' },
+  connected: { backgroundColor: "#4ade80" },
+  disconnected: { backgroundColor: "#ef4444" },
+  statusText: { color: "#FFF", fontSize: 14, flex: 1, marginLeft: 8 },
+  score: { color: "#FFF", fontSize: 14, fontWeight: "600" },
   content: { flex: 1 },
   scrollContent: { padding: 20 },
-  waitingText: { marginTop: 15, fontSize: 16, color: '#666', textAlign: 'center' },
+  waitingText: {
+    marginTop: 15,
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+  },
   optionsContainer: { marginTop: 10 },
   finishedTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#667eea',
+    fontWeight: "bold",
+    color: "#667eea",
     marginBottom: 10,
   },
-  finishedText: { fontSize: 16, color: '#666', textAlign: 'center' },
+  finishedText: { fontSize: 16, color: "#666", textAlign: "center" },
   controls: {
     padding: 20,
-    backgroundColor: '#f8fafc',
+    backgroundColor: "#f8fafc",
     borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
-    flexDirection: 'row',
+    borderTopColor: "#e2e8f0",
+    flexDirection: "row",
     gap: 10,
   },
   controlButton: { flex: 1 },

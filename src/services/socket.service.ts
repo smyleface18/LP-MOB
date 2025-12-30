@@ -1,12 +1,13 @@
-import { io, Socket } from 'socket.io-client';
-import { GameService, SocketEvents } from '../types/type';
+import { io, Socket } from "socket.io-client";
+import { GameService, SocketEvents } from "../types/type";
+import { API_BASE_URL } from "./api/apiConfig";
 
 export class SocketService implements GameService {
   private socket: Socket | null = null;
   private eventListeners: Map<string, Function[]> = new Map();
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
-  private baseURL = 'ws://192.168.0.15:3000'; // Cambiar según tu entorno
+  private baseURL = API_BASE_URL; // Cambiar según tu entorno
 
   constructor() {
     // NO inicializamos automáticamente
@@ -16,7 +17,7 @@ export class SocketService implements GameService {
     if (this.socket && this.socket.connected) return;
 
     this.socket = io(`${this.baseURL}/game`, {
-      transports: ['websocket'],
+      transports: ["websocket"],
       timeout: 10000,
       forceNew: true,
     });
@@ -33,31 +34,31 @@ export class SocketService implements GameService {
   private setupEventListeners() {
     if (!this.socket) return;
 
-    this.socket.on('connect', () => {
+    this.socket.on("connect", () => {
       this.reconnectAttempts = 0;
-      this.emit('connect');
+      this.emit("connect");
     });
 
-    this.socket.on('disconnect', (reason) => {
-      this.emit('disconnect', { reason });
-      if (reason !== 'io client disconnect') {
+    this.socket.on("disconnect", (reason) => {
+      this.emit("disconnect", { reason });
+      if (reason !== "io client disconnect") {
         this.handleReconnection();
       }
     });
 
-    this.socket.on('connect_error', (err) => {
-      this.emit('error', { error: err.message });
+    this.socket.on("connect_error", (err) => {
+      this.emit("error", { error: err.message });
       this.handleReconnection();
     });
 
     const gameEvents: (keyof SocketEvents)[] = [
-      'newQuestion',
-      'answerResult',
-      'gameEnded',
-      'gameStopped',
+      "newQuestion",
+      "answerResult",
+      "gameEnded",
+      "gameStopped",
     ];
 
-    gameEvents.forEach(event => {
+    gameEvents.forEach((event) => {
       this.socket?.on(event, (data: any) => {
         this.emit(event, data);
       });
@@ -66,7 +67,7 @@ export class SocketService implements GameService {
 
   private handleReconnection() {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      this.emit('error', { error: 'Max reconnection attempts reached' });
+      this.emit("error", { error: "Max reconnection attempts reached" });
       return;
     }
 
@@ -85,23 +86,23 @@ export class SocketService implements GameService {
   }
 
   joinGame(userId: string) {
-    if (!this.isConnected()) throw new Error('Socket not connected');
-    this.socket?.emit('joinGame', { userId });
+    if (!this.isConnected()) throw new Error("Socket not connected");
+    this.socket?.emit("joinGame", { userId });
   }
 
   startGame() {
-    if (!this.isConnected()) throw new Error('Socket not connected');
-    this.socket?.emit('startGame');
+    if (!this.isConnected()) throw new Error("Socket not connected");
+    this.socket?.emit("startGame");
   }
 
   stopGame() {
-    if (!this.isConnected()) throw new Error('Socket not connected');
-    this.socket?.emit('stopGame');
+    if (!this.isConnected()) throw new Error("Socket not connected");
+    this.socket?.emit("stopGame");
   }
 
   submitAnswer(questionId: string, answer: string, userId: string) {
-    if (!this.isConnected()) throw new Error('Socket not connected');
-    this.socket?.emit('answer', { questionId, answer, userId });
+    if (!this.isConnected()) throw new Error("Socket not connected");
+    this.socket?.emit("answer", { questionId, answer, userId });
   }
 
   on<T>(event: string, callback: (data: T) => void) {
@@ -119,8 +120,12 @@ export class SocketService implements GameService {
   private emit(event: string, data?: any) {
     const listeners = this.eventListeners.get(event);
     if (!listeners) return;
-    listeners.forEach(cb => {
-      try { cb(data); } catch (err) { console.error(err); }
+    listeners.forEach((cb) => {
+      try {
+        cb(data);
+      } catch (err) {
+        console.error(err);
+      }
     });
   }
 

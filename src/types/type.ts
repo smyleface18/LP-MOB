@@ -17,6 +17,18 @@ export enum TypeQuestionCategory {
   SPEAKING = "SPEAKING",
 }
 
+export interface S3Object {
+  key: string;
+
+  type: string;
+
+  displayName?: string;
+
+  url?: string;
+
+  bucketName?: string;
+}
+
 export interface CoreEntity {
   id: string;
   active: boolean;
@@ -32,15 +44,25 @@ export interface CategoryQuestion extends CoreEntity {
 }
 
 export interface Question extends CoreEntity {
-  questionText?: string;
-  questionImage?: string;
-  options: string[];
-  correctAnswer: string;
+  questionText: string;
+  media?: S3Object;
+  options: QuestionOption[];
+  timeLimit: number;
+  games: Game[];
   category: CategoryQuestion;
   categoryId: string;
 }
 
-export interface GameQuestion {
+export interface QuestionOption extends CoreEntity {
+  text?: string;
+  media?: S3Object;
+  isCorrect: boolean;
+  correctAnswer: string;
+  question: Question;
+  questionId: string;
+}
+
+export interface Game {
   questionText?: string;
   questionImage?: string;
   options: string[];
