@@ -71,10 +71,7 @@ export const useCategories = () => {
 
       if (!response.ok) {
         setError("Error al cambiar el estado de la categoría");
-        console.error(
-          "Error toggling category active:",
-          "Error al cambiar el estado de la categoría"
-        );
+        console.error("Error toggling category active:", response.message);
         return;
       }
 

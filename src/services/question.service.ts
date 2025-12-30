@@ -1,6 +1,6 @@
 import { apiService } from "./api/api.service";
 import { API_ENDPOINTS } from "./api/apiConfig";
-import { Question } from "../types/type";
+import { Question, ResponseApi } from "../types/type";
 
 export interface CreateQuestionDto {
   questionText?: string;
@@ -15,32 +15,37 @@ export interface UpdateQuestionDto extends Partial<CreateQuestionDto> {}
 
 export const questionService = {
   // Obtener todas las preguntas
-  getAll: async (): Promise<Question[]> => {
+  getAll: async (): Promise<ResponseApi<Question[]>> => {
     return apiService.get<Question[]>(API_ENDPOINTS.QUESTIONS);
   },
 
   // Obtener una pregunta por ID
-  getById: async (id: string): Promise<Question> => {
+  getById: async (id: string): Promise<ResponseApi<Question>> => {
     return apiService.get<Question>(`${API_ENDPOINTS.QUESTIONS}/${id}`);
   },
 
   // Crear una nueva pregunta
-  create: async (data: CreateQuestionDto): Promise<Question> => {
+  create: async (data: CreateQuestionDto): Promise<ResponseApi<Question>> => {
     return apiService.post<Question>(API_ENDPOINTS.QUESTIONS, data);
   },
 
   // Crear múltiples preguntas
-  createMany: async (data: CreateQuestionDto[]): Promise<Question[]> => {
+  createMany: async (
+    data: CreateQuestionDto[]
+  ): Promise<ResponseApi<Question[]>> => {
     return apiService.post<Question[]>(`${API_ENDPOINTS.QUESTIONS}/bulk`, data);
   },
 
   // Actualizar una pregunta
-  update: async (id: string, data: UpdateQuestionDto): Promise<Question> => {
+  update: async (
+    id: string,
+    data: UpdateQuestionDto
+  ): Promise<ResponseApi<Question>> => {
     return apiService.patch<Question>(`${API_ENDPOINTS.QUESTIONS}/${id}`, data);
   },
 
   // Eliminar una pregunta
-  delete: async (id: string): Promise<void> => {
+  delete: async (id: string): Promise<ResponseApi<void>> => {
     return apiService.delete<void>(`${API_ENDPOINTS.QUESTIONS}/${id}`);
   },
 };
