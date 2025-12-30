@@ -15,65 +15,16 @@ import CategoryDetailScreen from "./src/screens/CategoryDetail.screen";
 import CreateCategoryScreen from "./src/screens/CreateCategory.screen";
 import GameScreen from "./src/screens/Game.screen";
 import UserDashboardScreen from "./src/screens/UserDashboard.screen";
+import { AppNavigator } from "./src/navigation/AppNavigator";
 
 const Stack = createStackNavigator();
 
 export default function App() {
   return (
     <SafeAreaProvider>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor="#FFFFFF"
-        translucent={true}
-      />
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFFFF" }}>
-        <NavigationContainer>
-          <Stack.Navigator
-            initialRouteName="Login"
-            screenOptions={{
-              headerShown: false,
-              cardStyle: { backgroundColor: "#FFFFFF" },
-            }}
-          >
-            <Stack.Screen
-              name="ManageQuestionsScreen"
-              component={ManageQuestionsScreen}
-            />
-            <Stack.Screen
-              name="AdminDashboard"
-              component={AdminDashboardScreen}
-            />
-            <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Signup" component={SignupScreen} />
-            <Stack.Screen
-              name="CreateQuestionScreen"
-              component={CreateQuestionScreen}
-            />
-            <Stack.Screen
-              name="QuestionDetail"
-              component={QuestionDetailScreen}
-            />
-            <Stack.Screen
-              name="ManageCategoriesScreen"
-              component={ManageCategoriesScreen}
-            />
-            <Stack.Screen
-              name="CategoryDetailScreen"
-              component={CategoryDetailScreen}
-            />
-            <Stack.Screen
-              name="CreateCategoryScreen"
-              component={CreateCategoryScreen}
-            />
-            <Stack.Screen name="GameScreen" component={GameScreen} />
-            <Stack.Screen
-              name="UserDashboardScreen"
-              component={UserDashboardScreen}
-            />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </SafeAreaView>
+      <NavigationContainer>
+        <AppNavigator />
+      </NavigationContainer>
     </SafeAreaProvider>
   );
 }

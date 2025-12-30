@@ -6,5 +6,8 @@ export const API_ENDPOINTS = {
   AUTH: {
     SIGN_UP: "/auth/signUp",
     SIGN_IN: "/auth/signIn",
+    ME: "/auth/me",
+    REFRESH_TOKEN: "/auth/refresh-token",
+    REVOKE_TOKEN: "/auth/revoke-token",
   },
 };

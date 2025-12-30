@@ -1,6 +1,9 @@
-import { Authenticated, ResponseApi, SignUpDto } from "../types/type";
-import { apiService } from "./api.service";
-import { API_ENDPOINTS } from "./apiConfig";
+import { useEffect } from "react";
+import { ResponseApi, SignUpDto } from "../../types/type";
+import { apiService } from "../api/api.service";
+import { API_ENDPOINTS } from "../api/apiConfig";
+import { useAuthStore } from "./auth.store";
+import { Authenticated } from "./auth.type";
 
 export const AuthService = {
   async signUp(signUpDto: SignUpDto): Promise<ResponseApi<null>> {

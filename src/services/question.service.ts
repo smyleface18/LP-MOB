@@ -1,6 +1,6 @@
-import { apiService } from './api.service';
-import { API_ENDPOINTS } from './apiConfig';
-import { Question } from '../types/type';
+import { apiService } from "./api/api.service";
+import { API_ENDPOINTS } from "./api/apiConfig";
+import { Question } from "../types/type";
 
 export interface CreateQuestionDto {
   questionText?: string;

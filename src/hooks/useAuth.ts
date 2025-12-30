@@ -1,6 +1,8 @@
-import { useState } from "react";
-import { AuthService } from "../services/auth.service";
-import { Authenticated, ResponseApi, SignUpDto } from "../types/type";
+import { useEffect, useState } from "react";
+import { AuthService } from "../services/auth/auth.service";
+import { ResponseApi, SignUpDto } from "../types/type";
+import { Authenticated } from "../services/auth/auth.type";
+import { useAuthStore } from "../services/auth/auth.store";
 
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);
@@ -12,6 +14,7 @@ export const useAuth = () => {
     password: "",
     confirmPassword: "",
   });
+  const { signInStatus } = useAuthStore();
 
   const signUp = async (dto: SignUpDto): Promise<ResponseApi<null> | null> => {
     setLoading(true);
@@ -21,7 +24,7 @@ export const useAuth = () => {
     if (!response.ok) {
       setError(response.message);
       setLoading(false);
-      return null;
+      return response;
     }
 
     setLoading(false);
@@ -33,13 +36,17 @@ export const useAuth = () => {
     password: string
   ): Promise<ResponseApi<Authenticated> | null> => {
     setLoading(true);
-    setError(null);
 
     const response = await AuthService.signIn(email, password);
+
     if (!response.ok) {
       setError(response.message);
       setLoading(false);
-      return null;
+      return response;
+    }
+
+    if (response.ok && response.data) {
+      signInStatus(response.data!);
     }
 
     setLoading(false);

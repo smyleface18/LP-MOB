@@ -1,5 +1,6 @@
-import { ResponseApi } from "../types/type";
+import { ResponseApi } from "../../types/type";
 import { API_BASE_URL } from "./apiConfig";
+import * as SecureStore from "expo-secure-store";
 
 class ApiService {
   private baseURL: string;
@@ -13,9 +14,12 @@ class ApiService {
     options: RequestInit = {}
   ): Promise<ResponseApi<T>> {
     const url = `${this.baseURL}${endpoint}`;
+    const token = await SecureStore.getItemAsync("accessToken");
+
     const config: RequestInit = {
       headers: {
         "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
       ...options,
@@ -24,20 +28,19 @@ class ApiService {
     try {
       const response = await fetch(url, config);
       const responseBody = await response.json();
-
       if (!response.ok) {
         console.error("API error body:", responseBody);
         return {
           ok: false,
           data: null,
-          message: responseBody.message,
+          message: this.normalizeApiMessage(responseBody.message),
         };
       }
 
       return {
         ok: true,
         data: responseBody,
-        message: responseBody.message,
+        message: this.normalizeApiMessage(responseBody.message),
       };
     } catch (error) {
       console.error("API request failed:", error);
@@ -65,6 +68,13 @@ class ApiService {
 
   async delete<T>(endpoint: string): Promise<ResponseApi<T>> {
     return this.request<T>(endpoint, { method: "DELETE" });
+  }
+
+  private normalizeApiMessage(message: string | string[]): string {
+    if (Array.isArray(message)) {
+      return message.join("\n");
+    }
+    return message;
   }
 }
 

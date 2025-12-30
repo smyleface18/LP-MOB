@@ -30,10 +30,10 @@ const LoginScreen = () => {
     }
 
     const response = await signIn(email, password);
-    if (!response) {
-      alert(error);
+    if (!response?.ok) {
+      Alert.alert("Error", response?.message!);
+      return;
     }
-    console.log(response?.data?.accessToken);
   };
 
   return (

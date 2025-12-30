@@ -1,5 +1,5 @@
 // types.ts
-export enum LevelCategoryQuestion {
+export enum Level {
   A1 = "A1",
   A2 = "A2",
   B1 = "B1",
@@ -25,7 +25,7 @@ export interface CoreEntity {
 }
 
 export interface CategoryQuestion extends CoreEntity {
-  level: LevelCategoryQuestion;
+  level: Level;
   descriptionCategory: string;
   questions: Question[];
   type: TypeQuestionCategory;
@@ -118,10 +118,4 @@ export interface ResponseApi<T> {
   ok: boolean;
   message: string;
   data: T | null;
-}
-
-export interface Authenticated {
-  accessToken: string;
-  idToken: string;
-  refreshToken: string;
 }

@@ -1,127 +1,130 @@
-import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
+import React, { useState } from "react";
+import {
+  View,
+  Text,
   StyleSheet,
   FlatList,
   Alert,
   Modal,
   ActivityIndicator,
   TouchableOpacity,
-  ScrollView
-} from 'react-native';
-import { Question, LevelCategoryQuestion, TypeQuestionCategory } from '../types/type';
-import Button from '../components/Button.component';
-import QuestionCard from '../components/QuestionCard.component';
-import FilterSection from '../components/FilterSection.component';
-import Input from '../components/Input.component';
-import { useQuestions } from '../hooks/useQuestion';
-import { useCategories } from '../hooks/useCategories';
-import { useNavigation } from '@react-navigation/native';
+  ScrollView,
+} from "react-native";
+import { Question, Level, TypeQuestionCategory } from "../types/type";
+import Button from "../components/Button.component";
+import QuestionCard from "../components/QuestionCard.component";
+import FilterSection from "../components/FilterSection.component";
+import Input from "../components/Input.component";
+import { useQuestions } from "../hooks/useQuestion";
+import { useCategories } from "../hooks/useCategories";
+import { useNavigation } from "@react-navigation/native";
 
 const ManageQuestionsScreen = () => {
-  const { 
-    questions, 
-    loading, 
-    error, 
-    createQuestion, 
-    updateQuestion, 
+  const {
+    questions,
+    loading,
+    error,
+    createQuestion,
+    updateQuestion,
     deleteQuestion,
-    loadQuestions
+    loadQuestions,
   } = useQuestions();
 
   const { categories, loading: categoriesLoading } = useCategories();
   const navigation = useNavigation();
 
   const [filtersModalVisible, setFiltersModalVisible] = useState(false);
-  const [searchText, setSearchText] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedLevel, setSelectedLevel] = useState<string>('all');
-  const [selectedType, setSelectedType] = useState<string>('all');
+  const [searchText, setSearchText] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedLevel, setSelectedLevel] = useState<string>("all");
+  const [selectedType, setSelectedType] = useState<string>("all");
 
   // Count active filters
   const activeFiltersCount = [
-    selectedCategory !== 'all',
-    selectedLevel !== 'all', 
-    selectedType !== 'all'
+    selectedCategory !== "all",
+    selectedLevel !== "all",
+    selectedType !== "all",
   ].filter(Boolean).length;
 
   // Filter questions
-  const filteredQuestions = questions.filter(question => {
-    const matchesCategory = selectedCategory === 'all' || question.categoryId === selectedCategory;
-    const matchesLevel = selectedLevel === 'all' || question.category?.level === selectedLevel;
-    const matchesType = selectedType === 'all' || question.category?.type === selectedType;
-    
+  const filteredQuestions = questions.filter((question) => {
+    const matchesCategory =
+      selectedCategory === "all" || question.categoryId === selectedCategory;
+    const matchesLevel =
+      selectedLevel === "all" || question.category?.level === selectedLevel;
+    const matchesType =
+      selectedType === "all" || question.category?.type === selectedType;
+
     return matchesCategory && matchesLevel && matchesType;
   });
 
   const handleCreateQuestionRedirect = () => {
-    navigation.navigate('CreateQuestionScreen' as never);
+    navigation.navigate("CreateQuestionScreen" as never);
   };
 
   const handleQuestionPress = (question: Question) => {
     navigation.navigate({
-      name: 'QuestionDetail',
+      name: "QuestionDetail",
       params: {
         questionId: question.id,
-        question: question
-      }
+        question: question,
+      },
     } as never);
   };
 
   const handleDeleteQuestion = async (questionId: string) => {
     Alert.alert(
-      'Delete Question',
-      'Are you sure you want to delete this question?',
+      "Delete Question",
+      "Are you sure you want to delete this question?",
       [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Delete', 
-          style: 'destructive',
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
           onPress: async () => {
             try {
               await deleteQuestion(questionId);
-              Alert.alert('Success', 'Question deleted successfully');
+              Alert.alert("Success", "Question deleted successfully");
             } catch (err) {
-              Alert.alert('Error', 'Failed to delete question');
+              Alert.alert("Error", "Failed to delete question");
             }
-          }
-        }
+          },
+        },
       ]
     );
   };
 
   const handleToggleActive = async (questionId: string) => {
     try {
-      const question = questions.find(q => q.id === questionId);
+      const question = questions.find((q) => q.id === questionId);
       if (question) {
         await updateQuestion(questionId, { active: !question.active });
       }
     } catch (err) {
-      Alert.alert('Error', 'Failed to update question');
+      Alert.alert("Error", "Failed to update question");
     }
   };
 
   const handleClearFilters = () => {
-    setSelectedCategory('all');
-    setSelectedLevel('all');
-    setSelectedType('all');
+    setSelectedCategory("all");
+    setSelectedLevel("all");
+    setSelectedType("all");
     setFiltersModalVisible(false);
   };
 
-  const categoryOptions = categories.map(cat => ({
+  const categoryOptions = categories.map((cat) => ({
     value: cat.id,
-    label: cat.descriptionCategory
+    label: cat.descriptionCategory,
   }));
 
-  const levelOptions = Object.values(LevelCategoryQuestion).map(level => ({
+  const levelOptions = Object.values(Level).map((level) => ({
     value: level,
-    label: level
+    label: level,
   }));
 
-  const typeOptions = Object.values(TypeQuestionCategory).map(type => ({
+  const typeOptions = Object.values(TypeQuestionCategory).map((type) => ({
     value: type,
-    label: type
+    label: type,
   }));
 
   const renderQuestionItem = ({ item }: { item: Question }) => (
@@ -179,8 +182,8 @@ const ManageQuestionsScreen = () => {
           variant="outlined"
           style={styles.searchInput}
         />
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           style={styles.filtersButton}
           onPress={() => setFiltersModalVisible(true)}
         >
@@ -195,10 +198,12 @@ const ManageQuestionsScreen = () => {
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>No questions found</Text>
           <Text style={styles.emptySubtext}>
-            {searchText || selectedCategory !== 'all' || selectedLevel !== 'all' || selectedType !== 'all' 
-              ? 'Try adjusting your search filters' 
-              : 'No questions available'
-            }
+            {searchText ||
+            selectedCategory !== "all" ||
+            selectedLevel !== "all" ||
+            selectedType !== "all"
+              ? "Try adjusting your search filters"
+              : "No questions available"}
           </Text>
         </View>
       ) : (
@@ -240,7 +245,7 @@ const ManageQuestionsScreen = () => {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Filters</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.closeButton}
                 onPress={() => setFiltersModalVisible(false)}
               >
@@ -248,7 +253,10 @@ const ManageQuestionsScreen = () => {
               </TouchableOpacity>
             </View>
 
-            <ScrollView style={styles.filtersScroll} showsVerticalScrollIndicator={false}>
+            <ScrollView
+              style={styles.filtersScroll}
+              showsVerticalScrollIndicator={false}
+            >
               <FilterSection
                 title="Categories"
                 options={categoryOptions}
@@ -295,49 +303,49 @@ const ManageQuestionsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
   },
   header: {
     padding: 20,
-    backgroundColor: '#000000',
+    backgroundColor: "#000000",
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+    fontWeight: "bold",
+    color: "#FFFFFF",
     marginBottom: 5,
   },
   subtitle: {
     fontSize: 16,
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     opacity: 0.9,
   },
   searchContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 15,
-    backgroundColor: '#F8F8F8',
-    alignItems: 'center',
+    backgroundColor: "#F8F8F8",
+    alignItems: "center",
   },
   searchInput: {
     flex: 1,
     marginRight: 10,
   },
   filtersButton: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: "#E0E0E0",
     minWidth: 80,
-    alignItems: 'center',
+    alignItems: "center",
   },
   filtersButtonText: {
     fontSize: 14,
-    color: '#666666',
-    fontWeight: '500',
+    color: "#666666",
+    fontWeight: "500",
   },
   questionsList: {
     flex: 1,
@@ -351,54 +359,54 @@ const styles = StyleSheet.create({
     paddingBottom: 15,
   },
   createButton: {
-    width: '100%', // Esto asegura que ocupe todo el ancho disponible
+    width: "100%", // Esto asegura que ocupe todo el ancho disponible
   },
   modalContainer: {
     flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    maxHeight: '80%',
+    maxHeight: "80%",
   },
   modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: "#F0F0F0",
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#000000',
+    fontWeight: "bold",
+    color: "#000000",
   },
   closeButton: {
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: '#F0F0F0',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#F0F0F0",
+    justifyContent: "center",
+    alignItems: "center",
   },
   closeButtonText: {
     fontSize: 18,
-    color: '#666666',
-    fontWeight: 'bold',
+    color: "#666666",
+    fontWeight: "bold",
   },
   filtersScroll: {
     maxHeight: 400,
     paddingHorizontal: 20,
   },
   modalActions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 20,
     borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
+    borderTopColor: "#F0F0F0",
   },
   clearButton: {
     flex: 1,
@@ -410,33 +418,33 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
   },
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#666666',
+    color: "#666666",
   },
   errorContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
     padding: 20,
   },
   errorText: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FF0000',
+    fontWeight: "bold",
+    color: "#FF0000",
     marginBottom: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   errorSubtext: {
     fontSize: 14,
-    color: '#666666',
-    textAlign: 'center',
+    color: "#666666",
+    textAlign: "center",
     marginBottom: 20,
   },
   retryButton: {
@@ -444,20 +452,20 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   emptyText: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#666666',
+    fontWeight: "bold",
+    color: "#666666",
     marginBottom: 8,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#999999',
-    textAlign: 'center',
+    color: "#999999",
+    textAlign: "center",
   },
 });
 
