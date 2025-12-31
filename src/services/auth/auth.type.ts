@@ -1,4 +1,4 @@
-import { Level } from "../../types/type";
+import { CoreEntity, Level } from "../../types/type";
 
 export interface AuthState {
   accessToken: string | null;
@@ -11,8 +11,7 @@ export interface AuthState {
   restoreSession: () => Promise<void>;
 }
 
-interface User {
-  name: string;
+export interface User extends CoreEntity {
   avatar: Object;
   username: string;
   email: string;

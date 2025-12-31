@@ -16,26 +16,27 @@ import StatItem from "../components/Statitem.component";
 import Button from "../components/Button.component";
 import { useGame } from "../hooks/useGame";
 import { useCategories } from "../hooks/useCategories";
+import { useUser } from "../hooks/useUser";
+import { LinearGradient } from "expo-linear-gradient";
+import { blue } from "react-native-reanimated/lib/typescript/reanimated2/Colors";
 
 const UserDashboardScreen = () => {
   const navigation = useNavigation();
   const { connected, score, userId, joinGame, isConnected } = useGame();
 
-  const {
-    categories,
-    loading: categoriesLoading,
-    loadCategories,
-    activeCategories,
-    totalCategories,
-  } = useCategories();
+  const { user, getMe, loading } = useUser();
 
-  const [userStats] = useState({
+  useEffect(() => {
+    getMe();
+  }, []);
+
+  const userStats = {
     totalGames: 45,
-    gamesWon: 32,
+    gamesWon: user.score,
     currentStreak: 5,
     bestStreak: 12,
     averageScore: 76,
-  });
+  };
 
   const handleQuickPlay = () => {
     if (!isConnected) {
@@ -53,7 +54,6 @@ const UserDashboardScreen = () => {
   const handleHowToPlay = () => {
     navigation.navigate("GameScreen" as never);
   };
-
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -61,42 +61,51 @@ const UserDashboardScreen = () => {
     >
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.avatarContainer}>
-            <View style={styles.avatar}>
-              <Image
-                source={{
-                  uri: "https://cdn-icons-png.flaticon.com/512/7178/7178489.png",
-                }}
-                style={styles.avatarImage}
-                resizeMode="cover"
-                onError={() => {
-                  // Fallback a avatar por defecto
-                  console.log("Using default avatar");
-                }}
+        <LinearGradient
+          colors={["#fd4863ff", "#F4F4F5"]}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
+          style={styles.header}
+        >
+          <View style={styles.header}>
+            {/* Contenido */}
+
+            <View style={styles.avatarContainer}>
+              <View style={styles.avatar}>
+                <Image
+                  source={{
+                    uri: "https://cdn-icons-png.flaticon.com/512/7178/7178489.png",
+                  }}
+                  style={styles.avatarImage}
+                  resizeMode="cover"
+                  onError={() => {
+                    // Fallback a avatar por defecto
+                    console.log("Using default avatar");
+                  }}
+                />
+              </View>
+            </View>
+            <Text style={styles.nickname}>{user.username}</Text>
+            <View style={styles.connectionStatus}>
+              <View
+                style={[
+                  styles.statusDot,
+                  connected ? styles.connected : styles.disconnected,
+                ]}
               />
+              <Text style={styles.statusText}>
+                {connected ? "Connected" : "Disconnected"}
+              </Text>
             </View>
           </View>
-          <Text style={styles.nickname}>Username</Text>
-          <View style={styles.connectionStatus}>
-            <View
-              style={[
-                styles.statusDot,
-                connected ? styles.connected : styles.disconnected,
-              ]}
-            />
-            <Text style={styles.statusText}>
-              {connected ? "Connected" : "Disconnected"}
-            </Text>
-          </View>
-        </View>
+        </LinearGradient>
 
         {/* Main Metrics */}
         <View style={styles.metricsGrid}>
-          <MetricCard value={userStats.totalGames} label="Games Played" />
+          <MetricCard value={`${user.score} XP`} label="Score" />
           <MetricCard value={userStats.gamesWon} label="Games Won" />
           <MetricCard value={userStats.currentStreak} label="Current Streak" />
-          <MetricCard value={totalCategories} label="Categories" />
+          <MetricCard value={0} label="Categories" />
         </View>
 
         {/* Performance Charts */}
@@ -134,7 +143,7 @@ const UserDashboardScreen = () => {
 
           <View style={styles.additionalStats}>
             <StatItem value={userStats.totalGames} label="Total Games" />
-            <StatItem value={userStats.gamesWon} label="Games Won" />
+            <StatItem value={`${user.score} XP`} label="XP" />
             <StatItem value={userStats.bestStreak} label="Best Streak" />
           </View>
         </View>
@@ -160,7 +169,6 @@ const styles = StyleSheet.create({
   header: {
     padding: 20,
     paddingTop: 40,
-    backgroundColor: "#000000ff",
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     alignItems: "center",
@@ -172,7 +180,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "#FFFFFF",
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
@@ -184,7 +191,7 @@ const styles = StyleSheet.create({
   nickname: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#FFFFFF",
+    color: "#18181B",
     marginBottom: 10,
   },
   connectionStatus: {
@@ -205,7 +212,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 14,
-    color: "#FFFFFF",
+    color: "#18181B",
     opacity: 0.9,
   },
   avatarText: {
