@@ -1,6 +1,11 @@
 node_modules
+.expo
 dist
 build
+android
+ios
 coverage
-package-lock.json
-yarn.lock
+*.log
+.env
+.env.*
+.DS_Store

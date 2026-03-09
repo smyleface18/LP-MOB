@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   TouchableOpacity,
   Text,
@@ -6,18 +6,18 @@ import {
   TouchableOpacityProps,
   ViewStyle,
   TextStyle,
-} from "react-native";
+} from 'react-native';
 
 interface ButtonProps extends TouchableOpacityProps {
-  variant?: "primary" | "secondary" | "outlined";
+  variant?: 'primary' | 'secondary' | 'outlined';
   title: string;
-  size?: "small" | "medium" | "large";
+  size?: 'small' | 'medium' | 'large';
 }
 
 const Button: React.FC<ButtonProps> = ({
-  variant = "primary",
+  variant = 'primary',
   title,
-  size = "medium",
+  size = 'medium',
   style,
   ...props
 }) => {
@@ -25,26 +25,16 @@ const Button: React.FC<ButtonProps> = ({
   const getButtonStyle = (): ViewStyle[] => {
     const baseStyle = styles.button;
     const variantStyle =
-      styles[
-        `button${
-          variant.charAt(0).toUpperCase() + variant.slice(1)
-        }` as keyof typeof styles
-      ];
+      styles[`button${variant.charAt(0).toUpperCase() + variant.slice(1)}` as keyof typeof styles];
     const sizeStyle =
-      styles[
-        `buttonSize${
-          size.charAt(0).toUpperCase() + size.slice(1)
-        }` as keyof typeof styles
-      ];
+      styles[`buttonSize${size.charAt(0).toUpperCase() + size.slice(1)}` as keyof typeof styles];
 
     return [baseStyle, variantStyle as ViewStyle, sizeStyle as ViewStyle];
   };
 
   const getTextStyle = (): TextStyle => {
     return styles[
-      `buttonText${
-        variant.charAt(0).toUpperCase() + variant.slice(1)
-      }` as keyof typeof styles
+      `buttonText${variant.charAt(0).toUpperCase() + variant.slice(1)}` as keyof typeof styles
     ] as TextStyle;
   };
 
@@ -58,20 +48,20 @@ const Button: React.FC<ButtonProps> = ({
 const styles = StyleSheet.create({
   button: {
     borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-    width: "100%",
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
   },
   buttonPrimary: {
-    backgroundColor: "#FF0000",
+    backgroundColor: '#FF0000',
   },
   buttonSecondary: {
-    backgroundColor: "#18181B",
+    backgroundColor: '#18181B',
   },
   buttonOutlined: {
-    backgroundColor: "transparent",
+    backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: "#FF0000",
+    borderColor: '#FF0000',
   },
   buttonSizeSmall: {
     height: 40,
@@ -84,16 +74,16 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   buttonTextPrimary: {
-    color: "#FFFFFF",
+    color: '#FFFFFF',
   },
   buttonTextSecondary: {
-    color: "#FFFFFF",
+    color: '#FFFFFF',
   },
   buttonTextOutlined: {
-    color: "#FF0000",
+    color: '#FF0000',
   },
 });
 

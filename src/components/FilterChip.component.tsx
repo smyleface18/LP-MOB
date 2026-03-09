@@ -8,13 +8,8 @@ interface FilterChipProps {
 }
 
 const FilterChip: React.FC<FilterChipProps> = ({ label, isActive, onPress }) => (
-  <TouchableOpacity 
-    style={[styles.chip, isActive && styles.chipActive]}
-    onPress={onPress}
-  >
-    <Text style={[styles.chipText, isActive && styles.chipTextActive]}>
-      {label}
-    </Text>
+  <TouchableOpacity style={[styles.chip, isActive && styles.chipActive]} onPress={onPress}>
+    <Text style={[styles.chipText, isActive && styles.chipTextActive]}>{label}</Text>
   </TouchableOpacity>
 );
 

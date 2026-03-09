@@ -1,20 +1,20 @@
 // components/QuestionCard.component.tsx
+import { Question } from '@/types/question';
 import React from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
-import { GameQuestion, Question } from '../types/type';
 
 interface QuestionCardProps {
-  question: GameQuestion
+  question: Question;
   questionNumber?: number;
   totalQuestions?: number;
   timeRemaining?: number;
 }
 
-const QuestionView: React.FC<QuestionCardProps> = ({ 
-  question, 
+const QuestionView: React.FC<QuestionCardProps> = ({
+  question,
   questionNumber,
   totalQuestions,
-  timeRemaining 
+  timeRemaining,
 }) => {
   return (
     <View style={styles.container}>
@@ -27,10 +27,7 @@ const QuestionView: React.FC<QuestionCardProps> = ({
             </Text>
           )}
           {timeRemaining !== undefined && (
-            <Text style={[
-              styles.timer,
-              timeRemaining <= 10 && styles.timerWarning
-            ]}>
+            <Text style={[styles.timer, timeRemaining <= 10 && styles.timerWarning]}>
               ⏱️ {timeRemaining}s
             </Text>
           )}
@@ -38,20 +35,16 @@ const QuestionView: React.FC<QuestionCardProps> = ({
       )}
 
       {/* Imagen de la pregunta */}
-      {question.questionImage && (
-        <Image 
-          source={{ uri: question.questionImage }} 
+      {question.media && (
+        <Image
+          source={{ uri: question.media.url }}
           style={styles.questionImage}
           resizeMode="contain"
         />
       )}
 
       {/* Texto de la pregunta */}
-      {question.questionText && (
-        <Text style={styles.questionText}>
-          {question.questionText}
-        </Text>
-      )}
+      {question.questionText && <Text style={styles.questionText}>{question.questionText}</Text>}
     </View>
   );
 };
