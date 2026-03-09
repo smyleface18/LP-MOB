@@ -28,6 +28,8 @@
   "devDependencies": {
     "@types/react": "~19.1.0",
     "@types/socket.io-client": "^3.0.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
     "typescript": "~5.9.2"
   },
   "private": true

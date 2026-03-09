@@ -1,6 +1,6 @@
-import { ResponseApi } from "../../types/type";
-import { API_BASE_URL } from "./apiConfig";
-import * as SecureStore from "expo-secure-store";
+import { ResponseApi } from '../../types/type';
+import { API_BASE_URL } from './apiConfig';
+import * as SecureStore from 'expo-secure-store';
 
 class ApiService {
   private baseURL: string;
@@ -9,16 +9,13 @@ class ApiService {
     this.baseURL = API_BASE_URL;
   }
 
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<ResponseApi<T>> {
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ResponseApi<T>> {
     const url = `${this.baseURL}${endpoint}`;
-    const token = await SecureStore.getItemAsync("accessToken");
+    const token = await SecureStore.getItemAsync('accessToken');
 
     const config: RequestInit = {
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
@@ -27,9 +24,18 @@ class ApiService {
 
     try {
       const response = await fetch(url, config);
-      const responseBody = await response.json();
+      const responseBody = (await response.json()) as ResponseApi<T>;
+
+      if (response.status === 204) {
+        return {
+          ok: true,
+          data: null as T,
+          message: 'Operation successful',
+        };
+      }
+
       if (!response.ok) {
-        console.error("API error body:", responseBody);
+        console.error('API error body:', responseBody);
         return {
           ok: false,
           data: null,
@@ -39,40 +45,40 @@ class ApiService {
 
       return {
         ok: true,
-        data: responseBody,
+        data: responseBody.data,
         message: this.normalizeApiMessage(responseBody.message),
       };
     } catch (error) {
-      console.error("API request failed:", error);
+      console.error('API request failed:', error);
       throw error;
     }
   }
 
   async get<T>(endpoint: string): Promise<ResponseApi<T>> {
-    return this.request<T>(endpoint, { method: "GET" });
+    return this.request<T>(endpoint, { method: 'GET' });
   }
 
   async post<T>(endpoint: string, data: any): Promise<ResponseApi<T>> {
     return this.request<T>(endpoint, {
-      method: "POST",
+      method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
   async patch<T>(endpoint: string, data: any): Promise<ResponseApi<T>> {
     return this.request<T>(endpoint, {
-      method: "PATCH",
+      method: 'PATCH',
       body: JSON.stringify(data),
     });
   }
 
   async delete<T>(endpoint: string): Promise<ResponseApi<T>> {
-    return this.request<T>(endpoint, { method: "DELETE" });
+    return this.request<T>(endpoint, { method: 'DELETE' });
   }
 
   private normalizeApiMessage(message: string | string[]): string {
     if (Array.isArray(message)) {
-      return message.join("\n");
+      return message.join('\n');
     }
     return message;
   }

@@ -1,6 +1,7 @@
-import { apiService } from "./api/api.service";
-import { API_ENDPOINTS } from "./api/apiConfig";
-import { CategoryQuestion, ResponseApi } from "../types/type";
+import { apiService } from './api/api.service';
+import { API_ENDPOINTS } from './api/apiConfig';
+import { ResponseApi } from '../types/type';
+import { CategoryQuestion } from '@/types/category-question';
 
 export interface CreateCategoryDto {
   level: string;
@@ -19,27 +20,17 @@ export const categoryService = {
 
   // Obtener una categoría por ID
   getById: async (id: string): Promise<ResponseApi<CategoryQuestion>> => {
-    return apiService.get<CategoryQuestion>(
-      `${API_ENDPOINTS.CATEGORIES}/${id}`
-    );
+    return apiService.get<CategoryQuestion>(`${API_ENDPOINTS.CATEGORIES}/${id}`);
   },
 
   // Crear una nueva categoría
-  create: async (
-    data: CreateCategoryDto
-  ): Promise<ResponseApi<CategoryQuestion>> => {
+  create: async (data: CreateCategoryDto): Promise<ResponseApi<CategoryQuestion>> => {
     return apiService.post<CategoryQuestion>(API_ENDPOINTS.CATEGORIES, data);
   },
 
   // Actualizar una categoría
-  update: async (
-    id: string,
-    data: UpdateCategoryDto
-  ): Promise<ResponseApi<CategoryQuestion>> => {
-    return apiService.patch<CategoryQuestion>(
-      `${API_ENDPOINTS.CATEGORIES}/${id}`,
-      data
-    );
+  update: async (id: string, data: UpdateCategoryDto): Promise<ResponseApi<CategoryQuestion>> => {
+    return apiService.patch<CategoryQuestion>(`${API_ENDPOINTS.CATEGORIES}/${id}`, data);
   },
 
   // Eliminar una categoría
