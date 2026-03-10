@@ -1,18 +1,12 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  Alert,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { LevelCategoryQuestion, TypeQuestionCategory } from '../types/type';
 import Button from '../components/Button.component';
 import Input from '../components/Input.component';
 import FilterSection from '../components/FilterSection.component';
 import { useCategories } from '../hooks/useCategories';
+import { TypeQuestionCategory } from '@/types/category-question';
+import { Level } from '@/types/common';
 
 const CreateCategoryScreen = () => {
   const navigation = useNavigation();
@@ -20,38 +14,38 @@ const CreateCategoryScreen = () => {
 
   const [formData, setFormData] = useState({
     descriptionCategory: '',
-    level: '' as LevelCategoryQuestion | '',
+    level: '' as Level | '',
     type: '' as TypeQuestionCategory | '',
-    active: true
+    active: true,
   });
 
   const [errors, setErrors] = useState({
     descriptionCategory: '',
     level: '',
-    type: ''
+    type: '',
   });
 
-  const levelOptions = Object.values(LevelCategoryQuestion).map(level => ({
+  const levelOptions = Object.values(Level).map((level) => ({
     value: level,
-    label: level
+    label: level,
   }));
 
-  const typeOptions = Object.values(TypeQuestionCategory).map(type => ({
+  const typeOptions = Object.values(TypeQuestionCategory).map((type) => ({
     value: type,
-    label: type
+    label: type,
   }));
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
 
     // Clear error when user starts typing
     if (errors[field as keyof typeof errors]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [field]: ''
+        [field]: '',
       }));
     }
   };
@@ -60,7 +54,7 @@ const CreateCategoryScreen = () => {
     const newErrors = {
       descriptionCategory: '',
       level: '',
-      type: ''
+      type: '',
     };
 
     let isValid = true;
@@ -93,16 +87,16 @@ const CreateCategoryScreen = () => {
     try {
       const submitData = {
         ...formData,
-        descriptionCategory: formData.descriptionCategory.trim()
+        descriptionCategory: formData.descriptionCategory.trim(),
       };
 
       await createCategory(submitData);
-      
+
       Alert.alert('Success', 'Category created successfully', [
         {
           text: 'OK',
-          onPress: () => navigation.goBack()
-        }
+          onPress: () => navigation.goBack(),
+        },
       ]);
     } catch (error) {
       Alert.alert('Error', 'Failed to create category');
@@ -113,14 +107,14 @@ const CreateCategoryScreen = () => {
   const handleClearForm = () => {
     setFormData({
       descriptionCategory: '',
-      level: '' as LevelCategoryQuestion | '',
+      level: '' as Level | '',
       type: '' as TypeQuestionCategory | '',
-      active: true
+      active: true,
     });
     setErrors({
       descriptionCategory: '',
       level: '',
-      type: ''
+      type: '',
     });
   };
 
@@ -164,9 +158,7 @@ const CreateCategoryScreen = () => {
             selectedValue={formData.level}
             onValueChange={(value) => handleInputChange('level', value)}
           />
-          {errors.level && (
-            <Text style={styles.errorText}>{errors.level}</Text>
-          )}
+          {errors.level && <Text style={styles.errorText}>{errors.level}</Text>}
         </View>
 
         {/* Category Type */}
@@ -178,9 +170,7 @@ const CreateCategoryScreen = () => {
             selectedValue={formData.type}
             onValueChange={(value) => handleInputChange('type', value)}
           />
-          {errors.type && (
-            <Text style={styles.errorText}>{errors.type}</Text>
-          )}
+          {errors.type && <Text style={styles.errorText}>{errors.type}</Text>}
         </View>
 
         {/* Category Summary */}
@@ -229,7 +219,7 @@ const CreateCategoryScreen = () => {
             size="medium"
           />
           <Button
-            title={loading ? "Creating..." : "Create Category"}
+            title={loading ? 'Creating...' : 'Create Category'}
             variant="primary"
             onPress={handleSubmit}
             style={styles.submitButton}

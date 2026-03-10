@@ -1,43 +1,29 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  Alert,
-  TouchableOpacity,
-} from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import {
-  LevelCategoryQuestion,
-  TypeQuestionCategory,
-  CategoryQuestion,
-} from "../types/type";
-import Button from "../components/Button.component";
-import Input from "../components/Input.component";
-import FilterSection from "../components/FilterSection.component";
-import { useCategories } from "../hooks/useCategories";
-import { questionService } from "../services/question.service";
+import React, { useState } from 'react';
+import { View, Text, ScrollView, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import Button from '../components/Button.component';
+import Input from '../components/Input.component';
+import FilterSection from '../components/FilterSection.component';
+import { useCategories } from '../hooks/useCategories';
+import { questionService } from '../services/question.service';
+import { Level } from '@/types/common';
+import { TypeQuestionCategory } from '@/types/category-question';
 
 const CreateQuestionScreen = () => {
   const navigation = useNavigation();
   const { categories, loading: categoriesLoading } = useCategories();
 
   const [formData, setFormData] = useState({
-    questionText: "",
-    questionImage: "",
-    options: ["", "", "", ""],
-    correctAnswer: "",
-    categoryId: "",
+    questionText: '',
+    questionImage: '',
+    options: ['', '', '', ''],
+    correctAnswer: '',
+    categoryId: '',
     active: true,
   });
 
-  const [selectedLevel, setSelectedLevel] = useState<
-    LevelCategoryQuestion | ""
-  >("");
-  const [selectedType, setSelectedType] = useState<TypeQuestionCategory | "">(
-    ""
-  );
+  const [selectedLevel, setSelectedLevel] = useState<Level | ''>('');
+  const [selectedType, setSelectedType] = useState<TypeQuestionCategory | ''>('');
 
   // Filter categories based on selected level and type
   const filteredCategories = categories.filter((category) => {
@@ -51,7 +37,7 @@ const CreateQuestionScreen = () => {
     label: cat.descriptionCategory,
   }));
 
-  const levelOptions = Object.values(LevelCategoryQuestion).map((level) => ({
+  const levelOptions = Object.values(Level).map((level) => ({
     value: level,
     label: level,
   }));
@@ -62,7 +48,7 @@ const CreateQuestionScreen = () => {
   }));
 
   // Get selected category to display in summary
-  const selectedCategory = categories.find(cat => cat.id === formData.categoryId);
+  const selectedCategory = categories.find((cat) => cat.id === formData.categoryId);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({
@@ -84,7 +70,7 @@ const CreateQuestionScreen = () => {
     if (formData.options.length < 6) {
       setFormData((prev) => ({
         ...prev,
-        options: [...prev.options, ""],
+        options: [...prev.options, ''],
       }));
     }
   };
@@ -95,8 +81,7 @@ const CreateQuestionScreen = () => {
       setFormData((prev) => ({
         ...prev,
         options: newOptions,
-        correctAnswer:
-          prev.correctAnswer === prev.options[index] ? "" : prev.correctAnswer,
+        correctAnswer: prev.correctAnswer === prev.options[index] ? '' : prev.correctAnswer,
       }));
     }
   };
@@ -110,35 +95,35 @@ const CreateQuestionScreen = () => {
 
   const handleClearForm = () => {
     setFormData({
-      questionText: "",
-      questionImage: "",
-      options: ["", "", "", ""],
-      correctAnswer: "",
-      categoryId: "",
+      questionText: '',
+      questionImage: '',
+      options: ['', '', '', ''],
+      correctAnswer: '',
+      categoryId: '',
       active: true,
     });
-    setSelectedLevel("");
-    setSelectedType("");
+    setSelectedLevel('');
+    setSelectedType('');
   };
 
   const validateForm = () => {
     if (!formData.questionText && !formData.questionImage) {
-      Alert.alert("Error", "You must provide question text or image");
+      Alert.alert('Error', 'You must provide question text or image');
       return false;
     }
 
-    if (formData.options.filter((opt) => opt.trim() !== "").length < 2) {
-      Alert.alert("Error", "You must provide at least 2 options");
+    if (formData.options.filter((opt) => opt.trim() !== '').length < 2) {
+      Alert.alert('Error', 'You must provide at least 2 options');
       return false;
     }
 
     if (!formData.correctAnswer) {
-      Alert.alert("Error", "You must select a correct answer");
+      Alert.alert('Error', 'You must select a correct answer');
       return false;
     }
 
     if (!formData.categoryId) {
-      Alert.alert("Error", "You must select a category");
+      Alert.alert('Error', 'You must select a category');
       return false;
     }
 
@@ -151,19 +136,19 @@ const CreateQuestionScreen = () => {
     try {
       const submitData = {
         ...formData,
-        options: formData.options.filter((opt) => opt.trim() !== ""),
+        options: formData.options.filter((opt) => opt.trim() !== ''),
       };
 
       await questionService.create(submitData);
-      Alert.alert("Success", "Question created successfully", [
+      Alert.alert('Success', 'Question created successfully', [
         {
-          text: "OK",
+          text: 'OK',
           onPress: () => navigation.goBack(),
         },
       ]);
     } catch (error) {
-      Alert.alert("Error", "Failed to create question");
-      console.error("Error creating question:", error);
+      Alert.alert('Error', 'Failed to create question');
+      console.error('Error creating question:', error);
     }
   };
 
@@ -191,7 +176,7 @@ const CreateQuestionScreen = () => {
           <Input
             placeholder="Enter the question text..."
             value={formData.questionText}
-            onChangeText={(value) => handleInputChange("questionText", value)}
+            onChangeText={(value) => handleInputChange('questionText', value)}
             variant="outlined"
             multiline
             numberOfLines={3}
@@ -201,13 +186,11 @@ const CreateQuestionScreen = () => {
 
         {/* Question Image (Optional) */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            Question Image (Optional)
-          </Text>
+          <Text style={styles.sectionTitle}>Question Image (Optional)</Text>
           <Input
             placeholder="Image URL..."
             value={formData.questionImage}
-            onChangeText={(value) => handleInputChange("questionImage", value)}
+            onChangeText={(value) => handleInputChange('questionImage', value)}
             variant="outlined"
           />
         </View>
@@ -217,23 +200,16 @@ const CreateQuestionScreen = () => {
           <Text style={styles.sectionTitle}>Filter Categories</Text>
           <FilterSection
             title="Level"
-            options={[
-              { value: "", label: "All levels" },
-              ...levelOptions,
-            ]}
+            options={[{ value: '', label: 'All levels' }, ...levelOptions]}
             selectedValue={selectedLevel}
-            onValueChange={(value) =>
-              setSelectedLevel(value as LevelCategoryQuestion | "")
-            }
+            onValueChange={(value) => setSelectedLevel(value as Level | '')}
           />
 
           <FilterSection
             title="Type"
-            options={[{ value: "", label: "All types" }, ...typeOptions]}
+            options={[{ value: '', label: 'All types' }, ...typeOptions]}
             selectedValue={selectedType}
-            onValueChange={(value) =>
-              setSelectedType(value as TypeQuestionCategory | "")
-            }
+            onValueChange={(value) => setSelectedType(value as TypeQuestionCategory | '')}
           />
         </View>
 
@@ -245,7 +221,7 @@ const CreateQuestionScreen = () => {
               title=""
               options={categoryOptions}
               selectedValue={formData.categoryId}
-              onValueChange={(value) => handleInputChange("categoryId", value)}
+              onValueChange={(value) => handleInputChange('categoryId', value)}
             />
           ) : (
             <Text style={styles.noCategoriesText}>
@@ -259,7 +235,7 @@ const CreateQuestionScreen = () => {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Answer Options</Text>
             <Text style={styles.optionCount}>
-              {formData.options.filter((opt) => opt.trim() !== "").length}/6
+              {formData.options.filter((opt) => opt.trim() !== '').length}/6
             </Text>
           </View>
 
@@ -276,18 +252,14 @@ const CreateQuestionScreen = () => {
                 <TouchableOpacity
                   style={[
                     styles.correctAnswerButton,
-                    formData.correctAnswer === option &&
-                      styles.correctAnswerButtonActive,
+                    formData.correctAnswer === option && styles.correctAnswerButtonActive,
                   ]}
-                  onPress={() =>
-                    option.trim() && handleSetCorrectAnswer(option)
-                  }
+                  onPress={() => option.trim() && handleSetCorrectAnswer(option)}
                 >
                   <Text
                     style={[
                       styles.correctAnswerText,
-                      formData.correctAnswer === option &&
-                        styles.correctAnswerTextActive,
+                      formData.correctAnswer === option && styles.correctAnswerTextActive,
                     ]}
                   >
                     ✓
@@ -317,7 +289,10 @@ const CreateQuestionScreen = () => {
         </View>
 
         {/* Question Summary */}
-        {(formData.questionText || formData.questionImage || formData.categoryId || formData.correctAnswer) && (
+        {(formData.questionText ||
+          formData.questionImage ||
+          formData.categoryId ||
+          formData.correctAnswer) && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Question Summary</Text>
             <View style={styles.summaryContainer}>
@@ -337,7 +312,8 @@ const CreateQuestionScreen = () => {
                 <View style={styles.summaryItem}>
                   <Text style={styles.summaryLabel}>Category:</Text>
                   <Text style={styles.summaryValue}>
-                    {selectedCategory.descriptionCategory} ({selectedCategory.level} - {selectedCategory.type})
+                    {selectedCategory.descriptionCategory} ({selectedCategory.level} -{' '}
+                    {selectedCategory.type})
                   </Text>
                 </View>
               )}
@@ -352,7 +328,7 @@ const CreateQuestionScreen = () => {
               <View style={styles.summaryItem}>
                 <Text style={styles.summaryLabel}>Total Options:</Text>
                 <Text style={styles.summaryValue}>
-                  {formData.options.filter(opt => opt.trim() !== '').length} options
+                  {formData.options.filter((opt) => opt.trim() !== '').length} options
                 </Text>
               </View>
             </View>
@@ -391,23 +367,23 @@ const CreateQuestionScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: '#FFFFFF',
   },
   header: {
     padding: 20,
-    backgroundColor: "#000000",
+    backgroundColor: '#000000',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
   title: {
     fontSize: 24,
-    fontWeight: "bold",
-    color: "#FFFFFF",
+    fontWeight: 'bold',
+    color: '#FFFFFF',
     marginBottom: 5,
   },
   subtitle: {
     fontSize: 16,
-    color: "#FFFFFF",
+    color: '#FFFFFF',
     opacity: 0.9,
   },
   formContainer: {
@@ -417,30 +393,30 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
   sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 15,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#000000",
+    fontWeight: 'bold',
+    color: '#000000',
     marginBottom: 10,
   },
   textArea: {
     minHeight: 80,
-    textAlignVertical: "top",
+    textAlignVertical: 'top',
   },
   noCategoriesText: {
-    color: "#666666",
-    fontStyle: "italic",
-    textAlign: "center",
+    color: '#666666',
+    fontStyle: 'italic',
+    textAlign: 'center',
     marginTop: 10,
   },
   optionRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 10,
   },
   optionInput: {
@@ -448,80 +424,80 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   optionActions: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   correctAnswerButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
     borderWidth: 2,
-    borderColor: "#CCCCCC",
-    justifyContent: "center",
-    alignItems: "center",
+    borderColor: '#CCCCCC',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 8,
   },
   correctAnswerButtonActive: {
-    borderColor: "#4CAF50",
-    backgroundColor: "#4CAF50",
+    borderColor: '#4CAF50',
+    backgroundColor: '#4CAF50',
   },
   correctAnswerText: {
     fontSize: 16,
-    color: "#666666",
+    color: '#666666',
   },
   correctAnswerTextActive: {
-    color: "#FFFFFF",
+    color: '#FFFFFF',
   },
   removeButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#FF4444",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#FF4444',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   removeButtonText: {
     fontSize: 18,
-    color: "#FFFFFF",
-    fontWeight: "bold",
+    color: '#FFFFFF',
+    fontWeight: 'bold',
   },
   addOptionButton: {
     marginTop: 10,
   },
   optionCount: {
     fontSize: 14,
-    color: "#666666",
-    fontWeight: "bold",
+    color: '#666666',
+    fontWeight: 'bold',
   },
   summaryContainer: {
-    backgroundColor: "#F8F9FA",
+    backgroundColor: '#F8F9FA',
     padding: 15,
     borderRadius: 8,
     borderLeftWidth: 4,
-    borderLeftColor: "#007AFF",
+    borderLeftColor: '#007AFF',
   },
   summaryItem: {
-    flexDirection: "row",
+    flexDirection: 'row',
     marginBottom: 8,
   },
   summaryLabel: {
     fontSize: 14,
-    fontWeight: "bold",
-    color: "#000000",
+    fontWeight: 'bold',
+    color: '#000000',
     width: 120,
   },
   summaryValue: {
     fontSize: 14,
-    color: "#333333",
+    color: '#333333',
     flex: 1,
   },
   correctAnswer: {
-    color: "#4CAF50",
-    fontWeight: "bold",
+    color: '#4CAF50',
+    fontWeight: 'bold',
   },
   actionsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginTop: 20,
     gap: 10,
   },
@@ -536,9 +512,9 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
   },
 });
 

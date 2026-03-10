@@ -1,4 +1,4 @@
-import { ResponseApi } from '../../types/type';
+import { ApiResponse } from '@/types/type';
 import { API_BASE_URL } from './apiConfig';
 import * as SecureStore from 'expo-secure-store';
 
@@ -9,7 +9,8 @@ class ApiService {
     this.baseURL = API_BASE_URL;
   }
 
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ResponseApi<T>> {
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+    console.log('ejecutando request: ', endpoint, options);
     const url = `${this.baseURL}${endpoint}`;
     const token = await SecureStore.getItemAsync('accessToken');
 
@@ -24,15 +25,18 @@ class ApiService {
 
     try {
       const response = await fetch(url, config);
-      const responseBody = (await response.json()) as ResponseApi<T>;
 
       if (response.status === 204) {
         return {
           ok: true,
-          data: null as T,
+          data: null,
           message: 'Operation successful',
         };
       }
+
+      const responseBody = await response.json();
+
+      console.log('API raw response:', responseBody);
 
       if (!response.ok) {
         console.error('API error body:', responseBody);
@@ -54,25 +58,25 @@ class ApiService {
     }
   }
 
-  async get<T>(endpoint: string): Promise<ResponseApi<T>> {
+  async get<T>(endpoint: string): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, { method: 'GET' });
   }
 
-  async post<T>(endpoint: string, data: any): Promise<ResponseApi<T>> {
+  async post<T>(endpoint: string, data: any): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async patch<T>(endpoint: string, data: any): Promise<ResponseApi<T>> {
+  async patch<T>(endpoint: string, data: any): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'PATCH',
       body: JSON.stringify(data),
     });
   }
 
-  async delete<T>(endpoint: string): Promise<ResponseApi<T>> {
+  async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, { method: 'DELETE' });
   }
 

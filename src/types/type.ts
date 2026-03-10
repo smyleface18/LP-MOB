@@ -37,8 +37,8 @@ export interface SignUpDto {
   password: string;
 }
 
-export interface ResponseApi<T> {
+export interface ApiResponse<T> {
   ok: boolean;
-  message: string;
   data: T | null;
+  message?: string | string[];
 }

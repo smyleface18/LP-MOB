@@ -1,6 +1,6 @@
-import { create } from "zustand";
-import { Authenticated, AuthState } from "./auth.type";
-import * as SecureStore from "expo-secure-store";
+import { create } from 'zustand';
+import { Authenticated, AuthState } from './auth.type';
+import * as SecureStore from 'expo-secure-store';
 
 export const useAuthStore = create<AuthState>((set) => ({
   accessToken: null,
@@ -10,10 +10,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
 
   signInStatus: async (authenticated: Authenticated) => {
-    await SecureStore.setItemAsync("accessToken", authenticated.accessToken);
-    await SecureStore.setItemAsync("idToken", authenticated.idToken);
-    await SecureStore.setItemAsync("refreshToken", authenticated.refreshToken);
-
+    await SecureStore.setItemAsync('accessToken', authenticated.accessToken);
+    await SecureStore.setItemAsync('idToken', authenticated.idToken);
+    await SecureStore.setItemAsync('refreshToken', authenticated.refreshToken);
+    console.log('aqui');
     set({
       accessToken: authenticated.accessToken,
       idToken: authenticated.idToken,
@@ -23,9 +23,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   signOut: async () => {
-    await SecureStore.deleteItemAsync("accessToken");
-    await SecureStore.deleteItemAsync("idToken");
-    await SecureStore.deleteItemAsync("refreshToken");
+    await SecureStore.deleteItemAsync('accessToken');
+    await SecureStore.deleteItemAsync('idToken');
+    await SecureStore.deleteItemAsync('refreshToken');
 
     set({
       accessToken: null,
@@ -37,7 +37,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   restoreSession: async () => {
-    const refreshToken = await SecureStore.getItemAsync("accessToken");
+    const refreshToken = await SecureStore.getItemAsync('accessToken');
 
     if (!refreshToken) return;
 

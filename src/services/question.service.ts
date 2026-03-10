@@ -1,6 +1,7 @@
-import { apiService } from "./api/api.service";
-import { API_ENDPOINTS } from "./api/apiConfig";
-import { Question, ResponseApi } from "../types/type";
+import { Question } from '@/types/question';
+import { apiService } from './api/api.service';
+import { API_ENDPOINTS } from './api/apiConfig';
+import { ResponseApi } from '@/types/type';
 
 export interface CreateQuestionDto {
   questionText?: string;
@@ -30,17 +31,12 @@ export const questionService = {
   },
 
   // Crear múltiples preguntas
-  createMany: async (
-    data: CreateQuestionDto[]
-  ): Promise<ResponseApi<Question[]>> => {
+  createMany: async (data: CreateQuestionDto[]): Promise<ResponseApi<Question[]>> => {
     return apiService.post<Question[]>(`${API_ENDPOINTS.QUESTIONS}/bulk`, data);
   },
 
   // Actualizar una pregunta
-  update: async (
-    id: string,
-    data: UpdateQuestionDto
-  ): Promise<ResponseApi<Question>> => {
+  update: async (id: string, data: UpdateQuestionDto): Promise<ResponseApi<Question>> => {
     return apiService.patch<Question>(`${API_ENDPOINTS.QUESTIONS}/${id}`, data);
   },
 

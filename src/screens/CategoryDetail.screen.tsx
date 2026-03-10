@@ -6,14 +6,15 @@ import {
   StyleSheet,
   Alert,
   TouchableOpacity,
-  ActivityIndicator
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { CategoryQuestion, LevelCategoryQuestion, TypeQuestionCategory } from '../types/type';
 import Button from '../components/Button.component';
 import Input from '../components/Input.component';
 import FilterSection from '../components/FilterSection.component';
 import { useCategories } from '../hooks/useCategories';
+import { Level } from '@/types/common';
+import { CategoryQuestion, TypeQuestionCategory } from '@/types/category-question';
 
 interface RouteParams {
   categoryId: string;
@@ -25,16 +26,21 @@ const CategoryDetailScreen = () => {
   const route = useRoute();
   const { categoryId, category: initialCategory } = route.params as RouteParams;
 
-  const { categories, loading: categoriesLoading, updateCategory, deleteCategory } = useCategories();
+  const {
+    categories,
+    loading: categoriesLoading,
+    updateCategory,
+    deleteCategory,
+  } = useCategories();
   const [loading, setLoading] = useState(!initialCategory);
   const [saving, setSaving] = useState(false);
   const [category, setCategory] = useState<CategoryQuestion | null>(initialCategory || null);
 
   const [formData, setFormData] = useState({
     descriptionCategory: '',
-    level: '' as LevelCategoryQuestion | '',
+    level: '' as Level | '',
     type: '' as TypeQuestionCategory | '',
-    active: true
+    active: true,
   });
 
   // Cargar la categoría si no viene en los params
@@ -51,7 +57,7 @@ const CategoryDetailScreen = () => {
         descriptionCategory: category.descriptionCategory,
         level: category.level,
         type: category.type,
-        active: category.active
+        active: category.active,
       });
     }
   }, [category]);
@@ -60,7 +66,7 @@ const CategoryDetailScreen = () => {
     try {
       setLoading(true);
       // Buscar en las categorías ya cargadas
-      const foundCategory = categories.find(cat => cat.id === categoryId);
+      const foundCategory = categories.find((cat) => cat.id === categoryId);
       if (foundCategory) {
         setCategory(foundCategory);
       } else {
@@ -74,20 +80,20 @@ const CategoryDetailScreen = () => {
     }
   };
 
-  const levelOptions = Object.values(LevelCategoryQuestion).map(level => ({
+  const levelOptions = Object.values(Level).map((level) => ({
     value: level,
-    label: level
+    label: level,
   }));
 
-  const typeOptions = Object.values(TypeQuestionCategory).map(type => ({
+  const typeOptions = Object.values(TypeQuestionCategory).map((type) => ({
     value: type,
-    label: type
+    label: type,
   }));
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -119,8 +125,8 @@ const CategoryDetailScreen = () => {
       Alert.alert('Éxito', 'Categoría actualizada correctamente', [
         {
           text: 'OK',
-          onPress: () => navigation.goBack()
-        }
+          onPress: () => navigation.goBack(),
+        },
       ]);
     } catch (error) {
       Alert.alert('Error', 'No se pudo actualizar la categoría');
@@ -131,38 +137,37 @@ const CategoryDetailScreen = () => {
   };
 
   const handleDelete = () => {
-    Alert.alert(
-      'Eliminar Categoría',
-      '¿Estás seguro de que quieres eliminar esta categoría?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Eliminar', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteCategory(categoryId);
-              Alert.alert('Éxito', 'Categoría eliminada correctamente', [
-                {
-                  text: 'OK',
-                  onPress: () => navigation.goBack()
-                }
-              ]);
-            } catch (error) {
-              Alert.alert('Error', 'No se pudo eliminar la categoría');
-            }
+    Alert.alert('Eliminar Categoría', '¿Estás seguro de que quieres eliminar esta categoría?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Eliminar',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteCategory(categoryId);
+            Alert.alert('Éxito', 'Categoría eliminada correctamente', [
+              {
+                text: 'OK',
+                onPress: () => navigation.goBack(),
+              },
+            ]);
+          } catch (error) {
+            Alert.alert('Error', 'No se pudo eliminar la categoría');
           }
-        }
-      ]
-    );
+        },
+      },
+    ]);
   };
 
   const handleToggleActive = async () => {
     try {
       setSaving(true);
       await updateCategory(categoryId, { active: !formData.active });
-      setFormData(prev => ({ ...prev, active: !prev.active }));
-      Alert.alert('Éxito', `Categoría ${!formData.active ? 'activada' : 'desactivada'} correctamente`);
+      setFormData((prev) => ({ ...prev, active: !prev.active }));
+      Alert.alert(
+        'Éxito',
+        `Categoría ${!formData.active ? 'activada' : 'desactivada'} correctamente`,
+      );
     } catch (error) {
       Alert.alert('Error', 'No se pudo actualizar el estado de la categoría');
     } finally {
@@ -208,14 +213,12 @@ const CategoryDetailScreen = () => {
           <TouchableOpacity
             style={[
               styles.statusButton,
-              formData.active ? styles.statusActive : styles.statusInactive
+              formData.active ? styles.statusActive : styles.statusInactive,
             ]}
             onPress={handleToggleActive}
             disabled={saving}
           >
-            <Text style={styles.statusText}>
-              {formData.active ? 'Activa' : 'Inactiva'}
-            </Text>
+            <Text style={styles.statusText}>{formData.active ? 'Activa' : 'Inactiva'}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -241,7 +244,7 @@ const CategoryDetailScreen = () => {
             title=""
             options={levelOptions}
             selectedValue={formData.level}
-            onValueChange={(value) => handleInputChange('level', value as LevelCategoryQuestion)}
+            onValueChange={(value) => handleInputChange('level', value as Level)}
           />
         </View>
 
@@ -292,7 +295,7 @@ const CategoryDetailScreen = () => {
               style={styles.cancelButton}
             />
             <Button
-              title={saving ? "Guardando..." : "Guardar Cambios"}
+              title={saving ? 'Guardando...' : 'Guardar Cambios'}
               variant="primary"
               onPress={handleSave}
               disabled={saving}

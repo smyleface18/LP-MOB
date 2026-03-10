@@ -1,32 +1,27 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
+import {
+  View,
+  Text,
   StyleSheet,
   FlatList,
   Alert,
   Modal,
   ActivityIndicator,
   TouchableOpacity,
-  ScrollView
+  ScrollView,
 } from 'react-native';
-import { CategoryQuestion, LevelCategoryQuestion, TypeQuestionCategory } from '../types/type';
 import Button from '../components/Button.component';
 import CategoryCard from '../components/CategoryCard.component';
 import FilterSection from '../components/FilterSection.component';
 import Input from '../components/Input.component';
 import { useCategories } from '../hooks/useCategories';
 import { useNavigation } from '@react-navigation/native';
+import { CategoryQuestion, TypeQuestionCategory } from '@/types/category-question';
+import { Level } from '@/types/common';
 
 const ManageCategoriesScreen = () => {
-  const { 
-    categories, 
-    loading, 
-    error, 
-    updateCategory, 
-    deleteCategory,
-    loadCategories
-  } = useCategories();
+  const { categories, loading, error, updateCategory, deleteCategory, loadCategories } =
+    useCategories();
 
   const navigation = useNavigation();
 
@@ -36,17 +31,18 @@ const ManageCategoriesScreen = () => {
   const [selectedType, setSelectedType] = useState<string>('all');
 
   // Count active filters
-  const activeFiltersCount = [
-    selectedLevel !== 'all', 
-    selectedType !== 'all'
-  ].filter(Boolean).length;
+  const activeFiltersCount = [selectedLevel !== 'all', selectedType !== 'all'].filter(
+    Boolean,
+  ).length;
 
   // Filter categories
-  const filteredCategories = categories.filter(category => {
-    const matchesSearch = category.descriptionCategory.toLowerCase().includes(searchText.toLowerCase());
+  const filteredCategories = categories.filter((category) => {
+    const matchesSearch = category.descriptionCategory
+      .toLowerCase()
+      .includes(searchText.toLowerCase());
     const matchesLevel = selectedLevel === 'all' || category.level === selectedLevel;
     const matchesType = selectedType === 'all' || category.type === selectedType;
-    
+
     return matchesSearch && matchesLevel && matchesType;
   });
 
@@ -55,37 +51,36 @@ const ManageCategoriesScreen = () => {
   };
 
   const handleCategoryPress = (category: CategoryQuestion) => {
-    navigation.navigate({name :'CreateCategoryScreen', params : {
-      categoryId: category.id,
-      category: category
-    }} as never);
+    navigation.navigate({
+      name: 'CreateCategoryScreen',
+      params: {
+        categoryId: category.id,
+        category: category,
+      },
+    } as never);
   };
 
   const handleDeleteCategory = async (categoryId: string) => {
-    Alert.alert(
-      'Delete Category',
-      'Are you sure you want to delete this category?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Delete', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteCategory(categoryId);
-              Alert.alert('Success', 'Category deleted successfully');
-            } catch (err) {
-              Alert.alert('Error', 'Failed to delete category');
-            }
+    Alert.alert('Delete Category', 'Are you sure you want to delete this category?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteCategory(categoryId);
+            Alert.alert('Success', 'Category deleted successfully');
+          } catch (err) {
+            Alert.alert('Error', 'Failed to delete category');
           }
-        }
-      ]
-    );
+        },
+      },
+    ]);
   };
 
   const handleToggleActive = async (categoryId: string) => {
     try {
-      const category = categories.find(c => c.id === categoryId);
+      const category = categories.find((c) => c.id === categoryId);
       if (category) {
         await updateCategory(categoryId, { active: !category.active });
       }
@@ -100,14 +95,14 @@ const ManageCategoriesScreen = () => {
     setFiltersModalVisible(false);
   };
 
-  const levelOptions = Object.values(LevelCategoryQuestion).map(level => ({
+  const levelOptions = Object.values(Level).map((level) => ({
     value: level,
-    label: level
+    label: level,
   }));
 
-  const typeOptions = Object.values(TypeQuestionCategory).map(type => ({
+  const typeOptions = Object.values(TypeQuestionCategory).map((type) => ({
     value: type,
-    label: type
+    label: type,
   }));
 
   const renderCategoryItem = ({ item }: { item: CategoryQuestion }) => (
@@ -151,9 +146,7 @@ const ManageCategoriesScreen = () => {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Category Management</Text>
-        <Text style={styles.subtitle}>
-          Total: {filteredCategories.length} categories
-        </Text>
+        <Text style={styles.subtitle}>Total: {filteredCategories.length} categories</Text>
       </View>
 
       {/* Search and Filters */}
@@ -165,11 +158,8 @@ const ManageCategoriesScreen = () => {
           variant="outlined"
           style={styles.searchInput}
         />
-        
-        <TouchableOpacity 
-          style={styles.filtersButton}
-          onPress={() => setFiltersModalVisible(true)}
-        >
+
+        <TouchableOpacity style={styles.filtersButton} onPress={() => setFiltersModalVisible(true)}>
           <Text style={styles.filtersButtonText}>
             Filters {activeFiltersCount > 0 && `(${activeFiltersCount})`}
           </Text>
@@ -181,10 +171,9 @@ const ManageCategoriesScreen = () => {
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>No categories found</Text>
           <Text style={styles.emptySubtext}>
-            {searchText || selectedLevel !== 'all' || selectedType !== 'all' 
-              ? 'Try adjusting your search filters' 
-              : 'No categories available'
-            }
+            {searchText || selectedLevel !== 'all' || selectedType !== 'all'
+              ? 'Try adjusting your search filters'
+              : 'No categories available'}
           </Text>
         </View>
       ) : (
@@ -226,7 +215,7 @@ const ManageCategoriesScreen = () => {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Filters</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.closeButton}
                 onPress={() => setFiltersModalVisible(false)}
               >

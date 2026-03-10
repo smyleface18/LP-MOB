@@ -1,23 +1,23 @@
-import { useState } from "react";
-import { User, UserRoles } from "../services/auth/auth.type";
-import { Level } from "../types/type";
-import { userService } from "../services/user.service";
+import { useState } from 'react';
+import { User, UserRoles } from '../services/auth/auth.type';
+import { userService } from '../services/user.service';
+import { Level } from '@/types/common';
 
 export const useUser = () => {
   const [user, setUser] = useState<User>({
-    id: "",
+    id: '',
     active: false,
     createdAt: new Date(),
     updatedAt: new Date(),
-    avatar: "",
-    username: "",
-    email: "",
+    avatar: '',
+    username: '',
+    email: '',
     score: 0,
     userRole: UserRoles.PLAYER,
     level: Level.A1,
   });
 
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const getMe = async () => {

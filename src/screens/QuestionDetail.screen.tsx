@@ -6,15 +6,17 @@ import {
   StyleSheet,
   Alert,
   TouchableOpacity,
-  ActivityIndicator
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { Question, LevelCategoryQuestion, TypeQuestionCategory, CategoryQuestion } from '../types/type';
 import Button from '../components/Button.component';
 import Input from '../components/Input.component';
 import FilterSection from '../components/FilterSection.component';
 import { useCategories } from '../hooks/useCategories';
 import { questionService } from '../services/question.service';
+import { Question } from '@/types/question';
+import { Level } from '@/types/common';
+import { TypeQuestionCategory } from '@/types/category-question';
 
 interface RouteParams {
   questionId: string;
@@ -37,10 +39,10 @@ const QuestionDetailScreen = () => {
     options: ['', '', '', ''],
     correctAnswer: '',
     categoryId: '',
-    active: true
+    active: true,
   });
 
-  const [selectedLevel, setSelectedLevel] = useState<LevelCategoryQuestion | ''>('');
+  const [selectedLevel, setSelectedLevel] = useState<Level | ''>('');
   const [selectedType, setSelectedType] = useState<TypeQuestionCategory | ''>('');
 
   // Cargar la pregunta si no viene en los params
@@ -55,11 +57,11 @@ const QuestionDetailScreen = () => {
     if (question) {
       setFormData({
         questionText: question.questionText || '',
-        questionImage: question.questionImage || '',
+        questionImage: question.media?.url || '',
         options: [...question.options, '', '', ''].slice(0, 4), // Asegurar 4 opciones
-        correctAnswer: question.correctAnswer,
+        correctAnswer: question.options.find((op) => op.isCorrect == true)?.text?,
         categoryId: question.categoryId,
-        active: question.active
+        active: question.active,
       });
 
       // Setear filtros basados en la categoría actual
@@ -84,48 +86,48 @@ const QuestionDetailScreen = () => {
   };
 
   // Filtrar categorías basado en nivel y tipo seleccionados
-  const filteredCategories = categories.filter(category => {
+  const filteredCategories = categories.filter((category) => {
     const matchesLevel = !selectedLevel || category.level === selectedLevel;
     const matchesType = !selectedType || category.type === selectedType;
     return matchesLevel && matchesType;
   });
 
-  const categoryOptions = filteredCategories.map(cat => ({
+  const categoryOptions = filteredCategories.map((cat) => ({
     value: cat.id,
-    label: cat.descriptionCategory
+    label: cat.descriptionCategory,
   }));
 
-  const levelOptions = Object.values(LevelCategoryQuestion).map(level => ({
+  const levelOptions = Object.values(Level).map((level) => ({
     value: level,
-    label: level
+    label: level,
   }));
 
-  const typeOptions = Object.values(TypeQuestionCategory).map(type => ({
+  const typeOptions = Object.values(TypeQuestionCategory).map((type) => ({
     value: type,
-    label: type
+    label: type,
   }));
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handleOptionChange = (index: number, value: string) => {
     const newOptions = [...formData.options];
     newOptions[index] = value;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      options: newOptions
+      options: newOptions,
     }));
   };
 
   const handleAddOption = () => {
     if (formData.options.length < 6) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        options: [...prev.options, '']
+        options: [...prev.options, ''],
       }));
     }
   };
@@ -133,18 +135,18 @@ const QuestionDetailScreen = () => {
   const handleRemoveOption = (index: number) => {
     if (formData.options.length > 2) {
       const newOptions = formData.options.filter((_, i) => i !== index);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         options: newOptions,
-        correctAnswer: prev.correctAnswer === prev.options[index] ? '' : prev.correctAnswer
+        correctAnswer: prev.correctAnswer === prev.options[index] ? '' : prev.correctAnswer,
       }));
     }
   };
 
   const handleSetCorrectAnswer = (answer: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      correctAnswer: answer
+      correctAnswer: answer,
     }));
   };
 
@@ -154,7 +156,7 @@ const QuestionDetailScreen = () => {
       return false;
     }
 
-    const validOptions = formData.options.filter(opt => opt.trim() !== '');
+    const validOptions = formData.options.filter((opt) => opt.trim() !== '');
     if (validOptions.length < 2) {
       Alert.alert('Error', 'Debe proporcionar al menos 2 opciones');
       return false;
@@ -180,15 +182,15 @@ const QuestionDetailScreen = () => {
       setSaving(true);
       const submitData = {
         ...formData,
-        options: formData.options.filter(opt => opt.trim() !== '')
+        options: formData.options.filter((opt) => opt.trim() !== ''),
       };
 
       await questionService.update(questionId, submitData);
       Alert.alert('Éxito', 'Pregunta actualizada correctamente', [
         {
           text: 'OK',
-          onPress: () => navigation.goBack()
-        }
+          onPress: () => navigation.goBack(),
+        },
       ]);
     } catch (error) {
       Alert.alert('Error', 'No se pudo actualizar la pregunta');
@@ -199,38 +201,37 @@ const QuestionDetailScreen = () => {
   };
 
   const handleDelete = () => {
-    Alert.alert(
-      'Eliminar Pregunta',
-      '¿Estás seguro de que quieres eliminar esta pregunta?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Eliminar', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await questionService.delete(questionId);
-              Alert.alert('Éxito', 'Pregunta eliminada correctamente', [
-                {
-                  text: 'OK',
-                  onPress: () => navigation.goBack()
-                }
-              ]);
-            } catch (error) {
-              Alert.alert('Error', 'No se pudo eliminar la pregunta');
-            }
+    Alert.alert('Eliminar Pregunta', '¿Estás seguro de que quieres eliminar esta pregunta?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Eliminar',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await questionService.delete(questionId);
+            Alert.alert('Éxito', 'Pregunta eliminada correctamente', [
+              {
+                text: 'OK',
+                onPress: () => navigation.goBack(),
+              },
+            ]);
+          } catch (error) {
+            Alert.alert('Error', 'No se pudo eliminar la pregunta');
           }
-        }
-      ]
-    );
+        },
+      },
+    ]);
   };
 
   const handleToggleActive = async () => {
     try {
       setSaving(true);
       await questionService.update(questionId, { active: !formData.active });
-      setFormData(prev => ({ ...prev, active: !prev.active }));
-      Alert.alert('Éxito', `Pregunta ${!formData.active ? 'activada' : 'desactivada'} correctamente`);
+      setFormData((prev) => ({ ...prev, active: !prev.active }));
+      Alert.alert(
+        'Éxito',
+        `Pregunta ${!formData.active ? 'activada' : 'desactivada'} correctamente`,
+      );
     } catch (error) {
       Alert.alert('Error', 'No se pudo actualizar el estado de la pregunta');
     } finally {
@@ -276,14 +277,12 @@ const QuestionDetailScreen = () => {
           <TouchableOpacity
             style={[
               styles.statusButton,
-              formData.active ? styles.statusActive : styles.statusInactive
+              formData.active ? styles.statusActive : styles.statusInactive,
             ]}
             onPress={handleToggleActive}
             disabled={saving}
           >
-            <Text style={styles.statusText}>
-              {formData.active ? 'Activa' : 'Inactiva'}
-            </Text>
+            <Text style={styles.statusText}>{formData.active ? 'Activa' : 'Inactiva'}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -322,7 +321,7 @@ const QuestionDetailScreen = () => {
             title="Nivel"
             options={[{ value: '', label: 'Todos los niveles' }, ...levelOptions]}
             selectedValue={selectedLevel}
-            onValueChange={(value) => setSelectedLevel(value as LevelCategoryQuestion | '')}
+            onValueChange={(value) => setSelectedLevel(value as Level | '')}
           />
 
           <FilterSection
@@ -355,7 +354,7 @@ const QuestionDetailScreen = () => {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Opciones de Respuesta</Text>
             <Text style={styles.optionCount}>
-              {formData.options.filter(opt => opt.trim() !== '').length}/6
+              {formData.options.filter((opt) => opt.trim() !== '').length}/6
             </Text>
           </View>
 
@@ -372,14 +371,16 @@ const QuestionDetailScreen = () => {
                 <TouchableOpacity
                   style={[
                     styles.correctAnswerButton,
-                    formData.correctAnswer === option && styles.correctAnswerButtonActive
+                    formData.correctAnswer === option && styles.correctAnswerButtonActive,
                   ]}
                   onPress={() => option.trim() && handleSetCorrectAnswer(option)}
                 >
-                  <Text style={[
-                    styles.correctAnswerText,
-                    formData.correctAnswer === option && styles.correctAnswerTextActive
-                  ]}>
+                  <Text
+                    style={[
+                      styles.correctAnswerText,
+                      formData.correctAnswer === option && styles.correctAnswerTextActive,
+                    ]}
+                  >
                     ✓
                   </Text>
                 </TouchableOpacity>
@@ -432,7 +433,7 @@ const QuestionDetailScreen = () => {
               style={styles.cancelButton}
             />
             <Button
-              title={saving ? "Guardando..." : "Guardar Cambios"}
+              title={saving ? 'Guardando...' : 'Guardar Cambios'}
               variant="primary"
               onPress={handleSave}
               disabled={saving}

@@ -1,4 +1,5 @@
-import { CoreEntity, Level } from "../../types/type";
+import { Level } from '@/types/common';
+import { CoreEntity } from '@/types/common/cores.type';
 
 export interface AuthState {
   accessToken: string | null;
@@ -21,8 +22,8 @@ export interface User extends CoreEntity {
 }
 
 export enum UserRoles {
-  PLAYER = "PLAYER",
-  ADMIN = "ADMIN",
+  PLAYER = 'PLAYER',
+  ADMIN = 'ADMIN',
 }
 
 export interface Authenticated {
