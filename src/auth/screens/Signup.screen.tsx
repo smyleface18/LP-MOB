@@ -1,43 +1,35 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  Image,
-} from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import Input from "../components/Input.component";
-import Button from "../components/Button.component";
-import { useAuth } from "../hooks/useAuth";
-import { SignUpDto } from "../types/type";
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, Image } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import Input from '../../components/Input.component';
+import Button from '../../components/Button.component';
+import { useAuth } from '../../hooks/useAuth';
+import { SignUpDto } from '../types/type';
 
 const SignupScreen = () => {
   const navigation = useNavigation();
-
-  const handleLoginRedirect = () => {
-    navigation.navigate("Login" as never);
+../../components/Input.component
+  const handleLoginR../../components/Button.component
+    navigation.navigate('../../hooks/useAuth;
   };
 
   const { signUp, loading, error, signUpForm, setSignUpForm } = useAuth();
 
   const validatePassword = (password: string) => {
-    const regex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
     return regex.test(password);
   };
 
   const handleSignUp = async () => {
     if (signUpForm.password != signUpForm.confirmPassword) {
-      alert("las constraseñas no coinciden");
+      alert('las constraseñas no coinciden');
       return;
     }
 
     if (!validatePassword(signUpForm.password)) {
       alert(
         `La contraseña debe contener mayúsculas, minúsculas,
-         números y caracteres especiales, la contraseña debe tener 8 caracteres o más de largo.`
+         números y caracteres especiales, la contraseña debe tener 8 caracteres o más de largo.`,
       );
       return;
     }
@@ -52,18 +44,18 @@ const SignupScreen = () => {
     if (!result) {
       alert(error);
       setSignUpForm({
-        confirmPassword: "",
-        email: "",
-        nickname: "",
-        password: "",
+        confirmPassword: '',
+        email: '',
+        nickname: '',
+        password: '',
       });
     } else {
       alert(result.message);
       setSignUpForm({
-        confirmPassword: "",
-        email: "",
-        nickname: "",
-        password: "",
+        confirmPassword: '',
+        email: '',
+        nickname: '',
+        password: '',
       });
       handleLoginRedirect();
     }
@@ -72,14 +64,11 @@ const SignupScreen = () => {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.formContainer}>
         {/* Logo */}
-        <Image
-          source={require("../assets/LinguaPlay.png")}
-          style={styles.logo}
-        />
+        <Image source={require('../assets/LinguaPlay.png')} style={styles.logo} />
 
         {/* Input de Correo */}
         <Input
@@ -100,9 +89,7 @@ const SignupScreen = () => {
           variant="outlined"
           style={styles.input}
           value={signUpForm.nickname}
-          onChangeText={(text) =>
-            setSignUpForm({ ...signUpForm, nickname: text })
-          }
+          onChangeText={(text) => setSignUpForm({ ...signUpForm, nickname: text })}
         />
 
         {/* Input de Contraseña */}
@@ -113,9 +100,7 @@ const SignupScreen = () => {
           variant="outlined"
           style={styles.input}
           value={signUpForm.password}
-          onChangeText={(text) =>
-            setSignUpForm({ ...signUpForm, password: text })
-          }
+          onChangeText={(text) => setSignUpForm({ ...signUpForm, password: text })}
         />
 
         {/* Input de Confirmación de Contraseña */}
@@ -126,14 +111,12 @@ const SignupScreen = () => {
           variant="outlined"
           style={styles.input}
           value={signUpForm.confirmPassword}
-          onChangeText={(text) =>
-            setSignUpForm({ ...signUpForm, confirmPassword: text })
-          }
+          onChangeText={(text) => setSignUpForm({ ...signUpForm, confirmPassword: text })}
         />
 
         {/* Botón de Registro */}
         <Button
-          title={loading ? "Registrando..." : "Registrarse"}
+          title={loading ? 'Registrando...' : 'Registrarse'}
           variant="primary"
           size="medium"
           style={[styles.signupButton, loading && styles.buttonDisabled]}
@@ -144,7 +127,7 @@ const SignupScreen = () => {
         {/* Link de Login */}
         <View style={styles.loginContainer}>
           <Text style={styles.loginText}>
-            ¿Ya estás registrado?{" "}
+            ¿Ya estás registrado?{' '}
             <Text style={styles.loginLink} onPress={handleLoginRedirect}>
               Inicia sesión aquí
             </Text>
@@ -158,13 +141,13 @@ const SignupScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   formContainer: {
-    width: "80%",
-    alignItems: "center",
+    width: '80%',
+    alignItems: 'center',
   },
   buttonDisabled: {
     opacity: 0.6,
@@ -178,19 +161,19 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   signupButton: {
-    width: "100%",
+    width: '100%',
     marginTop: 8,
   },
   loginContainer: {
     marginTop: 20,
   },
   loginText: {
-    color: "#000000",
+    color: '#000000',
     fontSize: 14,
   },
   loginLink: {
-    color: "#FF0000",
-    fontWeight: "bold",
+    color: '#FF0000',
+    fontWeight: 'bold',
   },
 });
 

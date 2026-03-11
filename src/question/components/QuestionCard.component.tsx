@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Switch, TouchableOpacity } from 'react-native';
-import { Question, LevelCategoryQuestion, TypeQuestionCategory } from '../types/type';
+import { Question } from '../types';
+import { Level } from '@/shared/types/common';
 
 interface QuestionCardProps {
   question: Question;
@@ -10,23 +11,23 @@ interface QuestionCardProps {
   onPress?: (question: Question) => void;
 }
 
-const QuestionCard: React.FC<QuestionCardProps> = ({ 
-  question, 
-  onEdit, 
-  onDelete, 
+const QuestionCard: React.FC<QuestionCardProps> = ({
+  question,
+  onEdit,
+  onDelete,
   onToggleActive,
-  onPress 
+  onPress,
 }) => {
   const category = question.category;
-  
-  const getLevelColor = (level: LevelCategoryQuestion) => {
+
+  const getLevelColor = (level: Level) => {
     const colors = {
-      [LevelCategoryQuestion.A1]: '#4CAF50',
-      [LevelCategoryQuestion.A2]: '#8BC34A',
-      [LevelCategoryQuestion.B1]: '#FFC107',
-      [LevelCategoryQuestion.B2]: '#FF9800',
-      [LevelCategoryQuestion.C1]: '#F44336',
-      [LevelCategoryQuestion.C2]: '#D32F2F'
+      [Level.A1]: '#4CAF50',
+      [Level.A2]: '#8BC34A',
+      [Level.B1]: '#FFC107',
+      [Level.B2]: '#FF9800',
+      [Level.C1]: '#F44336',
+      [Level.C2]: '#D32F2F',
     };
     return colors[level] || '#666666';
   };
@@ -38,7 +39,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       [TypeQuestionCategory.READING]: '#9C27B0',
       [TypeQuestionCategory.VOCABULARY]: '#4CAF50',
       [TypeQuestionCategory.WRITING]: '#FF9800',
-      [TypeQuestionCategory.SPEAKING]: '#E91E63'
+      [TypeQuestionCategory.SPEAKING]: '#E91E63',
     };
     return colors[type] || '#666666';
   };
@@ -75,30 +76,20 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           thumbColor={question.active ? '#ff0000ff' : '#f4f3f4'}
         />
       </View>
-      
+
       {category && (
-        <Text style={styles.categoryText}>
-          Category: {category.descriptionCategory}
-        </Text>
+        <Text style={styles.categoryText}>Category: {category.descriptionCategory}</Text>
       )}
-      
-      <Text style={styles.optionsText}>
-        Options: {question.options.join(', ')}
-      </Text>
-      
-      <Text style={styles.correctAnswer}>
-        Correct answer: {question.correctAnswer}
-      </Text>
+
+      <Text style={styles.optionsText}>Options: {question.options.join(', ')}</Text>
+
+      <Text style={styles.correctAnswer}>Correct answer: {question.correctAnswer}</Text>
     </View>
   );
 
   if (onPress) {
     return (
-      <TouchableOpacity 
-        style={styles.card}
-        onPress={() => onPress(question)}
-        activeOpacity={0.7}
-      >
+      <TouchableOpacity style={styles.card} onPress={() => onPress(question)} activeOpacity={0.7}>
         <CardContent />
       </TouchableOpacity>
     );

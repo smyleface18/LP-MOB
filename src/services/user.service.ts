@@ -1,7 +1,7 @@
-import { ResponseApi } from "../types/type";
-import { apiService } from "./api/api.service";
-import { API_ENDPOINTS } from "./api/apiConfig";
-import { User } from "./auth/auth.type";
+import { ResponseApi } from '../types/type';
+import { apiService } from '../shared/api/api.service';
+import { API_ENDPOINTS } from '../shared/api/apiConfig';
+import { User } from '../auth/types/auth.type';
 
 export const userService = {
   getMe: async (): Promise<ResponseApi<User>> => {

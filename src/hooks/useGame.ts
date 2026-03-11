@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { socketService } from '../services/socket.service';
-import { GameQuestion, GameState } from '../types/type';
+import { Question } from '@/question/types';
 
 export const useGame = () => {
   const [gameState, setGameState] = useState<GameState>({
@@ -18,9 +18,9 @@ export const useGame = () => {
 
   // Conexión
   useEffect(() => {
-    const handleConnect = () => setGameState(prev => ({ ...prev, connected: true }));
+    const handleConnect = () => setGameState((prev) => ({ ...prev, connected: true }));
     const handleDisconnect = () => {
-      setGameState(prev => ({ ...prev, connected: false }));
+      setGameState((prev) => ({ ...prev, connected: false }));
       stopTimer();
     };
 
@@ -47,13 +47,13 @@ export const useGame = () => {
   // Eventos del juego
   useEffect(() => {
     const handleNewQuestion = (data: {
-      question: GameQuestion;
+      question: Question;
       questionNumber: number;
       totalQuestions: number;
       timeLimit: number;
     }) => {
       const timeRemaining = Math.floor(data.timeLimit / 1000);
-      setGameState(prev => ({
+      setGameState((prev) => ({
         ...prev,
         currentQuestion: data.question,
         questionNumber: data.questionNumber,
@@ -64,15 +64,19 @@ export const useGame = () => {
       startTimer(timeRemaining);
     };
 
-    const handleAnswerResult = (data: { correct: boolean; correctAnswer: string; questionId: string }) => {
-      if (data.correct) setGameState(prev => ({ ...prev, score: prev.score + 1 }));
+    const handleAnswerResult = (data: {
+      correct: boolean;
+      correctAnswer: string;
+      questionId: string;
+    }) => {
+      if (data.correct) setGameState((prev) => ({ ...prev, score: prev.score + 1 }));
     };
 
     const handleGameEnded = () => stopGameState();
     const handleGameStopped = () => stopGameState();
 
     const stopGameState = () => {
-      setGameState(prev => ({
+      setGameState((prev) => ({
         ...prev,
         gameStarted: false,
         currentQuestion: null,
@@ -97,9 +101,9 @@ export const useGame = () => {
   // Timer
   const startTimer = useCallback((seconds: number) => {
     stopTimer();
-    setGameState(prev => ({ ...prev, timeRemaining: seconds }));
+    setGameState((prev) => ({ ...prev, timeRemaining: seconds }));
     timerRef.current = setInterval(() => {
-      setGameState(prev => {
+      setGameState((prev) => {
         if (prev.timeRemaining <= 1) {
           stopTimer();
           return { ...prev, timeRemaining: 0 };
@@ -118,28 +122,43 @@ export const useGame = () => {
   const joinGame = useCallback(() => {
     try {
       socketService.joinGame(gameState.userId);
-      setGameState(prev => ({ ...prev, gameStarted: true }));
-    } catch (err) { console.error(err); }
+      setGameState((prev) => ({ ...prev, gameStarted: true }));
+    } catch (err) {
+      console.error(err);
+    }
   }, [gameState.userId]);
 
   const startGame = useCallback(() => {
-    try { socketService.startGame(); } catch (err) { console.error(err); }
+    try {
+      socketService.startGame();
+    } catch (err) {
+      console.error(err);
+    }
   }, []);
 
   const stopGame = useCallback(() => {
-    try { socketService.stopGame(); } catch (err) { console.error(err); }
+    try {
+      socketService.stopGame();
+    } catch (err) {
+      console.error(err);
+    }
   }, []);
 
-  const submitAnswer = useCallback((answer: string, userId: string) => {
-    if (!gameState.currentQuestion) return;
-    try {
-      socketService.submitAnswer(gameState.currentQuestion.id, answer, userId);
-      stopTimer();
-    } catch (err) { console.error(err); }
-  }, [gameState.currentQuestion, stopTimer]);
+  const submitAnswer = useCallback(
+    (answer: string, userId: string) => {
+      if (!gameState.currentQuestion) return;
+      try {
+        socketService.submitAnswer(gameState.currentQuestion.id, answer, userId);
+        stopTimer();
+      } catch (err) {
+        console.error(err);
+      }
+    },
+    [gameState.currentQuestion, stopTimer],
+  );
 
   const resetGame = useCallback(() => {
-    setGameState(prev => ({
+    setGameState((prev) => ({
       ...prev,
       currentQuestion: null,
       questionNumber: 0,

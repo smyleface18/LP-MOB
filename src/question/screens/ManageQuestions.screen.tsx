@@ -10,12 +10,12 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import Button from '../components/Button.component';
-import QuestionCard from '../components/QuestionCard.component';
-import FilterSection from '../components/FilterSection.component';
-import Input from '../components/Input.component';
-import { useQuestions } from '../hooks/useQuestion';
-import { useCategories } from '../hooks/useCategories';
+import Button from '../../components/Button.component';
+import QuestionCard from '../../components/QuestionCard.component';
+import FilterSection from '../../components/FilterSection.component';
+import Input from '../../components/Input.component';
+import { useQuestions } from '../../hooks/useQuestion';
+import { useCategories } from '../../hooks/useCategories';
 import { useNavigation } from '@react-navigation/native';
 import { Question } from '@/types/question';
 import { Level } from '@/types/common';

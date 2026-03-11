@@ -30,15 +30,3 @@ export interface GameService {
   submitAnswer(questionId: string, answer: string, userId: string): void;
   isConnected(): boolean;
 }
-
-export interface SignUpDto {
-  email: string;
-  username: string;
-  password: string;
-}
-
-export interface ApiResponse<T> {
-  ok: boolean;
-  data: T | null;
-  message?: string | string[];
-}

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, Image, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import Input from '../components/Input.component';
-import Button from '../components/Button.component';
-import { useAuth } from '../hooks/useAuth';
+import Input from '../../components/Input.component';
+import Button from '../../components/Button.component';
+import { useAuth } from '../../hooks/useAuth';
 
 const SignInScreen = () => {
   const navigation = useNavigation();

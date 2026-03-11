@@ -1,6 +1,6 @@
-import { ApiResponse } from '@/types/type';
 import { API_BASE_URL } from './apiConfig';
 import * as SecureStore from 'expo-secure-store';
+import { ApiResponse } from './types';
 
 class ApiService {
   private baseURL: string;

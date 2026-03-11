@@ -18,3 +18,8 @@ export enum TypeQuestionCategory {
   WRITING = 'WRITING',
   SPEAKING = 'SPEAKING',
 }
+
+export interface CreateCategoryQuestionDto extends Omit<
+  CategoryQuestion,
+  'id' | 'active' | 'createdAt' | 'updatedAt' | 'questions'
+> {}

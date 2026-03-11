@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { User, UserRoles } from '../services/auth/auth.type';
+import { User, UserRoles } from '../auth/types/auth.type';
 import { userService } from '../services/user.service';
 import { Level } from '@/types/common';
 

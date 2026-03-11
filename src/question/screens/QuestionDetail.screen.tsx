@@ -9,10 +9,10 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import Button from '../components/Button.component';
-import Input from '../components/Input.component';
-import FilterSection from '../components/FilterSection.component';
-import { useCategories } from '../hooks/useCategories';
+import Button from '../../components/Button.component';
+import Input from '../../components/Input.component';
+import FilterSection from '../../components/FilterSection.component';
+import { useCategories } from '../../hooks/useCategories';
 import { questionService } from '../services/question.service';
 import { Question } from '@/types/question';
 import { Level } from '@/types/common';
@@ -59,7 +59,7 @@ const QuestionDetailScreen = () => {
         questionText: question.questionText || '',
         questionImage: question.media?.url || '',
         options: [...question.options, '', '', ''].slice(0, 4), // Asegurar 4 opciones
-        correctAnswer: question.options.find((op) => op.isCorrect == true)?.text?,
+        correctAnswer: question.options.find((op) => op.isCorrect == true),
         categoryId: question.categoryId,
         active: question.active,
       });

@@ -4,7 +4,7 @@ import { useGame } from '../hooks/useGame';
 import Button from '../components/Button.component';
 import OptionButton from '../components/OptionButton.component';
 import ResultModal from '../components/ResultModal.component';
-import QuestionView from '../components/QuestionView.component';
+import QuestionView from '../question/components/QuestionView.component';
 
 const GameScreen: React.FC = () => {
   const {
@@ -32,7 +32,9 @@ const GameScreen: React.FC = () => {
     (optionId: string) => {
       if (selectedOption || timeRemaining <= 0 || !currentQuestion) return;
 
-      const correct = currentQuestion.options.find((op) => op.id === optionId)?.isCorrect;
+      const correct = currentQuestion.options.find(
+        (op: OptionQUestion) => op.id === optionId,
+      )?.isCorrect;
       setSelectedOption(optionId);
       setIsCorrect(correct!);
       setCorrectAnswer('oe');

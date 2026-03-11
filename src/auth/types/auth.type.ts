@@ -1,5 +1,5 @@
-import { Level } from '@/types/common';
-import { CoreEntity } from '@/types/common/cores.type';
+import { Level } from '@/shared/types/common';
+import { CoreEntity } from '@/shared/types/common/cores.type';
 
 export interface AuthState {
   accessToken: string | null;
@@ -31,4 +31,10 @@ export interface Authenticated {
   idToken: string;
   refreshToken: string;
   expiresIn: number;
+}
+
+export interface SignUpDto {
+  email: string;
+  username: string;
+  password: string;
 }

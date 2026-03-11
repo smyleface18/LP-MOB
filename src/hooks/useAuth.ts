@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { AuthService } from '../services/auth/auth.service';
-import { Authenticated } from '../services/auth/auth.type';
-import { useAuthStore } from '../services/auth/auth.store';
+import { AuthService } from '../auth/auth.service';
+import { Authenticated } from '../auth/types/auth.type';
+import { useAuthStore } from '../auth/auth.store';
 import { ApiResponse, SignUpDto } from '@/types/type';
 
 export const useAuth = () => {
