@@ -1,5 +1,5 @@
 import { CoreEntity, S3Object } from '../common/cores.type';
-import { Question } from '../question/question.type';
+import { Question } from '@/features/question/types';
 
 export interface QuestionOption extends CoreEntity {
   text?: string;

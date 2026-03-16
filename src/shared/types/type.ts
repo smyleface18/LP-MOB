@@ -1,4 +1,4 @@
-import { Question } from './question';
+import { Question } from '@/features/question/types';
 
 export interface SocketEvents {
   // Emit events (cliente -> servidor)

@@ -1,6 +1,6 @@
 import { Level } from '../common';
 import { CoreEntity } from '../common/cores.type';
-import { Question } from '../question';
+import { Question } from '@/features/question/types';
 import { User } from '../user';
 
 export interface Game extends CoreEntity {

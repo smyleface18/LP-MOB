@@ -1,0 +1,180 @@
+import React from 'react';
+import { View, Text, StyleSheet, Switch, TouchableOpacity } from 'react-native';
+import { Question } from '../types';
+import { Level } from '@/shared/types/common';
+import { TypeQuestionCategory } from '@/shared/types/category-question';
+
+
+interface QuestionCardProps {
+  question: Question;
+  onEdit: (question: Question) => void;
+  onDelete: (questionId: string) => void;
+  onToggleActive: (questionId: string) => void;
+  onPress?: (question: Question) => void;
+}
+
+const QuestionCard: React.FC<QuestionCardProps> = ({
+  question,
+  onEdit,
+  onDelete,
+  onToggleActive,
+  onPress,
+}) => {
+  const category = question.category;
+
+  const getLevelColor = (level: Level) => {
+    const colors = {
+      [Level.A1]: '#4CAF50',
+      [Level.A2]: '#8BC34A',
+      [Level.B1]: '#FFC107',
+      [Level.B2]: '#FF9800',
+      [Level.C1]: '#F44336',
+      [Level.C2]: '#D32F2F',
+    };
+    return colors[level] || '#666666';
+  };
+
+  const getTypeColor = (type: TypeQuestionCategory) => {
+    const colors = {
+      [TypeQuestionCategory.LISTENING]: '#2196F3',
+      [TypeQuestionCategory.GRAMMAR]: '#FF5722',
+      [TypeQuestionCategory.READING]: '#9C27B0',
+      [TypeQuestionCategory.VOCABULARY]: '#4CAF50',
+      [TypeQuestionCategory.WRITING]: '#FF9800',
+      [TypeQuestionCategory.SPEAKING]: '#E91E63',
+    };
+    return colors[type] || '#666666';
+  };
+
+  const CardContent = () => (
+    <View style={styles.cardContent}>
+      <View style={styles.header}>
+        <View style={styles.info}>
+          <Text style={styles.questionText} numberOfLines={2}>
+            {question.questionText || `Image question: ${question.correctAnswer}`}
+          </Text>
+          <View style={styles.tagsContainer}>
+            {category?.level && (
+              <View style={[styles.tag, { backgroundColor: getLevelColor(category.level) }]}>
+                <Text style={styles.tagText}>{category.level}</Text>
+              </View>
+            )}
+            {category?.type && (
+              <View style={[styles.tag, { backgroundColor: getTypeColor(category.type) }]}>
+                <Text style={styles.tagText}>{category.type}</Text>
+              </View>
+            )}
+            {(!category?.level || !category?.type) && (
+              <View style={[styles.tag, { backgroundColor: '#666666' }]}>
+                <Text style={styles.tagText}>No category</Text>
+              </View>
+            )}
+          </View>
+        </View>
+        <Switch
+          value={question.active}
+          onValueChange={() => onToggleActive(question.id)}
+          trackColor={{ false: '#767577', true: '#767577' }}
+          thumbColor={question.active ? '#ff0000ff' : '#f4f3f4'}
+        />
+      </View>
+
+      {category && (
+        <Text style={styles.categoryText}>Category: {category.descriptionCategory}</Text>
+      )}
+
+      <Text style={styles.optionsText}>Options: {question.options.join(', ')}</Text>
+
+      <Text style={styles.correctAnswer}>Correct answer: {question.correctAnswer}</Text>
+    </View>
+  );
+
+  if (onPress) {
+    return (
+      <TouchableOpacity style={styles.card} onPress={() => onPress(question)} activeOpacity={0.7}>
+        <CardContent />
+      </TouchableOpacity>
+    );
+  }
+
+  return (
+    <View style={styles.card}>
+      <CardContent />
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: '#F8F8F8',
+    borderRadius: 12,
+    marginBottom: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#000000',
+    overflow: 'hidden',
+  },
+  cardContent: {
+    padding: 15,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 10,
+  },
+  info: {
+    flex: 1,
+    marginRight: 10,
+  },
+  questionText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#000000',
+    marginBottom: 8,
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  tag: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginRight: 6,
+    marginBottom: 4,
+  },
+  tagText: {
+    fontSize: 10,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+  categoryText: {
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 4,
+  },
+  optionsText: {
+    fontSize: 12,
+    color: '#666666',
+    marginBottom: 4,
+  },
+  correctAnswer: {
+    fontSize: 12,
+    color: '#000000',
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  actions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  editButton: {
+    marginRight: 8,
+    minWidth: 80,
+  },
+  deleteButton: {
+    minWidth: 80,
+  },
+});
+
+export default QuestionCard;
