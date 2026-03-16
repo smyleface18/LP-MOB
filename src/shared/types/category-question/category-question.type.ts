@@ -1,6 +1,6 @@
 import { Level } from '../common';
 import { CoreEntity } from '../common/cores.type';
-import { Question } from '../question';
+import { Question } from '@/features/question/types';
 
 export interface CategoryQuestion extends CoreEntity {
   id: string;
