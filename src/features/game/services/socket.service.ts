@@ -1,6 +1,6 @@
 import { io, Socket } from 'socket.io-client';
-import { GameService, SocketEvents } from '../types/type';
-import { API_BASE_URL } from '../shared/api/apiConfig';
+import { API_BASE_URL } from '@/shared/api/apiConfig';
+import { GameService, SocketEvents } from '@/shared/types/Type';
 
 export class SocketService implements GameService {
   private socket: Socket | null = null;
@@ -100,9 +100,9 @@ export class SocketService implements GameService {
     this.socket?.emit('stopGame');
   }
 
-  submitAnswer(questionId: string, answer: string, userId: string) {
+  submitAnswer(questionId: string, answerId: string) {
     if (!this.isConnected()) throw new Error('Socket not connected');
-    this.socket?.emit('answer', { questionId, answer, userId });
+    this.socket?.emit('answer', { questionId, answerId });
   }
 
   on<T>(event: string, callback: (data: T) => void) {

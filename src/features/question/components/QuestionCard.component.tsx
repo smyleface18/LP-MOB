@@ -4,7 +4,6 @@ import { Question } from '../types';
 import { Level } from '@/shared/types/common';
 import { TypeQuestionCategory } from '@/shared/types/category-question';
 
-
 interface QuestionCardProps {
   question: Question;
   onEdit: (question: Question) => void;
@@ -51,7 +50,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       <View style={styles.header}>
         <View style={styles.info}>
           <Text style={styles.questionText} numberOfLines={2}>
-            {question.questionText || `Image question: ${question.correctAnswer}`}
+            {question.questionText || 'Image question'}
           </Text>
           <View style={styles.tagsContainer}>
             {category?.level && (
@@ -83,9 +82,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         <Text style={styles.categoryText}>Category: {category.descriptionCategory}</Text>
       )}
 
-      <Text style={styles.optionsText}>Options: {question.options.join(', ')}</Text>
-
-      <Text style={styles.correctAnswer}>Correct answer: {question.correctAnswer}</Text>
+      <Text style={styles.optionsText}>
+        Options: {question.options.map((op) => op.text).join(', ')}
+      </Text>
     </View>
   );
 

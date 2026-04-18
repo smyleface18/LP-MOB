@@ -1,6 +1,6 @@
 import { Level } from '@/shared/types/common';
 import { CoreEntity } from '@/shared/types/common/cores.type';
-export * from './auth.type';
+
 export interface AuthState {
   accessToken: string | null;
   user: User | null;

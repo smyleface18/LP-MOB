@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { useGame } from '../hooks/useGame';
-import Button from '../components/Button.component';
-import OptionButton from '../components/OptionButton.component';
-import ResultModal from '../components/ResultModal.component';
-import QuestionView from '../question/components/QuestionView.component';
+import Button from '@/shared/components/Button.component';
+import OptionButton from '@/shared/components/OptionButton.component';
+import ResultModal from '@/shared/components/ResultModal.component';
+import QuestionView from '@/features/question/components/QuestionView.component';
+import { OptionDto } from '@/shared/types/question-option';
 
 const GameScreen: React.FC = () => {
   const {
@@ -32,15 +33,14 @@ const GameScreen: React.FC = () => {
     (optionId: string) => {
       if (selectedOption || timeRemaining <= 0 || !currentQuestion) return;
 
-      const correct = currentQuestion.options.find(
-        (op: OptionQUestion) => op.id === optionId,
-      )?.isCorrect;
+      const correct =
+        currentQuestion.options.find((op: OptionDto) => op.id === optionId)?.isCorrect ?? false;
       setSelectedOption(optionId);
-      setIsCorrect(correct!);
+      setIsCorrect(correct);
       setCorrectAnswer('oe');
 
       // Enviar al servidor
-      submitAnswer(optionId, userId);
+      submitAnswer(optionId);
 
       // Mostrar feedback visual
       setShowResult(true);

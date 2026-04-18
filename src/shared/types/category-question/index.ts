@@ -1,1 +1,1 @@
-export * from './category-question.type';
+export * from './CategoryQuestion';

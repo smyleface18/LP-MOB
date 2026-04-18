@@ -1,9 +1,21 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { socketService } from '../services/socket.service';
-import { Question } from '@/question/types';
+import { Question } from '@/features/question/types';
+
+interface Game {
+  connected: boolean;
+  gameStarted: boolean;
+  currentQuestion: Question | null;
+  questionNumber: number;
+  totalQuestions: number;
+  timeRemaining: number;
+  score: number;
+  userId: string;
+}
+
 
 export const useGame = () => {
-  const [gameState, setGameState] = useState<GameState>({
+  const [gameState, setGameState] = useState<Game>({
     connected: false,
     gameStarted: false,
     currentQuestion: null,
@@ -18,9 +30,9 @@ export const useGame = () => {
 
   // Conexión
   useEffect(() => {
-    const handleConnect = () => setGameState((prev) => ({ ...prev, connected: true }));
+    const handleConnect = () => setGameState((prev: Game) => ({ ...prev, connected: true }));
     const handleDisconnect = () => {
-      setGameState((prev) => ({ ...prev, connected: false }));
+      setGameState((prev: Game) => ({ ...prev, connected: false }));
       stopTimer();
     };
 
@@ -145,10 +157,10 @@ export const useGame = () => {
   }, []);
 
   const submitAnswer = useCallback(
-    (answer: string, userId: string) => {
+    (answer: string) => {
       if (!gameState.currentQuestion) return;
       try {
-        socketService.submitAnswer(gameState.currentQuestion.id, answer, userId);
+        socketService.submitAnswer(gameState.currentQuestion.id, answer);
         stopTimer();
       } catch (err) {
         console.error(err);

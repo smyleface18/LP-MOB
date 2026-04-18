@@ -1,6 +1,6 @@
-import { createStackNavigator } from "@react-navigation/stack";
-import UserDashboardScreen from "../screens/UserDashboard.screen";
-import GameScreen from "../screens/Game.screen";
+import GameScreen from '@/features/game/screens/Game.screen';
+import UserDashboardScreen from '@/features/auth/screens/UserDashboard.screen';
+import { createStackNavigator } from '@react-navigation/stack';
 
 const Stack = createStackNavigator();
 

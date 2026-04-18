@@ -24,6 +24,7 @@ export const useAppStore = create<AppStore>()(
         refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
         theme: state.theme,
+        user: state.user,
       }),
     },
   ),

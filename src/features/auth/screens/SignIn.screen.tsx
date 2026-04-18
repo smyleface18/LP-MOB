@@ -3,10 +3,10 @@ import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, Image, Alert } 
 import { useNavigation } from '@react-navigation/native';
 import { Input } from '@/shared/ui';
 import { Button } from '@/shared/ui';
+import { Logo } from '@/assets';
 import { useAuth } from '../hooks/useAuth';
 
 const SignInScreen = () => {
-  
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -36,7 +36,7 @@ const SignInScreen = () => {
     >
       <View style={styles.formContainer}>
         {/* Logo */}
-        <Image source={require('../assets/LinguaPlay.png')} style={styles.logo} />
+        <Image source={Logo} style={styles.logo} />
 
         {/* Input de Correo */}
         <Input

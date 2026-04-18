@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { User, UserRoles } from '../auth/types/auth.type';
 import { userService } from '../services/user.service';
-import { Level } from '@/types/common';
+import { User, UserRole } from '@/shared/types/user';
+import { Level } from '@/shared/types/common';
 
 export const useUser = () => {
   const [user, setUser] = useState<User>({
@@ -9,11 +9,11 @@ export const useUser = () => {
     active: false,
     createdAt: new Date(),
     updatedAt: new Date(),
-    avatar: '',
+    avatar: undefined,
     username: '',
     email: '',
     score: 0,
-    userRole: UserRoles.PLAYER,
+    userRole: UserRole.PLAYER,
     level: Level.A1,
   });
 
@@ -22,17 +22,20 @@ export const useUser = () => {
 
   const getMe = async () => {
     setLoading(true);
-    const reponse = await userService.getMe();
+    const response = await userService.getMe();
 
-    if (!reponse.ok) {
-      setError(reponse.message);
+    if (!response.ok) {
+      const message = Array.isArray(response.message)
+        ? response.message.join(' ')
+        : response.message ?? 'Unknown error';
+      setError(message);
       setLoading(false);
       return;
     }
 
-    setUser(reponse.data!);
+    setUser(response.data!);
     setLoading(false);
-    return reponse;
+    return response;
   };
 
   return {

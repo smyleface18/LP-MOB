@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Switch, TouchableOpacity } from 'react-native';
-import { CategoryQuestion, LevelCategoryQuestion, TypeQuestionCategory } from '../types/type';
-import Button from './Button.component';
+import { CategoryQuestion, TypeQuestionCategory } from '@/shared/types/category-question';
+import { Level } from '@/shared/types/common';
 
 interface CategoryCardProps {
   category: CategoryQuestion;
@@ -11,22 +11,21 @@ interface CategoryCardProps {
   onPress?: (category: CategoryQuestion) => void;
 }
 
-const CategoryCard: React.FC<CategoryCardProps> = ({ 
-  category, 
-  onEdit, 
-  onDelete, 
+const CategoryCard: React.FC<CategoryCardProps> = ({
+  category,
+  onEdit,
+  onDelete,
   onToggleActive,
-  onPress 
+  onPress,
 }) => {
-  
-  const getLevelColor = (level: LevelCategoryQuestion) => {
+  const getLevelColor = (level: Level) => {
     const colors = {
-      [LevelCategoryQuestion.A1]: '#4CAF50',
-      [LevelCategoryQuestion.A2]: '#8BC34A',
-      [LevelCategoryQuestion.B1]: '#FFC107',
-      [LevelCategoryQuestion.B2]: '#FF9800',
-      [LevelCategoryQuestion.C1]: '#F44336',
-      [LevelCategoryQuestion.C2]: '#D32F2F'
+      [Level.A1]: '#4CAF50',
+      [Level.A2]: '#8BC34A',
+      [Level.B1]: '#FFC107',
+      [Level.B2]: '#FF9800',
+      [Level.C1]: '#F44336',
+      [Level.C2]: '#D32F2F',
     };
     return colors[level] || '#666666';
   };
@@ -38,7 +37,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
       [TypeQuestionCategory.READING]: '#9C27B0',
       [TypeQuestionCategory.VOCABULARY]: '#4CAF50',
       [TypeQuestionCategory.WRITING]: '#FF9800',
-      [TypeQuestionCategory.SPEAKING]: '#E91E63'
+      [TypeQuestionCategory.SPEAKING]: '#E91E63',
     };
     return colors[type] || '#666666';
   };
@@ -66,20 +65,14 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
           thumbColor={category.active ? '#ff0000ff' : '#f4f3f4'}
         />
       </View>
-      
-      <Text style={styles.questionsCount}>
-        Questions: {category.questions?.length || 0}
-      </Text>
+
+      <Text style={styles.questionsCount}>Questions: {category.questions?.length || 0}</Text>
     </View>
   );
 
   if (onPress) {
     return (
-      <TouchableOpacity 
-        style={styles.card}
-        onPress={() => onPress(category)}
-        activeOpacity={0.7}
-      >
+      <TouchableOpacity style={styles.card} onPress={() => onPress(category)} activeOpacity={0.7}>
         <CardContent />
       </TouchableOpacity>
     );

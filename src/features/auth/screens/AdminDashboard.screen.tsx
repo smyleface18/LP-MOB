@@ -1,17 +1,12 @@
-import React from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-} from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import CategoryItem from "../components/CategoryItem.component";
-import MetricCard from "../components/Metric.component";
-import CircularChart from "../components/Char.component";
-import ProgressBar from "../components/ProgressBar.component";
-import StatItem from "../components/Statitem.component";
-import Button from "../components/Button.component";
+import React from 'react';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import CategoryItem from '@/features/category/components/CategoryItem.component';
+import MetricCard from '@/shared/components/Metric.component';
+import CircularChart from '@/shared/components/Char.component';
+import ProgressBar from '@/shared/components/ProgressBar.component';
+import StatItem from '@/shared/components/Statitem.component';
+import Button from '@/shared/components/Button.component';
 
 const AdminDashboardScreen = () => {
   const navigation = useNavigation();
@@ -28,11 +23,11 @@ const AdminDashboardScreen = () => {
   };
 
   const handleNavigateToQuestions = () => {
-    navigation.navigate("ManageQuestionsScreen" as never);
+    navigation.navigate('ManageQuestionsScreen' as never);
   };
 
   const handleNavigateToCategories = () => {
-    navigation.navigate("ManageCategoriesScreen" as never);
+    navigation.navigate('ManageCategoriesScreen' as never);
   };
 
   return (
@@ -45,26 +40,10 @@ const AdminDashboardScreen = () => {
 
       {/* Main Metrics */}
       <View style={styles.metricsGrid}>
-        <MetricCard
-          value={metricsData.totalQuestions}
-          label="Questions"
-          subLabel="+12 this week"
-        />
-        <MetricCard
-          value={metricsData.totalCategories}
-          label="Categories"
-          subLabel="3 levels"
-        />
-        <MetricCard
-          value={metricsData.totalUsers}
-          label="Users"
-          subLabel="Total registered"
-        />
-        <MetricCard
-          value={metricsData.activeUsers}
-          label="Active"
-          subLabel="Last 7 days"
-        />
+        <MetricCard value={metricsData.totalQuestions} label="Questions" subLabel="+12 this week" />
+        <MetricCard value={metricsData.totalCategories} label="Categories" subLabel="3 levels" />
+        <MetricCard value={metricsData.totalUsers} label="Users" subLabel="Total registered" />
+        <MetricCard value={metricsData.activeUsers} label="Active" subLabel="Last 7 days" />
       </View>
 
       {/* Performance Charts */}
@@ -76,16 +55,8 @@ const AdminDashboardScreen = () => {
             label="Average Score"
             color="#FF0000"
           />
-          <CircularChart
-            percentage={85}
-            label="Completion Rate"
-            color="#000000"
-          />
-          <CircularChart 
-            percentage={72} 
-            label="Retention" 
-            color="#FF4444" 
-          />
+          <CircularChart percentage={85} label="Completion Rate" color="#000000" />
+          <CircularChart percentage={72} label="Retention" color="#FF4444" />
         </View>
       </View>
 
@@ -99,18 +70,9 @@ const AdminDashboardScreen = () => {
         </View>
 
         <View style={styles.additionalStats}>
-          <StatItem
-            value={metricsData.totalGames}
-            label="Games Completed"
-          />
-          <StatItem
-            value={metricsData.questionsAnswered}
-            label="Questions Answered"
-          />
-          <StatItem
-            value={metricsData.newUsersThisWeek}
-            label="New This Week"
-          />
+          <StatItem value={metricsData.totalGames} label="Games Completed" />
+          <StatItem value={metricsData.questionsAnswered} label="Questions Answered" />
+          <StatItem value={metricsData.newUsersThisWeek} label="New This Week" />
         </View>
       </View>
 
@@ -150,53 +112,53 @@ const AdminDashboardScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: '#FFFFFF',
   },
   header: {
     padding: 20,
     paddingTop: 40,
-    backgroundColor: "#000000ff",
+    backgroundColor: '#000000ff',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
   title: {
     fontSize: 28,
-    fontWeight: "bold",
-    color: "#FFFFFF",
+    fontWeight: 'bold',
+    color: '#FFFFFF',
     marginBottom: 5,
   },
   subtitle: {
     fontSize: 16,
-    color: "#FFFFFF",
+    color: '#FFFFFF',
     opacity: 0.9,
   },
   metricsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     padding: 15,
-    justifyContent: "space-between",
+    justifyContent: 'space-between',
   },
   section: {
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0",
+    borderBottomColor: '#F0F0F0',
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: "bold",
-    color: "#000000",
+    fontWeight: 'bold',
+    color: '#000000',
     marginBottom: 15,
   },
   chartsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   statsContainer: {
     marginBottom: 20,
   },
   additionalStats: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   categoryDistribution: {
     marginTop: 10,

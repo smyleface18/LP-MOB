@@ -12,3 +12,10 @@ export interface QuestionOption extends CoreEntity {
 
   questionId: string;
 }
+
+export interface OptionDto {
+  id: string;
+  text?: string;
+  media?: S3Object;
+  isCorrect?: boolean;
+}

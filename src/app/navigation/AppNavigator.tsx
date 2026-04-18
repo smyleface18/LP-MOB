@@ -1,10 +1,10 @@
 import { AuthStack } from './AuthStack';
 import { UserStack } from './UserStack';
 import { AdminStack } from './AdminStack';
-import { useAuthStore } from '../services/auth/auth.store';
+import { useAppStore } from '@/store';
 
 export const AppNavigator = () => {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user } = useAppStore();
 
   if (!isAuthenticated) {
     return <AuthStack />;

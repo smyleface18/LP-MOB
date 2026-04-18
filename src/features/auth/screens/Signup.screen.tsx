@@ -66,7 +66,7 @@ const SignupScreen = () => {
           variant="outlined"
           style={styles.input}
           value={signUpForm.email}
-          onChangeText={(text) => setSignUpForm({ ...signUpForm, email: text })}
+          onChangeText={(text: string) => setSignUpForm({ ...signUpForm, email: text })}
         />
 
         <Input
@@ -75,7 +75,7 @@ const SignupScreen = () => {
           variant="outlined"
           style={styles.input}
           value={signUpForm.nickname}
-          onChangeText={(text) => setSignUpForm({ ...signUpForm, nickname: text })}
+          onChangeText={(text: string) => setSignUpForm({ ...signUpForm, nickname: text })}
         />
 
         <Input
@@ -85,7 +85,7 @@ const SignupScreen = () => {
           variant="outlined"
           style={styles.input}
           value={signUpForm.password}
-          onChangeText={(text) => setSignUpForm({ ...signUpForm, password: text })}
+          onChangeText={(text: string) => setSignUpForm({ ...signUpForm, password: text })}
         />
 
         <Input
@@ -95,7 +95,7 @@ const SignupScreen = () => {
           variant="outlined"
           style={styles.input}
           value={signUpForm.confirmPassword}
-          onChangeText={(text) => setSignUpForm({ ...signUpForm, confirmPassword: text })}
+          onChangeText={(text: string) => setSignUpForm({ ...signUpForm, confirmPassword: text })}
         />
 
         <Button

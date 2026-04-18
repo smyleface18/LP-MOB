@@ -17,15 +17,15 @@ export const categoryService = {
     return apiService.get<CategoryQuestion[]>(API_ENDPOINTS.CATEGORIES);
   },
   getById: async (id: string): Promise<ApiResponse<CategoryQuestion>> => {
-    return apiService.get<CategoryQuestion>(\/\);
+    return apiService.get<CategoryQuestion>(`${API_ENDPOINTS.CATEGORIES}/${id}`);
   },
   create: async (data: CreateCategoryDto): Promise<ApiResponse<CategoryQuestion>> => {
     return apiService.post<CategoryQuestion>(API_ENDPOINTS.CATEGORIES, data);
   },
   update: async (id: string, data: UpdateCategoryDto): Promise<ApiResponse<CategoryQuestion>> => {
-    return apiService.patch<CategoryQuestion>(\/\, data);
+    return apiService.patch<CategoryQuestion>(`${API_ENDPOINTS.CATEGORIES}/${id}`, data);
   },
   delete: async (id: string): Promise<ApiResponse<void>> => {
-    return apiService.delete<void>(\/\);
+    return apiService.delete<void>(`${API_ENDPOINTS.CATEGORIES}/${id}`);
   },
 };

@@ -1,1 +1,1 @@
-export * from './question.type';
+export * from './Question';

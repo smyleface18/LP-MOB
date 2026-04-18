@@ -58,8 +58,11 @@ const QuestionDetailScreen = () => {
       setFormData({
         questionText: question.questionText || '',
         questionImage: question.media?.url || '',
-        options: question.options.map(o => o.text ?? '').concat(['', '', '']).slice(0, 4),
-        correctAnswer: question.options.find((op) => op.isCorrect)?.text ?? '',
+        options: question.options
+          .map((o) => o.text ?? '')
+          .concat(['', '', ''])
+          .slice(0, 4),
+        correctAnswer: '',
         categoryId: question.categoryId,
         active: question.active,
       });

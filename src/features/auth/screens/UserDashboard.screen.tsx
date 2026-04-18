@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,18 +7,16 @@ import {
   Image,
   Platform,
   KeyboardAvoidingView,
-} from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import MetricCard from "../components/Metric.component";
-import CircularChart from "../components/Char.component";
-import ProgressBar from "../components/ProgressBar.component";
-import StatItem from "../components/Statitem.component";
-import Button from "../components/Button.component";
-import { useGame } from "../hooks/useGame";
-import { useCategories } from "../hooks/useCategories";
-import { useUser } from "../hooks/useUser";
-import { LinearGradient } from "expo-linear-gradient";
-import { blue } from "react-native-reanimated/lib/typescript/reanimated2/Colors";
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import MetricCard from '@/shared/components/Metric.component';
+import CircularChart from '@/shared/components/Char.component';
+import ProgressBar from '@/shared/components/ProgressBar.component';
+import StatItem from '@/shared/components/Statitem.component';
+import Button from '@/shared/components/Button.component';
+import { useGame } from '@/features/game/hooks/useGame';
+import { useUser } from '../hooks/useUser';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const UserDashboardScreen = () => {
   const navigation = useNavigation();
@@ -40,29 +38,29 @@ const UserDashboardScreen = () => {
 
   const handleQuickPlay = () => {
     if (!isConnected) {
-      alert("Please check your connection and try again");
+      alert('Please check your connection and try again');
       return;
     }
     joinGame();
-    navigation.navigate("GameScreen" as never);
+    navigation.navigate('GameScreen' as never);
   };
 
   const handleSelectCategory = () => {
-    navigation.navigate("CategorySelection" as never);
+    navigation.navigate('CategorySelection' as never);
   };
 
   const handleHowToPlay = () => {
-    navigation.navigate("GameScreen" as never);
+    navigation.navigate('GameScreen' as never);
   };
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <LinearGradient
-          colors={["#fd4863ff", "#F4F4F5"]}
+          colors={['#fd4863ff', '#F4F4F5']}
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 1 }}
           style={styles.header}
@@ -74,13 +72,13 @@ const UserDashboardScreen = () => {
               <View style={styles.avatar}>
                 <Image
                   source={{
-                    uri: "https://cdn-icons-png.flaticon.com/512/7178/7178489.png",
+                    uri: 'https://cdn-icons-png.flaticon.com/512/7178/7178489.png',
                   }}
                   style={styles.avatarImage}
                   resizeMode="cover"
                   onError={() => {
                     // Fallback a avatar por defecto
-                    console.log("Using default avatar");
+                    console.log('Using default avatar');
                   }}
                 />
               </View>
@@ -88,14 +86,9 @@ const UserDashboardScreen = () => {
             <Text style={styles.nickname}>{user.username}</Text>
             <View style={styles.connectionStatus}>
               <View
-                style={[
-                  styles.statusDot,
-                  connected ? styles.connected : styles.disconnected,
-                ]}
+                style={[styles.statusDot, connected ? styles.connected : styles.disconnected]}
               />
-              <Text style={styles.statusText}>
-                {connected ? "Connected" : "Disconnected"}
-              </Text>
+              <Text style={styles.statusText}>{connected ? 'Connected' : 'Disconnected'}</Text>
             </View>
           </View>
         </LinearGradient>
@@ -118,9 +111,7 @@ const UserDashboardScreen = () => {
               color="#FF0000"
             />
             <CircularChart
-              percentage={Math.round(
-                (userStats.gamesWon / userStats.totalGames) * 100
-              )}
+              percentage={Math.round((userStats.gamesWon / userStats.totalGames) * 100)}
               label="Win Rate"
               color="#000000"
             />
@@ -164,14 +155,14 @@ const UserDashboardScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: '#FFFFFF',
   },
   header: {
     padding: 20,
     paddingTop: 40,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    alignItems: "center",
+    alignItems: 'center',
   },
   avatarContainer: {
     marginBottom: 10,
@@ -180,23 +171,23 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "hidden",
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
   },
   avatarImage: {
-    width: "100%",
-    height: "100%",
+    width: '100%',
+    height: '100%',
   },
   nickname: {
     fontSize: 20,
-    fontWeight: "bold",
-    color: "#18181B",
+    fontWeight: 'bold',
+    color: '#18181B',
     marginBottom: 10,
   },
   connectionStatus: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   statusDot: {
     width: 8,
@@ -205,60 +196,60 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   connected: {
-    backgroundColor: "#00FF00",
+    backgroundColor: '#00FF00',
   },
   disconnected: {
-    backgroundColor: "#FF0000",
+    backgroundColor: '#FF0000',
   },
   statusText: {
     fontSize: 14,
-    color: "#18181B",
+    color: '#18181B',
     opacity: 0.9,
   },
   avatarText: {
     fontSize: 24,
-    fontWeight: "bold",
-    color: "#FFFFFF",
+    fontWeight: 'bold',
+    color: '#FFFFFF',
   },
   title: {
     fontSize: 28,
-    fontWeight: "bold",
-    color: "#FFFFFF",
+    fontWeight: 'bold',
+    color: '#FFFFFF',
     marginBottom: 5,
   },
   subtitle: {
     fontSize: 16,
-    color: "#FFFFFF",
+    color: '#FFFFFF',
     opacity: 0.9,
     marginBottom: 10,
   },
   metricsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     padding: 15,
-    justifyContent: "space-between",
+    justifyContent: 'space-between',
   },
   section: {
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0",
+    borderBottomColor: '#F0F0F0',
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: "bold",
-    color: "#000000",
+    fontWeight: 'bold',
+    color: '#000000',
     marginBottom: 15,
   },
   chartsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   statsContainer: {
     marginBottom: 20,
   },
   additionalStats: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   actionsSection: {
     padding: 20,
