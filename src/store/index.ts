@@ -30,25 +30,57 @@ export const useAppStore = create<AppStore>()(
   ),
 );
 
-// Selectores tipados — las features usan estos, nunca useAppStore directo con todo
-export const useAuthState = () => useAppStore((s) => ({
-  user: s.user,
-  isAuthenticated: s.isAuthenticated,
-  accessToken: s.accessToken,
-}));
+// Selectores tipados — GRANULARES para evitar re-renders innecesarios
+// Cada selector solo observa UNA propiedad específica, no crea nuevos objetos
 
-export const useAuthActions = () => useAppStore((s) => ({
-  signInStatus: s.signInStatus,
-  signOut: s.signOut,
-  restoreSession: s.restoreSession,
-}));
+// Auth State - Selectores individuales (máxima eficiencia)
+export const useUser = () => useAppStore((s) => s.user);
+export const useIsAuthenticated = () => useAppStore((s) => s.isAuthenticated);
+export const useAccessToken = () => useAppStore((s) => s.accessToken);
+export const useRefreshToken = () => useAppStore((s) => s.refreshToken);
+export const useIdToken = () => useAppStore((s) => s.idToken);
 
-export const useUiState = () => useAppStore((s) => ({
-  isLoading: s.isLoading,
-  theme: s.theme,
-}));
+// Auth Actions - Selectores individuales
+export const useSignInStatus = () => useAppStore((s) => s.signInStatus);
+export const useSignOut = () => useAppStore((s) => s.signOut);
+export const useRestoreSession = () => useAppStore((s) => s.restoreSession);
+export const useSetUser = () => useAppStore((s) => s.setUser);
+export const useUpdateTokens = () => useAppStore((s) => s.updateTokens);
 
-export const useUiActions = () => useAppStore((s) => ({
-  setLoading: s.setLoading,
-  setTheme: s.setTheme,
-}));
+// Auth State - Selector combinado (para componentes que necesitan varios a la vez)
+export const useAuthState = () => ({
+  user: useAppStore((s) => s.user),
+  isAuthenticated: useAppStore((s) => s.isAuthenticated),
+  accessToken: useAppStore((s) => s.accessToken),
+  refreshToken: useAppStore((s) => s.refreshToken),
+  idToken: useAppStore((s) => s.idToken),
+});
+
+// Auth Actions - Selector combinado
+export const useAuthActions = () => ({
+  signInStatus: useAppStore((s) => s.signInStatus),
+  signOut: useAppStore((s) => s.signOut),
+  restoreSession: useAppStore((s) => s.restoreSession),
+  setUser: useAppStore((s) => s.setUser),
+  updateTokens: useAppStore((s) => s.updateTokens),
+});
+
+// UI State - Selectores individuales
+export const useIsLoading = () => useAppStore((s) => s.isLoading);
+export const useTheme = () => useAppStore((s) => s.theme);
+
+// UI Actions - Selectores individuales
+export const useSetLoading = () => useAppStore((s) => s.setLoading);
+export const useSetTheme = () => useAppStore((s) => s.setTheme);
+
+// UI State - Selector combinado
+export const useUiState = () => ({
+  isLoading: useAppStore((s) => s.isLoading),
+  theme: useAppStore((s) => s.theme),
+});
+
+// UI Actions - Selector combinado
+export const useUiActions = () => ({
+  setLoading: useAppStore((s) => s.setLoading),
+  setTheme: useAppStore((s) => s.setTheme),
+});

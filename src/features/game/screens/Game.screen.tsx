@@ -1,25 +1,32 @@
-import React, { useState, useCallback, useMemo } from 'react';
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { useGame } from '../hooks/useGame';
 import Button from '@/shared/components/Button.component';
-import OptionButton from '@/shared/components/OptionButton.component';
-import ResultModal from '@/shared/components/ResultModal.component';
-import QuestionView from '@/features/question/components/QuestionView.component';
-import { OptionDto } from '@/shared/types/question-option';
+import GameLobby from './GameLobby.screen';
+import GamePlay from './GamePlay.screen';
+import { Level, ModeMatch } from '@/shared/types/Type';
+import GameMainMenu from './GameMainMenu.screen';
 
 const GameScreen: React.FC = () => {
   const {
     connected,
+    roomId,
+    level,
+    mode,
     gameStarted,
     currentQuestion,
     questionNumber,
     totalQuestions,
     timeRemaining,
     score,
-    userId,
+    user,
+    players,
+    error,
+    lastAnswerResult,
+    createGame,
     joinGame,
     startGame,
-    stopGame,
+    leaveRoom,
     submitAnswer,
   } = useGame();
 
@@ -27,156 +34,141 @@ const GameScreen: React.FC = () => {
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [correctAnswer, setCorrectAnswer] = useState('');
+  const [selectedLevel, setSelectedLevel] = useState<Level>(Level.A1);
+  const lastProcessedAnswerRef = React.useRef<string | null>(null);
 
   /** 🧠 Manejador cuando el usuario selecciona una opción */
   const handleOptionPress = useCallback(
     (optionId: string) => {
       if (selectedOption || timeRemaining <= 0 || !currentQuestion) return;
 
-      const correct =
-        currentQuestion.options.find((op: OptionDto) => op.id === optionId)?.isCorrect ?? false;
       setSelectedOption(optionId);
-      setIsCorrect(correct);
-      setCorrectAnswer('oe');
-
-      // Enviar al servidor
+      // Enviar al servidor - el backend decidirá si es correcta
       submitAnswer(optionId);
-
-      // Mostrar feedback visual
-      setShowResult(true);
+      // El resultado será recibido del backend via lastAnswerResult
     },
-    [selectedOption, timeRemaining, currentQuestion, submitAnswer, userId],
+    [selectedOption, timeRemaining, currentQuestion, submitAnswer],
   );
 
-  /** ⏱ Cerrar modal y limpiar estado */
+  // Cuando recibimos la respuesta del backend - solo procesar una vez
+  React.useEffect(() => {
+    if (lastAnswerResult && lastProcessedAnswerRef.current !== JSON.stringify(lastAnswerResult)) {
+      lastProcessedAnswerRef.current = JSON.stringify(lastAnswerResult);
+      setIsCorrect(lastAnswerResult.correct);
+      setCorrectAnswer(lastAnswerResult.correct ? 'Correct!' : 'Incorrect');
+      setShowResult(true);
+    }
+  }, [lastAnswerResult]);
+
+  /** ⏱ Cerrar modal */
   const handleCloseResult = useCallback(() => {
     setShowResult(false);
-    setSelectedOption(null);
+    lastProcessedAnswerRef.current = null; // Reset para permitir mostrar otro resultado
   }, []);
 
-  /** 🎨 Determinar color/estilo de cada opción */
-  const getOptionVariant = useCallback(
-    (option: string) => {
-      if (!selectedOption || !currentQuestion) return 'default';
-      if (option === currentQuestion.id) return 'correct';
-      if (option === selectedOption && option !== currentQuestion.id) return 'incorrect';
-      return 'default';
-    },
-    [selectedOption, currentQuestion],
-  );
+  // Reiniciar selección y resultado al llegar nueva pregunta
+  React.useEffect(() => {
+    setSelectedOption(null);
+    setShowResult(false);
+    setIsCorrect(false);
+    setCorrectAnswer('');
+    lastProcessedAnswerRef.current = null; // Permitir procesar nueva respuesta
+  }, [currentQuestion?.id]);
 
   /** 🧩 Estado de carga */
   if (!connected) {
     return (
-      <CenteredContainer>
+      <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color="#667eea" />
         <Text style={styles.loadingText}>Connecting to game server...</Text>
-        <Text style={styles.userId}>Your ID: {userId}</Text>
-      </CenteredContainer>
+        <Text style={styles.userId}>Your ID: {user?.id}</Text>
+        {error && <Text style={styles.errorText}>{error}</Text>}
+      </View>
     );
   }
 
   return (
     <View style={styles.container}>
       {/* Header */}
-      <Header connected={connected} score={score} />
+      <Header connected={connected} score={score} roomId={roomId} />
 
-      <ScrollView
-        style={styles.content}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        {/* Estado inicial */}
-        {!gameStarted && !currentQuestion && (
-          <CenteredContainer>
-            <ActivityIndicator size="large" color="#667eea" />
-            <Text style={styles.waitingText}>Waiting for game to start...</Text>
-            <Text style={styles.userId}>Your ID: {userId}</Text>
-          </CenteredContainer>
-        )}
+      {/* Main Content */}
+      {!roomId && !gameStarted && (
+        <GameMainMenu
+          selectedLevel={selectedLevel}
+          onLevelSelect={setSelectedLevel}
+          onCreateSinglePlayer={() => createGame(selectedLevel, ModeMatch.SINGLEPLAYER)}
+          onCreateMultiplayer={() => createGame(selectedLevel, ModeMatch.MULTIPLAYER)}
+          onJoinGame={joinGame}
+        />
+      )}
 
-        {/* Pregunta actual */}
-        {currentQuestion && (
-          <>
-            <QuestionView
-              question={currentQuestion}
-              questionNumber={questionNumber}
-              totalQuestions={totalQuestions}
-              timeRemaining={timeRemaining}
-            />
+      {roomId && !gameStarted && (
+        <GameLobby
+          roomId={roomId}
+          level={level}
+          mode={mode}
+          players={players}
+          userId={user?.id || ''}
+          onStartGame={startGame}
+          onLeaveRoom={leaveRoom}
+        />
+      )}
 
-            <View style={styles.optionsContainer}>
-              {currentQuestion.options.map((option, i) => (
-                <OptionButton
-                  key={i}
-                  option={option.text!}
-                  variant={getOptionVariant(option.text!)}
-                  disabled={!!selectedOption || timeRemaining <= 0}
-                  onPress={() => handleOptionPress(option.id)}
-                />
-              ))}
-            </View>
-          </>
-        )}
-
-        {/* Mensaje entre preguntas */}
-        {gameStarted && !currentQuestion && (
-          <CenteredContainer>
-            <Text style={styles.finishedTitle}>⏳ Next Question</Text>
-            <Text style={styles.finishedText}>Get ready for the next challenge...</Text>
-          </CenteredContainer>
-        )}
-      </ScrollView>
-
-      {/* Controles */}
-      <View style={styles.controls}>
-        {!gameStarted ? (
-          <>
-            <Button
-              title="Join Game"
-              variant="primary"
-              onPress={joinGame}
-              style={styles.controlButton}
-              disabled={!connected}
-            />
-            <Button
-              title="Start Game"
-              variant="secondary"
-              onPress={startGame}
-              style={styles.controlButton}
-              disabled={!connected}
-            />
-          </>
-        ) : (
-          <Button
-            title="Stop Game"
-            variant="outlined"
-            onPress={stopGame}
-            style={styles.controlButton}
+      {gameStarted && (
+        <>
+          <GamePlay
+            currentQuestion={currentQuestion}
+            questionNumber={questionNumber}
+            totalQuestions={totalQuestions}
+            timeRemaining={timeRemaining}
+            score={score}
+            onOptionPress={handleOptionPress}
+            onModalClose={handleCloseResult}
+            showResult={showResult}
+            isCorrect={isCorrect}
+            correctAnswer={correctAnswer}
+            selectedOption={selectedOption}
           />
-        )}
-      </View>
 
-      {/* Modal de resultado */}
-      <ResultModal
-        visible={showResult}
-        isCorrect={isCorrect}
-        correctAnswer={correctAnswer}
-        timeRemaining={1000} // Se cierra automáticamente en 1s
-        onClose={handleCloseResult}
-      />
+          {/* Leave Button */}
+          <View style={styles.leaveContainer}>
+            <Button
+              title="Leave Game"
+              variant="outlined"
+              onPress={leaveRoom}
+              style={styles.leaveButton}
+            />
+          </View>
+        </>
+      )}
+
+      {error && (
+        <View style={styles.errorBanner}>
+          <Text style={styles.errorBannerText}>{error}</Text>
+        </View>
+      )}
     </View>
   );
 };
 
 /* ---------------------- 🔹 COMPONENTES AUXILIARES ---------------------- */
 
-const Header = ({ connected, score }: { connected: boolean; score: number }) => (
+const Header = ({
+  connected,
+  score,
+  roomId,
+}: {
+  connected: boolean;
+  score: number;
+  roomId: string | null;
+}) => (
   <View style={styles.header}>
-    <Text style={styles.title}>🎮 LinguaPlay Trivia</Text>
+    <Text style={styles.headerTitle}>🎮 LinguaPlay</Text>
     <View style={styles.statusContainer}>
       <View style={[styles.statusIndicator, connected ? styles.connected : styles.disconnected]} />
       <Text style={styles.statusText}>{connected ? 'Connected' : 'Disconnected'}</Text>
+      {roomId && <Text style={styles.roomId}>Room: {roomId}</Text>}
       <Text style={styles.score}>Score: {score}</Text>
     </View>
   </View>
@@ -188,69 +180,106 @@ const CenteredContainer: React.FC<{ children: React.ReactNode }> = ({ children }
 
 /* --------------------------- 🎨 ESTILOS --------------------------- */
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
-  centered: {
+  container: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+  },
+  centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 40,
+    backgroundColor: '#ffffff',
   },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-  },
-  userId: { marginTop: 5, fontSize: 12, color: '#999', textAlign: 'center' },
   header: {
-    backgroundColor: '#667eea',
-    padding: 20,
-    paddingTop: 40,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    padding: 16,
+    paddingTop: 32,
+    backgroundColor: '#000000',
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
   },
-  title: {
+  headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#FFF',
-    textAlign: 'center',
-    marginBottom: 10,
+    color: '#ffffff',
+    marginBottom: 8,
   },
   statusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    flexWrap: 'wrap',
   },
-  statusIndicator: { width: 8, height: 8, borderRadius: 4 },
-  connected: { backgroundColor: '#4ade80' },
-  disconnected: { backgroundColor: '#ef4444' },
-  statusText: { color: '#FFF', fontSize: 14, flex: 1, marginLeft: 8 },
-  score: { color: '#FFF', fontSize: 14, fontWeight: '600' },
-  content: { flex: 1 },
-  scrollContent: { padding: 20 },
-  waitingText: {
-    marginTop: 15,
+  statusIndicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 6,
+  },
+  connected: {
+    backgroundColor: '#10b981',
+  },
+  disconnected: {
+    backgroundColor: '#ef4444',
+  },
+  statusText: {
+    fontSize: 12,
+    color: '#ffffff',
+    marginRight: 8,
+  },
+  roomId: {
+    fontSize: 12,
+    color: '#ffffff',
+    fontWeight: '600',
+    marginRight: 8,
+  },
+  score: {
+    fontSize: 12,
+    color: '#ffffff',
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 12,
     fontSize: 16,
     color: '#666',
+  },
+  userId: {
+    marginTop: 6,
+    fontSize: 12,
+    color: '#999',
+    fontFamily: 'monospace',
+  },
+  errorText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#ef4444',
     textAlign: 'center',
   },
-  optionsContainer: { marginTop: 10 },
-  finishedTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#667eea',
-    marginBottom: 10,
-  },
-  finishedText: { fontSize: 16, color: '#666', textAlign: 'center' },
-  controls: {
-    padding: 20,
-    backgroundColor: '#f8fafc',
+  leaveContainer: {
+    padding: 12,
+    paddingBottom: 20,
     borderTopWidth: 1,
     borderTopColor: '#e2e8f0',
-    flexDirection: 'row',
-    gap: 10,
   },
-  controlButton: { flex: 1 },
+  leaveButton: {
+    width: '100%',
+  },
+  errorBanner: {
+    backgroundColor: '#fee2e2',
+    padding: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#fecaca',
+  },
+  errorBannerText: {
+    color: '#dc2626',
+    fontSize: 13,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
 });
 
 export default GameScreen;

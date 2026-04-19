@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import CategoryItem from '@/features/category/components/CategoryItem.component';
 import MetricCard from '@/shared/components/Metric.component';
@@ -7,9 +7,11 @@ import CircularChart from '@/shared/components/Char.component';
 import ProgressBar from '@/shared/components/ProgressBar.component';
 import StatItem from '@/shared/components/Statitem.component';
 import Button from '@/shared/components/Button.component';
+import { useAuth } from '../hooks/useAuth';
 
 const AdminDashboardScreen = () => {
   const navigation = useNavigation();
+  const { handleSignOut, loading: signOutLoading } = useAuth();
 
   const metricsData = {
     totalQuestions: 156,
@@ -28,6 +30,23 @@ const AdminDashboardScreen = () => {
 
   const handleNavigateToCategories = () => {
     navigation.navigate('ManageCategoriesScreen' as never);
+  };
+
+  const handleSignOutPress = async () => {
+    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
+      {
+        text: 'Cancel',
+        onPress: () => {},
+        style: 'cancel',
+      },
+      {
+        text: 'Sign Out',
+        onPress: async () => {
+          await handleSignOut();
+        },
+        style: 'destructive',
+      },
+    ]);
   };
 
   return (
@@ -104,6 +123,22 @@ const AdminDashboardScreen = () => {
           onPress={handleNavigateToCategories}
           style={styles.actionButton}
         />
+
+        {/* Sign Out Button */}
+        <Button
+          title="Sign Out"
+          variant="outlined"
+          size="large"
+          onPress={handleSignOutPress}
+          disabled={signOutLoading}
+          style={[styles.actionButton, styles.signOutButton]}
+        />
+        {signOutLoading && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="small" color="#ef4444" />
+            <Text style={styles.loadingText}>Signing out...</Text>
+          </View>
+        )}
       </View>
     </ScrollView>
   );
@@ -168,6 +203,22 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     marginBottom: 15,
+  },
+  signOutButton: {
+    marginBottom: 20,
+    borderColor: '#ef4444',
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    gap: 8,
+  },
+  loadingText: {
+    color: '#ef4444',
+    fontWeight: '600',
+    fontSize: 14,
   },
 });
 

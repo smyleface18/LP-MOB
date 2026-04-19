@@ -7,6 +7,8 @@ import {
   Image,
   Platform,
   KeyboardAvoidingView,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import MetricCard from '@/shared/components/Metric.component';
@@ -16,13 +18,14 @@ import StatItem from '@/shared/components/Statitem.component';
 import Button from '@/shared/components/Button.component';
 import { useGame } from '@/features/game/hooks/useGame';
 import { useUser } from '../hooks/useUser';
+import { useAuth } from '../hooks/useAuth';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const UserDashboardScreen = () => {
   const navigation = useNavigation();
-  const { connected, score, userId, joinGame, isConnected } = useGame();
-
+  const { connected, score, joinGame, isConnected } = useGame();
   const { user, getMe, loading } = useUser();
+  const { handleSignOut, loading: signOutLoading } = useAuth();
 
   useEffect(() => {
     getMe();
@@ -30,7 +33,7 @@ const UserDashboardScreen = () => {
 
   const userStats = {
     totalGames: 45,
-    gamesWon: user.score,
+    gamesWon: user?.score,
     currentStreak: 5,
     bestStreak: 12,
     averageScore: 76,
@@ -41,7 +44,7 @@ const UserDashboardScreen = () => {
       alert('Please check your connection and try again');
       return;
     }
-    joinGame();
+
     navigation.navigate('GameScreen' as never);
   };
 
@@ -52,6 +55,25 @@ const UserDashboardScreen = () => {
   const handleHowToPlay = () => {
     navigation.navigate('GameScreen' as never);
   };
+
+  const handleSignOutPress = async () => {
+    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
+      {
+        text: 'Cancel',
+        onPress: () => {},
+        style: 'cancel',
+      },
+      {
+        text: 'Sign Out',
+        onPress: async () => {
+          await handleSignOut();
+          // Navigation will be handled by the app's auth state listener
+        },
+        style: 'destructive',
+      },
+    ]);
+  };
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -83,7 +105,7 @@ const UserDashboardScreen = () => {
                 />
               </View>
             </View>
-            <Text style={styles.nickname}>{user.username}</Text>
+            <Text style={styles.nickname}>{user?.username}</Text>
             <View style={styles.connectionStatus}>
               <View
                 style={[styles.statusDot, connected ? styles.connected : styles.disconnected]}
@@ -95,8 +117,8 @@ const UserDashboardScreen = () => {
 
         {/* Main Metrics */}
         <View style={styles.metricsGrid}>
-          <MetricCard value={`${user.score} XP`} label="Score" />
-          <MetricCard value={userStats.gamesWon} label="Games Won" />
+          <MetricCard value={`${user?.score} XP`} label="Score" />
+          <MetricCard value={userStats.gamesWon || 0} label="Games Won" />
           <MetricCard value={userStats.currentStreak} label="Current Streak" />
           <MetricCard value={0} label="Categories" />
         </View>
@@ -111,7 +133,9 @@ const UserDashboardScreen = () => {
               color="#FF0000"
             />
             <CircularChart
-              percentage={Math.round((userStats.gamesWon / userStats.totalGames) * 100)}
+              percentage={Math.round(
+                ((userStats.gamesWon || 0) / (userStats.totalGames || 1)) * 100,
+              )}
               label="Win Rate"
               color="#000000"
             />
@@ -134,7 +158,7 @@ const UserDashboardScreen = () => {
 
           <View style={styles.additionalStats}>
             <StatItem value={userStats.totalGames} label="Total Games" />
-            <StatItem value={`${user.score} XP`} label="XP" />
+            <StatItem value={`${user?.score || 0} XP`} label="XP" />
             <StatItem value={userStats.bestStreak} label="Best Streak" />
           </View>
         </View>
@@ -147,6 +171,22 @@ const UserDashboardScreen = () => {
           onPress={handleHowToPlay}
           style={styles.actionButton}
         />
+
+        {/* Sign Out Button */}
+        <Button
+          title="Sign Out"
+          variant="outlined"
+          size="large"
+          onPress={handleSignOutPress}
+          disabled={signOutLoading}
+          style={[styles.actionButton, styles.signOutButton]}
+        />
+        {signOutLoading && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="small" color="#ef4444" />
+            <Text style={styles.loadingText}>Signing out...</Text>
+          </View>
+        )}
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -256,6 +296,22 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     marginBottom: 15,
+  },
+  signOutButton: {
+    marginBottom: 20,
+    borderColor: '#ef4444',
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    gap: 8,
+  },
+  loadingText: {
+    color: '#ef4444',
+    fontWeight: '600',
+    fontSize: 14,
   },
 });
 

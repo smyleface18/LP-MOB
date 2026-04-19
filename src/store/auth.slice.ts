@@ -1,8 +1,9 @@
 import { StateCreator } from 'zustand';
 import { storageAdapter } from '@/shared/adapters/storage.adapter';
-import { Authenticated, AuthState } from '@/features/auth/types';
+import { Authenticated, AuthState, User, UserRoles } from '@/features/auth/types';
 
-// Solo el estado y acciones de auth — sin create()
+
+
 export type AuthSlice = AuthState;
 
 export const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
@@ -16,6 +17,8 @@ export const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
     await storageAdapter.set('accessToken', authenticated.accessToken);
     await storageAdapter.set('idToken', authenticated.idToken);
     await storageAdapter.set('refreshToken', authenticated.refreshToken);
+
+    
     set({
       accessToken: authenticated.accessToken,
       idToken: authenticated.idToken,
@@ -32,7 +35,6 @@ export const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
       accessToken: null,
       idToken: null,
       refreshToken: null,
-      user: null,
       isAuthenticated: false,
     });
   },
@@ -42,4 +44,22 @@ export const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
     if (!accessToken) return;
     set({ isAuthenticated: true });
   },
+
+  updateTokens: async (authenticated: Authenticated) => {
+    await storageAdapter.set('accessToken', authenticated.accessToken);
+    await storageAdapter.set('idToken', authenticated.idToken);
+    if (authenticated.refreshToken) {
+      await storageAdapter.set('refreshToken', authenticated.refreshToken);
+    }
+
+    set({
+      accessToken: authenticated.accessToken,
+      idToken: authenticated.idToken,
+      refreshToken: authenticated.refreshToken || null,
+    });
+  },
+
+  setUser: (user: User) => {
+    set({ user });
+  }
 });
