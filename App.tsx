@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet } from 'react-native';
 import { AppNavigator } from '@/app/navigation/AppNavigator';
+import TokenRefreshProvider from '@/features/auth/hooks/TokenRefreshProvider';
 
 const Stack = createStackNavigator();
 
@@ -12,9 +13,11 @@ const App = () => {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <NavigationContainer>
-        <AppNavigator />
+        <TokenRefreshProvider>
+          <AppNavigator />
+        </TokenRefreshProvider>
       </NavigationContainer>
-      <StatusBar style="dark" translucent />
+      <StatusBar style="dark" />
     </SafeAreaView>
   );
 };

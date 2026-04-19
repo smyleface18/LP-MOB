@@ -18,4 +18,16 @@ export const AuthService = {
     console.log(authenticated);
     return authenticated;
   },
+
+  async refreshAccessToken(refreshToken: string): Promise<ApiResponse<Authenticated>> {
+    return await apiService.post<Authenticated>(API_ENDPOINTS.AUTH.REFRESH_TOKEN, {
+      refreshToken,
+    });
+  },
+
+  async revokeToken(refreshToken: string): Promise<ApiResponse<null>> {
+    return await apiService.post<null>(API_ENDPOINTS.AUTH.REVOKE_TOKEN, {
+      refreshToken,
+    });
+  },
 };

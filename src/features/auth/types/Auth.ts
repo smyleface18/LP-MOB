@@ -1,5 +1,5 @@
 import { Level } from '@/shared/types/common';
-import { CoreEntity } from '@/shared/types/common/cores.type';
+import { CoreEntity, S3Object } from '@/shared/types/common/cores.type';
 
 export interface AuthState {
   accessToken: string | null;
@@ -10,10 +10,13 @@ export interface AuthState {
   signInStatus: (authenticated: Authenticated) => Promise<void>;
   signOut: () => Promise<void>;
   restoreSession: () => Promise<void>;
+  updateTokens: (authenticated: Authenticated) => Promise<void>;
+  setUser: (user: User) => void;
+
 }
 
 export interface User extends CoreEntity {
-  avatar: Object;
+  avatar?: S3Object;
   username: string;
   email: string;
   score: number;
@@ -37,4 +40,9 @@ export interface SignUpDto {
   email: string;
   username: string;
   password: string;
+}
+
+export interface TokenPayload {
+  exp: number;
+  iat: number;
 }

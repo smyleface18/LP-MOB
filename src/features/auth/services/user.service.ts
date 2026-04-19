@@ -1,8 +1,8 @@
 
-import { User } from '@/shared/types/user';
 import { apiService } from '@/shared/api/api.service';
 import { API_ENDPOINTS } from '@/shared/api/apiConfig';
 import { ApiResponse } from '@/shared/api/types';
+import { User } from '../types';
 
 export const userService = {
   getMe: async (): Promise<ApiResponse<User>> => {

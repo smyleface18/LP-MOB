@@ -1,21 +1,10 @@
-import { useState } from 'react';
+import { useActionState, useState } from 'react';
 import { userService } from '../services/user.service';
-import { User, UserRole } from '@/shared/types/user';
-import { Level } from '@/shared/types/common';
+import { useAuthActions, useAuthState } from '@/store';
 
 export const useUser = () => {
-  const [user, setUser] = useState<User>({
-    id: '',
-    active: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    avatar: undefined,
-    username: '',
-    email: '',
-    score: 0,
-    userRole: UserRole.PLAYER,
-    level: Level.A1,
-  });
+  const  { user }  = useAuthState();
+  const { setUser } = useAuthActions();
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,6 +12,7 @@ export const useUser = () => {
   const getMe = async () => {
     setLoading(true);
     const response = await userService.getMe();
+
 
     if (!response.ok) {
       const message = Array.isArray(response.message)
