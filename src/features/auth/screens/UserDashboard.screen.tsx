@@ -23,7 +23,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 const UserDashboardScreen = () => {
   const navigation = useNavigation();
-  const { actions, isConnected } = useGame();
+  const { actions, state } = useGame();
   const { user, getMe, loading } = useUser();
   const { handleSignOut, loading: signOutLoading } = useAuth();
 
@@ -40,7 +40,7 @@ const UserDashboardScreen = () => {
   };
 
   const handleQuickPlay = () => {
-    if (!isConnected) {
+    if (!state.user.isConnected) {
       alert('Please check your connection and try again');
       return;
     }
@@ -107,9 +107,14 @@ const UserDashboardScreen = () => {
             <Text style={styles.nickname}>{user?.username}</Text>
             <View style={styles.connectionStatus}>
               <View
-                style={[styles.statusDot, isConnected ? styles.connected : styles.disconnected]}
+                style={[
+                  styles.statusDot,
+                  state.user.isConnected ? styles.connected : styles.disconnected,
+                ]}
               />
-              <Text style={styles.statusText}>{isConnected ? 'Connected' : 'Disconnected'}</Text>
+              <Text style={styles.statusText}>
+                {state.user.isConnected ? 'Connected' : 'Disconnected'}
+              </Text>
             </View>
           </View>
         </LinearGradient>

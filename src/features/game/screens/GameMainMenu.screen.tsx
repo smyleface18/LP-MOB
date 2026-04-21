@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import Button from '@/shared/components/Button.component';
 import { Level } from '@/shared/types/common';
+import { colors } from '@/shared/ui/tokens';
 
 interface GameMainMenuProps {
   selectedLevel: Level;
@@ -102,7 +103,7 @@ const GameMainMenu: React.FC<GameMainMenuProps> = ({
             value={joinRoomId}
             onChangeText={setJoinRoomId}
             autoCapitalize="none"
-            placeholderTextColor="#cbd5e1"
+            placeholderTextColor={colors.neutral.slate300}
           />
           <Button
             title="🔗 Join Game"
@@ -120,7 +121,7 @@ const GameMainMenu: React.FC<GameMainMenuProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.background,
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -133,12 +134,12 @@ const styles = StyleSheet.create({
   mainTitle: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: colors.neutral.slate800,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 14,
-    color: '#64748b',
+    color: colors.neutral.slate500,
   },
   section: {
     marginBottom: 24,
@@ -146,7 +147,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1e293b',
+    color: colors.neutral.slate800,
     marginBottom: 12,
   },
   levelButtons: {
@@ -173,29 +174,29 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: colors.border.subtle,
   },
   dividerText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#94a3b8',
+    color: colors.neutral.slate400,
   },
   joinLabel: {
     fontSize: 13,
-    color: '#64748b',
+    color: colors.neutral.slate500,
     fontWeight: '500',
     marginBottom: 8,
   },
   roomInput: {
     height: 50,
     borderWidth: 1.5,
-    borderColor: '#e2e8f0',
+    borderColor: colors.border.subtle,
     borderRadius: 8,
     paddingHorizontal: 12,
     marginBottom: 12,
     fontSize: 15,
     fontWeight: '500',
-    color: '#1e293b',
+    color: colors.neutral.slate800,
   },
   joinButton: {
     width: '100%',

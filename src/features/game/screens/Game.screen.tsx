@@ -7,6 +7,7 @@ import GamePlay from './GamePlay.screen';
 import GameMainMenu from './GameMainMenu.screen';
 import { ModeMatch } from '../types';
 import { Level } from '@/shared/types/common';
+import { colors } from '@/shared/ui/tokens';
 
 const GameScreen: React.FC = () => {
   const { state, actions } = useGame();
@@ -62,7 +63,7 @@ const GameScreen: React.FC = () => {
   if (!state.user.isConnected) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#667eea" />
+        <ActivityIndicator size="large" color={colors.accent.indigo} />
         <Text style={styles.loadingText}>Connecting to game server...</Text>
         <Text style={styles.userId}>Your ID: {state.user.userId}</Text>
         {state.error && <Text style={styles.errorText}>{state.error}</Text>}
@@ -169,25 +170,25 @@ const CenteredContainer: React.FC<{ children: React.ReactNode }> = ({ children }
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.background,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.background,
   },
   header: {
     padding: 16,
     paddingTop: 32,
-    backgroundColor: '#000000',
+    backgroundColor: colors.secondary,
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: colors.text.inverse,
     marginBottom: 8,
   },
   statusContainer: {
@@ -203,25 +204,25 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   connected: {
-    backgroundColor: '#10b981',
+    backgroundColor: colors.status.online,
   },
   disconnected: {
-    backgroundColor: '#ef4444',
+    backgroundColor: colors.status.offline,
   },
   statusText: {
     fontSize: 12,
-    color: '#ffffff',
+    color: colors.text.inverse,
     marginRight: 8,
   },
   roomId: {
     fontSize: 12,
-    color: '#ffffff',
+    color: colors.text.inverse,
     fontWeight: '600',
     marginRight: 8,
   },
   score: {
     fontSize: 12,
-    color: '#ffffff',
+    color: colors.text.inverse,
   },
   centered: {
     flex: 1,
@@ -232,37 +233,37 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#666',
+    color: colors.text.secondary,
   },
   userId: {
     marginTop: 6,
     fontSize: 12,
-    color: '#999',
+    color: colors.text.hint,
     fontFamily: 'monospace',
   },
   errorText: {
     marginTop: 12,
     fontSize: 14,
-    color: '#ef4444',
+    color: colors.status.offline,
     textAlign: 'center',
   },
   leaveContainer: {
     padding: 12,
     paddingBottom: 20,
     borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
+    borderTopColor: colors.border.subtle,
   },
   leaveButton: {
     width: '100%',
   },
   errorBanner: {
-    backgroundColor: '#fee2e2',
+    backgroundColor: colors.feedback.error.background,
     padding: 12,
     borderTopWidth: 1,
-    borderTopColor: '#fecaca',
+    borderTopColor: colors.feedback.error.border,
   },
   errorBannerText: {
-    color: '#dc2626',
+    color: colors.feedback.error.text,
     fontSize: 13,
     fontWeight: '600',
     textAlign: 'center',

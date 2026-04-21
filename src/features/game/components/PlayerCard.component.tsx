@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
 import { PlayerInfo } from '../types';
+import { colors } from '@/shared/ui/tokens';
 
 interface PlayerCardProps {
   player: PlayerInfo;
@@ -19,7 +20,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, isHost = false }) => {
       .slice(0, 2);
   };
 
-  const statusColor = player.isConnected ? '#10b981' : '#ef4444';
+  const statusColor = player.isConnected ? colors.status.online : colors.status.offline;
   const opacityStyle = player.isConnected ? 1 : 0.6;
 
   return (
@@ -63,10 +64,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 10,
-    backgroundColor: '#f8fafc',
+    backgroundColor: colors.surface,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: colors.border.subtle,
     gap: 12,
   },
   avatarSection: {
@@ -76,20 +77,20 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: colors.border.subtle,
   },
   avatarPlaceholder: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#667eea',
+    backgroundColor: colors.accent.indigo,
     justifyContent: 'center',
     alignItems: 'center',
   },
   initials: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#ffffff',
+    color: colors.text.inverse,
   },
   statusDot: {
     position: 'absolute',
@@ -99,7 +100,7 @@ const styles = StyleSheet.create({
     height: 12,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: '#ffffff',
+    borderColor: colors.text.inverse,
   },
   infoSection: {
     flex: 1,
@@ -113,14 +114,14 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1e293b',
+    color: colors.neutral.slate800,
     flex: 1,
   },
   hostBadge: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#f59e0b',
-    backgroundColor: '#fef3c7',
+    color: colors.accent.amber,
+    backgroundColor: colors.accent.amberSoft,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
@@ -128,15 +129,15 @@ const styles = StyleSheet.create({
   levelBadge: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#4338ca',
-    backgroundColor: '#e0e7ff',
+    color: colors.accent.indigoDark,
+    backgroundColor: colors.accent.indigoSoft,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
   },
   status: {
     fontSize: 12,
-    color: '#64748b',
+    color: colors.neutral.slate500,
   },
   scoreSection: {
     alignItems: 'center',
@@ -145,13 +146,13 @@ const styles = StyleSheet.create({
   },
   scoreLabel: {
     fontSize: 11,
-    color: '#94a3b8',
+    color: colors.neutral.slate400,
     fontWeight: '500',
   },
   scoreValue: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1e293b',
+    color: colors.neutral.slate800,
     marginTop: 2,
   },
 });

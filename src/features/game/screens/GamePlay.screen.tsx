@@ -4,6 +4,7 @@ import QuestionView from '@/features/question/components/QuestionView.component'
 import OptionButton from '@/shared/components/OptionButton.component';
 import ResultModal from '@/shared/components/ResultModal.component';
 import { Question } from '@/features/question/types';
+import { colors } from '@/shared/ui/tokens';
 
 interface GamePlayProps {
   currentQuestion: Question | null;
@@ -102,7 +103,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.background,
   },
   content: {
     flex: 1,
@@ -117,17 +118,17 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: '#f8fafc',
+    backgroundColor: colors.surface,
     borderRadius: 8,
   },
   scoreText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1e293b',
+    color: colors.neutral.slate800,
   },
   questionCounter: {
     fontSize: 14,
-    color: '#64748b',
+    color: colors.neutral.slate500,
     fontWeight: '600',
   },
   optionsContainer: {
@@ -138,17 +139,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.background,
   },
   loadingTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#667eea',
+    color: colors.accent.indigo,
     marginBottom: 16,
   },
   score: {
     fontSize: 16,
-    color: '#64748b',
+    color: colors.neutral.slate500,
   },
 });
 
