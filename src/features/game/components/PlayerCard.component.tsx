@@ -8,6 +8,8 @@ interface PlayerCardProps {
 }
 
 const PlayerCard: React.FC<PlayerCardProps> = ({ player, isHost = false }) => {
+  const showHostBadge = isHost === true;
+
   const getInitials = (username: string): string => {
     return username
       .split(' ')
@@ -40,7 +42,8 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, isHost = false }) => {
           <Text style={styles.username} numberOfLines={1}>
             {player.username}
           </Text>
-          {isHost && <Text style={styles.hostBadge}>👑 Host</Text>}
+          <Text style={styles.levelBadge}>Level {player.level}</Text>
+          {showHostBadge && <Text style={styles.hostBadge}>👑 Host</Text>}
         </View>
         <Text style={styles.status}>{player.isConnected ? '🟢 Connected' : '🔴 Disconnected'}</Text>
       </View>
@@ -48,7 +51,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, isHost = false }) => {
       {/* Score */}
       <View style={styles.scoreSection}>
         <Text style={styles.scoreLabel}>Score</Text>
-        <Text style={styles.scoreValue}>{player.score}</Text>
+        <Text style={styles.scoreValue}>{player.totalScore}</Text>
       </View>
     </View>
   );
@@ -118,6 +121,15 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#f59e0b',
     backgroundColor: '#fef3c7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  levelBadge: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#4338ca',
+    backgroundColor: '#e0e7ff',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, FlatList } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import Button from '@/shared/components/Button.component';
 import PlayerCard from '../components/PlayerCard.component';
 import { PlayerInfo } from '../types';
@@ -9,7 +9,7 @@ interface GameLobbyProps {
   level: string | null;
   mode: string | null;
   players: PlayerInfo[];
-  userId: string;
+  user: PlayerInfo;
   onStartGame: () => void;
   onLeaveRoom: () => void;
 }
@@ -19,15 +19,10 @@ const GameLobby: React.FC<GameLobbyProps> = ({
   level,
   mode,
   players,
-  userId,
+  user,
   onStartGame,
   onLeaveRoom,
 }) => {
-  // Identificar al host (el primero que se unió)
-  const hostId = players.length > 0 ? players[0].userId : null;
-  const isHost = userId === hostId;
-  console.log(`[GameLobby] Render - userId: ${userId}, hostId: ${hostId}, isHost: ${isHost}`);
-
   return (
     <View style={styles.container}>
       <ScrollView
@@ -58,16 +53,7 @@ const GameLobby: React.FC<GameLobbyProps> = ({
           {players.length > 0 ? (
             <View style={styles.playersList}>
               {players.map((player) => {
-                console.log(
-                  `[GameLobby] Rendering player: ${player.userId} - username: ${player.username}`,
-                );
-                return (
-                  <PlayerCard
-                    key={player.userId}
-                    player={player}
-                    isHost={player.userId === hostId}
-                  />
-                );
+                return <PlayerCard key={player.userId} player={player} isHost={player.isOwner} />;
               })}
             </View>
           ) : (
@@ -79,7 +65,7 @@ const GameLobby: React.FC<GameLobbyProps> = ({
         {players.length > 0 && (
           <View style={styles.readyContainer}>
             <Text style={styles.waitingText}>✅ Ready to start!</Text>
-            {isHost ? (
+            {user.isOwner ? (
               <Text style={styles.hostText}>You are the host. Click below to start the game.</Text>
             ) : (
               <Text style={styles.hostText}>Waiting for host to start the game...</Text>
@@ -90,7 +76,7 @@ const GameLobby: React.FC<GameLobbyProps> = ({
 
       {/* Actions - Always visible at bottom */}
       <View style={styles.actions}>
-        {isHost && players.length > 0 && (
+        {user.isOwner && players.length > 0 && (
           <Button
             title="🚀 Start Game"
             variant="primary"

@@ -23,7 +23,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 const UserDashboardScreen = () => {
   const navigation = useNavigation();
-  const { connected, score, joinGame, isConnected } = useGame();
+  const { actions, isConnected } = useGame();
   const { user, getMe, loading } = useUser();
   const { handleSignOut, loading: signOutLoading } = useAuth();
 
@@ -100,7 +100,6 @@ const UserDashboardScreen = () => {
                   resizeMode="cover"
                   onError={() => {
                     // Fallback a avatar por defecto
-                    console.log('Using default avatar');
                   }}
                 />
               </View>
@@ -108,9 +107,9 @@ const UserDashboardScreen = () => {
             <Text style={styles.nickname}>{user?.username}</Text>
             <View style={styles.connectionStatus}>
               <View
-                style={[styles.statusDot, connected ? styles.connected : styles.disconnected]}
+                style={[styles.statusDot, isConnected ? styles.connected : styles.disconnected]}
               />
-              <Text style={styles.statusText}>{connected ? 'Connected' : 'Disconnected'}</Text>
+              <Text style={styles.statusText}>{isConnected ? 'Connected' : 'Disconnected'}</Text>
             </View>
           </View>
         </LinearGradient>
@@ -155,38 +154,34 @@ const UserDashboardScreen = () => {
             <ProgressBar percentage={25} label="Intermediate" color="#000000" />
             <ProgressBar percentage={10} label="Advanced" color="#CC0000" />
           </View>
-
-          <View style={styles.additionalStats}>
-            <StatItem value={userStats.totalGames} label="Total Games" />
-            <StatItem value={`${user?.score || 0} XP`} label="XP" />
-            <StatItem value={userStats.bestStreak} label="Best Streak" />
-          </View>
         </View>
 
         {/* Action Buttons */}
-        <Button
-          title="How to Play"
-          variant="secondary"
-          size="large"
-          onPress={handleHowToPlay}
-          style={styles.actionButton}
-        />
+        <View style={styles.section}>
+          <Button
+            title="How to Play"
+            variant="secondary"
+            size="large"
+            onPress={handleHowToPlay}
+            style={styles.actionButton}
+          />
 
-        {/* Sign Out Button */}
-        <Button
-          title="Sign Out"
-          variant="outlined"
-          size="large"
-          onPress={handleSignOutPress}
-          disabled={signOutLoading}
-          style={[styles.actionButton, styles.signOutButton]}
-        />
-        {signOutLoading && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color="#ef4444" />
-            <Text style={styles.loadingText}>Signing out...</Text>
-          </View>
-        )}
+          {/* Sign Out Button */}
+          <Button
+            title="Sign Out"
+            variant="outlined"
+            size="large"
+            onPress={handleSignOutPress}
+            disabled={signOutLoading}
+            style={[styles.actionButton, styles.signOutButton]}
+          />
+          {signOutLoading && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color="#ef4444" />
+              <Text style={styles.loadingText}>Signing out...</Text>
+            </View>
+          )}
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );

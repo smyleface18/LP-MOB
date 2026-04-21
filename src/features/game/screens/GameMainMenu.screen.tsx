@@ -10,7 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import Button from '@/shared/components/Button.component';
-import { Level } from '@/shared/types/Type';
+import { Level } from '@/shared/types/common';
 
 interface GameMainMenuProps {
   selectedLevel: Level;

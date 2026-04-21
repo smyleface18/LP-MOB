@@ -4,31 +4,12 @@ import { useGame } from '../hooks/useGame';
 import Button from '@/shared/components/Button.component';
 import GameLobby from './GameLobby.screen';
 import GamePlay from './GamePlay.screen';
-import { Level, ModeMatch } from '@/shared/types/Type';
 import GameMainMenu from './GameMainMenu.screen';
+import { ModeMatch } from '../types';
+import { Level } from '@/shared/types/common';
 
 const GameScreen: React.FC = () => {
-  const {
-    connected,
-    roomId,
-    level,
-    mode,
-    gameStarted,
-    currentQuestion,
-    questionNumber,
-    totalQuestions,
-    timeRemaining,
-    score,
-    user,
-    players,
-    error,
-    lastAnswerResult,
-    createGame,
-    joinGame,
-    startGame,
-    leaveRoom,
-    submitAnswer,
-  } = useGame();
+  const { state, actions } = useGame();
 
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -36,29 +17,31 @@ const GameScreen: React.FC = () => {
   const [correctAnswer, setCorrectAnswer] = useState('');
   const [selectedLevel, setSelectedLevel] = useState<Level>(Level.A1);
   const lastProcessedAnswerRef = React.useRef<string | null>(null);
-
   /** 🧠 Manejador cuando el usuario selecciona una opción */
   const handleOptionPress = useCallback(
     (optionId: string) => {
-      if (selectedOption || timeRemaining <= 0 || !currentQuestion) return;
+      if (selectedOption || state.timeRemaining <= 0 || !state.currentQuestion) return;
 
       setSelectedOption(optionId);
       // Enviar al servidor - el backend decidirá si es correcta
-      submitAnswer(optionId);
+      actions.submitAnswer(optionId);
       // El resultado será recibido del backend via lastAnswerResult
     },
-    [selectedOption, timeRemaining, currentQuestion, submitAnswer],
+    [selectedOption, state.timeRemaining, state.currentQuestion, actions],
   );
 
   // Cuando recibimos la respuesta del backend - solo procesar una vez
   React.useEffect(() => {
-    if (lastAnswerResult && lastProcessedAnswerRef.current !== JSON.stringify(lastAnswerResult)) {
-      lastProcessedAnswerRef.current = JSON.stringify(lastAnswerResult);
-      setIsCorrect(lastAnswerResult.correct);
-      setCorrectAnswer(lastAnswerResult.correct ? 'Correct!' : 'Incorrect');
+    if (
+      state.lastAnswerResult &&
+      lastProcessedAnswerRef.current !== JSON.stringify(state.lastAnswerResult)
+    ) {
+      lastProcessedAnswerRef.current = JSON.stringify(state.lastAnswerResult);
+      setIsCorrect(state.lastAnswerResult.correct);
+      setCorrectAnswer(state.lastAnswerResult.correct ? 'Correct!' : 'Incorrect');
       setShowResult(true);
     }
-  }, [lastAnswerResult]);
+  }, [state.lastAnswerResult]);
 
   /** ⏱ Cerrar modal */
   const handleCloseResult = useCallback(() => {
@@ -73,16 +56,16 @@ const GameScreen: React.FC = () => {
     setIsCorrect(false);
     setCorrectAnswer('');
     lastProcessedAnswerRef.current = null; // Permitir procesar nueva respuesta
-  }, [currentQuestion?.id]);
+  }, [state.currentQuestion?.id]);
 
   /** 🧩 Estado de carga */
-  if (!connected) {
+  if (!state.user.isConnected) {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color="#667eea" />
         <Text style={styles.loadingText}>Connecting to game server...</Text>
-        <Text style={styles.userId}>Your ID: {user?.id}</Text>
-        {error && <Text style={styles.errorText}>{error}</Text>}
+        <Text style={styles.userId}>Your ID: {state.user.userId}</Text>
+        {state.error && <Text style={styles.errorText}>{state.error}</Text>}
       </View>
     );
   }
@@ -90,39 +73,43 @@ const GameScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <Header connected={connected} score={score} roomId={roomId} />
+      <Header
+        connected={state.user.isConnected}
+        score={state.user.matchScore}
+        roomId={state.roomId}
+      />
 
       {/* Main Content */}
-      {!roomId && !gameStarted && (
+      {!state.roomId && !state.gameStarted && (
         <GameMainMenu
           selectedLevel={selectedLevel}
           onLevelSelect={setSelectedLevel}
-          onCreateSinglePlayer={() => createGame(selectedLevel, ModeMatch.SINGLEPLAYER)}
-          onCreateMultiplayer={() => createGame(selectedLevel, ModeMatch.MULTIPLAYER)}
-          onJoinGame={joinGame}
+          onCreateSinglePlayer={() => actions.createGame(selectedLevel, ModeMatch.SINGLEPLAYER)}
+          onCreateMultiplayer={() => actions.createGame(selectedLevel, ModeMatch.MULTIPLAYER)}
+          onJoinGame={actions.joinGame}
         />
       )}
 
-      {roomId && !gameStarted && (
+      {state.roomId && !state.gameStarted && (
         <GameLobby
-          roomId={roomId}
-          level={level}
-          mode={mode}
-          players={players}
-          userId={user?.id || ''}
-          onStartGame={startGame}
-          onLeaveRoom={leaveRoom}
+          roomId={state.roomId}
+          level={state.level}
+          mode={state.modeMatch}
+          players={state.players}
+          user={state.user}
+          onStartGame={actions.startGame}
+          onLeaveRoom={actions.leaveRoom}
         />
       )}
 
-      {gameStarted && (
+      {state.gameStarted && (
         <>
           <GamePlay
-            currentQuestion={currentQuestion}
-            questionNumber={questionNumber}
-            totalQuestions={totalQuestions}
-            timeRemaining={timeRemaining}
-            score={score}
+            currentQuestion={state.currentQuestion}
+            questionNumber={state.questionNumber}
+            totalQuestions={state.totalQuestions}
+            timeRemaining={state.timeRemaining}
+            score={state.user.matchScore}
             onOptionPress={handleOptionPress}
             onModalClose={handleCloseResult}
             showResult={showResult}
@@ -136,16 +123,16 @@ const GameScreen: React.FC = () => {
             <Button
               title="Leave Game"
               variant="outlined"
-              onPress={leaveRoom}
+              onPress={actions.leaveRoom}
               style={styles.leaveButton}
             />
           </View>
         </>
       )}
 
-      {error && (
+      {state.error && (
         <View style={styles.errorBanner}>
-          <Text style={styles.errorBannerText}>{error}</Text>
+          <Text style={styles.errorBannerText}>{state.error}</Text>
         </View>
       )}
     </View>
