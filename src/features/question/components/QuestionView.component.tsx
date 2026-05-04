@@ -1,9 +1,10 @@
-import { Question } from '@/features/question/types';
+import { QuestionDto } from '@/features/question/types';
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { ContentView } from './ContentView.component';
 
 interface QuestionCardProps {
-  question: Question;
+  question: QuestionDto;
   questionNumber?: number;
   totalQuestions?: number;
   timeRemaining?: number;
@@ -33,17 +34,8 @@ const QuestionView: React.FC<QuestionCardProps> = ({
         </View>
       )}
 
-      {/* Imagen de la pregunta */}
-      {question.media && (
-        <Image
-          source={{ uri: question.media.url }}
-          style={styles.questionImage}
-          resizeMode="contain"
-        />
-      )}
-
-      {/* Texto de la pregunta */}
-      {question.questionText && <Text style={styles.questionText}>{question.questionText}</Text>}
+      {/* Contenido de la pregunta (imagen, video, audio, etc.) */}
+      <ContentView content={question.content} />
     </View>
   );
 };

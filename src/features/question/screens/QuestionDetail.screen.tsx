@@ -59,7 +59,7 @@ const QuestionDetailScreen = () => {
         questionText: question.questionText || '',
         questionImage: question.media?.url || '',
         options: question.options
-          .map((o) => o.text ?? '')
+          .map((o) => o.content.value ?? '')
           .concat(['', '', ''])
           .slice(0, 4),
         correctAnswer: '',

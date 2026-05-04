@@ -1,6 +1,6 @@
 ﻿import { CategoryQuestion } from '@/shared/types/category-question';
-import { S3Object } from '@/shared/types/common/cores.type';
-import { OptionDto } from '@/shared/types/question-option';
+import { ContentObject, S3Object } from '@/shared/types/common/cores.type';
+import { OptionDto, QuestionOption } from '@/shared/types/question-option';
 
 export interface Question {
   id: string;
@@ -9,10 +9,19 @@ export interface Question {
   updatedAt: Date;
   questionText: string;
   category: CategoryQuestion;
-  options: OptionDto[];
+  options: QuestionOption[];
   categoryId: string;
   timeLimit: number;
   media?: S3Object;
+}
+
+export interface QuestionDto {
+  id: string;
+  content: ContentObject;
+  category: CategoryQuestion;
+  options: OptionDto[];
+  categoryId: string;
+  timeLimit: number;
 }
 
 export interface CreateQuestionDto {

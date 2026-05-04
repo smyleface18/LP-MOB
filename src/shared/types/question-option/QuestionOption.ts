@@ -1,10 +1,8 @@
-import { CoreEntity, S3Object } from '../common/cores.type';
+import { ContentObject, CoreEntity, S3Object } from '../common/cores.type';
 import { Question } from '@/features/question/types';
 
 export interface QuestionOption extends CoreEntity {
-  text?: string;
-
-  media?: S3Object;
+  content: ContentObject;
 
   isCorrect: boolean;
 
@@ -15,6 +13,5 @@ export interface QuestionOption extends CoreEntity {
 
 export interface OptionDto {
   id: string;
-  text?: string;
-  media?: S3Object;
+  content: ContentObject;
 }

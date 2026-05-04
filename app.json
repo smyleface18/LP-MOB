@@ -25,6 +25,10 @@
     },
     "web": {
       "favicon": "./src/assets/LinguaPlay-bg.png"
-    }
+    },
+    "plugins": [
+      "expo-video",
+      "expo-audio"
+    ]
   }
 }
