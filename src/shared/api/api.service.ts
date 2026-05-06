@@ -34,23 +34,33 @@ class ApiService {
         };
       }
 
-      const responseBody = await response.json();
+      const rawText = await response.text();
+      const responseBody = rawText ? this.safeJsonParse(rawText) : null;
 
-      console.log('API raw response:', responseBody);
+      if (responseBody) {
+        console.log('API raw response:', responseBody);
+      }
 
       if (!response.ok) {
-        console.error('API error body:', responseBody);
+        if (responseBody) {
+          console.error('API error body:', responseBody);
+        }
+
         return {
           ok: false,
           data: null,
-          message: this.normalizeApiMessage(responseBody.message),
+          message: responseBody?.message
+            ? this.normalizeApiMessage(responseBody.message)
+            : response.statusText || 'Request failed',
         };
       }
 
       return {
         ok: true,
-        data: responseBody.data,
-        message: this.normalizeApiMessage(responseBody.message),
+        data: responseBody?.data ?? null,
+        message: responseBody?.message
+          ? this.normalizeApiMessage(responseBody.message)
+          : 'Operation successful',
       };
     } catch (error) {
       console.error('API request failed:', error);
@@ -85,6 +95,15 @@ class ApiService {
       return message.join('\n');
     }
     return message;
+  }
+
+  private safeJsonParse(rawText: string): any | null {
+    try {
+      return JSON.parse(rawText);
+    } catch (error) {
+      console.error('API response is not valid JSON:', error);
+      return null;
+    }
   }
 }
 

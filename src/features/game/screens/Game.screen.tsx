@@ -5,7 +5,8 @@ import Button from '@/shared/components/Button.component';
 import GameLobby from './GameLobby.screen';
 import GamePlay from './GamePlay.screen';
 import GameMainMenu from './GameMainMenu.screen';
-import { ModeMatch } from '../types';
+import GameResults from './GameResults.screen';
+import { MatchStatus, ModeMatch } from '../types';
 import { Level } from '@/shared/types/common';
 import { colors } from '@/shared/ui/tokens';
 
@@ -38,8 +39,8 @@ const GameScreen: React.FC = () => {
       lastProcessedAnswerRef.current !== JSON.stringify(state.lastAnswerResult)
     ) {
       lastProcessedAnswerRef.current = JSON.stringify(state.lastAnswerResult);
-      setIsCorrect(state.lastAnswerResult.correct);
-      setCorrectAnswer(state.lastAnswerResult.correct ? 'Correct!' : 'Incorrect');
+      setIsCorrect(state.lastAnswerResult.isCorrect);
+      setCorrectAnswer(state.lastAnswerResult.isCorrect ? 'Correct!' : 'Incorrect');
       setShowResult(true);
     }
   }, [state.lastAnswerResult]);
@@ -81,7 +82,7 @@ const GameScreen: React.FC = () => {
       />
 
       {/* Main Content */}
-      {!state.roomId && !state.gameStarted && (
+      {!state.roomId && !state.status && (
         <GameMainMenu
           selectedLevel={selectedLevel}
           onLevelSelect={setSelectedLevel}
@@ -91,7 +92,7 @@ const GameScreen: React.FC = () => {
         />
       )}
 
-      {state.roomId && !state.gameStarted && (
+      {state.roomId && state.status === MatchStatus.WAITING && (
         <GameLobby
           roomId={state.roomId}
           level={state.level}
@@ -103,7 +104,7 @@ const GameScreen: React.FC = () => {
         />
       )}
 
-      {state.gameStarted && (
+      {state.status === MatchStatus.STARTING && (
         <>
           <GamePlay
             currentQuestion={state.currentQuestion}
@@ -131,11 +132,17 @@ const GameScreen: React.FC = () => {
         </>
       )}
 
+      {state.status === MatchStatus.FINISHED && (
+        <GameResults players={state.players} onPlayAgain={actions.leaveRoom} />
+      )}
+
       {state.error && (
         <View style={styles.errorBanner}>
           <Text style={styles.errorBannerText}>{state.error}</Text>
         </View>
       )}
+
+      {}
     </View>
   );
 };

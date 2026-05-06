@@ -52,7 +52,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, isHost = false }) => {
       {/* Score */}
       <View style={styles.scoreSection}>
         <Text style={styles.scoreLabel}>Score</Text>
-        <Text style={styles.scoreValue}>{player.totalScore}</Text>
+        <Text style={styles.scoreValue}>{player.matchScore}</Text>
       </View>
     </View>
   );

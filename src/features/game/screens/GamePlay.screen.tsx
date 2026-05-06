@@ -1,13 +1,13 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import QuestionView from '@/features/question/components/QuestionView.component';
 import OptionButton from '@/shared/components/OptionButton.component';
 import ResultModal from '@/shared/components/ResultModal.component';
-import { Question } from '@/features/question/types';
+import { QuestionDto } from '@/features/question/types';
 import { colors } from '@/shared/ui/tokens';
 
 interface GamePlayProps {
-  currentQuestion: Question | null;
+  currentQuestion: QuestionDto | null;
   questionNumber: number;
   totalQuestions: number;
   timeRemaining: number;
@@ -16,7 +16,7 @@ interface GamePlayProps {
   onModalClose: () => void;
   showResult: boolean;
   isCorrect: boolean;
-  correctAnswer: string;
+  correctAnswer: string[];
   selectedOption: string | null;
 }
 
@@ -79,7 +79,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
           {currentQuestion.options.map((option, i) => (
             <OptionButton
               key={option.id ?? i}
-              option={option.text?.trim() || `Option ${i + 1}`}
+              option={option.content.value?.trim() || `Option ${i + 1}`}
               variant={getOptionVariant(option.id)}
               disabled={!!selectedOption || timeRemaining <= 0}
               onPress={() => onOptionPress(option.id)}

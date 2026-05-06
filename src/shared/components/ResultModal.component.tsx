@@ -1,22 +1,23 @@
 // components/ResultModal.component.tsx
+import { Question } from '@/features/question/types';
 import React, { useEffect } from 'react';
 import { View, Text, Modal, StyleSheet } from 'react-native';
+import { QuestionOption } from '../types/question-option';
 
 interface ResultModalProps {
   visible: boolean;
   isCorrect: boolean;
-  correctAnswer?: string;
+  correctAnswer: string[];
   onClose: () => void;
-    timeRemaining: number
+  timeRemaining: number;
 }
-
 
 const ResultModal: React.FC<ResultModalProps> = ({
   visible,
   isCorrect,
   correctAnswer,
   onClose,
-  timeRemaining = 2000
+  timeRemaining = 2000,
 }) => {
   useEffect(() => {
     if (!visible) return;
@@ -31,12 +32,7 @@ const ResultModal: React.FC<ResultModalProps> = ({
   if (!visible) return null;
 
   return (
-    <Modal
-      animationType="fade"
-      transparent={true}
-      visible={visible}
-      onRequestClose={() => {}}
-    >
+    <Modal animationType="fade" transparent={true} visible={visible} onRequestClose={() => {}}>
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <Text style={styles.icon}>{isCorrect ? '🎉' : '❌'}</Text>

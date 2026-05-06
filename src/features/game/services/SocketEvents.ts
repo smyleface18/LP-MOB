@@ -1,12 +1,7 @@
-/**
- * Tipos de Socket.io - Alineados con backend
- */
-
 import { Level } from '@/shared/types/common';
-import { Question } from '@/features/question/types';
-import { OptionDto } from '@/shared/types/question-option';
+import { QuestionDto } from '@/features/question/types';
 import { ApiResponse } from '@/shared/api/types';
-import { PlayerInfo, ModeMatch } from '../types';
+import { PlayerInfo, ModeMatch, QuestionResultDto } from '../types';
 
 /**
  * Eventos que emite el servidor hacia el cliente
@@ -17,15 +12,12 @@ export type ServerToClientEvents = {
   error: { message: string };
   playersUpdated: { players: PlayerInfo[] };
   newQuestion: {
-    question: Question;
+    question: QuestionDto;
     questionNumber: number;
     totalQuestions: number;
     timeLimit: number;
   };
-  answerResult: {
-    correct: boolean;
-    correctAnswer: OptionDto[];
-  };
+  answer: QuestionResultDto;
   questionEnded: void;
   gameEnded: {
     results: any[];
@@ -40,6 +32,7 @@ export type ServerToClientEvents = {
     level: Level;
     modeMatch: ModeMatch;
   };
+  gameStarted: void;
 };
 
 /**
@@ -53,5 +46,10 @@ export type ClientToServerEvents = {
   joinGame: (data: { roomId: string }, cb: (res: ApiResponse<any>) => void) => void;
   startGame: () => void;
   leaveRoom: () => void;
-  answer: (data: { questionId: string; answerId: string }) => void;
+  answer: (
+    data: { questionId: string; answerId: string },
+    cb: (res: ApiResponse<QuestionResultDto>) => void,
+  ) => void;
+  gameEnded: () => void;
+  gameStarted: () => void;
 };

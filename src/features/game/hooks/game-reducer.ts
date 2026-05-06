@@ -1,4 +1,4 @@
-import { Match } from '../types';
+import { Match, MatchStatus } from '../types';
 import { GameAction } from './game-action';
 import { Level } from '@/shared/types/common';
 
@@ -7,7 +7,6 @@ export const INITIAL_STATE: Match = {
   level: null,
   modeMatch: null,
   status: null,
-  gameStarted: false,
   currentQuestion: null,
   questionNumber: 0,
   totalQuestions: 0,
@@ -40,7 +39,6 @@ export function gameReducer(state: Match, action: GameAction): Match {
         },
         roomId: null,
         players: [],
-        gameStarted: false,
         currentQuestion: null,
         timeRemaining: 0,
       };
@@ -56,8 +54,8 @@ export function gameReducer(state: Match, action: GameAction): Match {
           isOwner: true,
         },
         ...action.payload,
-        gameStarted: false,
         error: null,
+        status: MatchStatus.WAITING,
       };
 
     case 'GAME_JOINED':
@@ -66,7 +64,11 @@ export function gameReducer(state: Match, action: GameAction): Match {
         roomId: action.payload.roomId,
         level: action.payload.level,
         modeMatch: action.payload.modeMatch,
-        gameStarted: false,
+        status: MatchStatus.WAITING,
+        user: {
+          ...state.user,
+          isOwner: false,
+        },
         error: null,
       };
 
@@ -80,27 +82,33 @@ export function gameReducer(state: Match, action: GameAction): Match {
         questionNumber: action.payload.questionNumber,
         totalQuestions: action.payload.totalQuestions,
         timeRemaining: action.payload.timeRemaining,
-        gameStarted: true,
       };
 
     case 'SET_TIME':
       return { ...state, timeRemaining: action.payload };
 
+    case 'GAME_STARTED':
+      return { ...state, status: MatchStatus.STARTING };
+
     case 'ANSWER_RESULT':
+      console.log('Reducer received answer result:', action.payload);
       return {
         ...state,
         lastAnswerResult: action.payload,
         user: {
           ...state.user,
-          matchScore: action.payload.correct ? state.user.matchScore + 100 : state.user.matchScore,
         },
       };
 
     case 'QUESTION_ENDED':
-      return { ...state, currentQuestion: null, timeRemaining: 0 };
+      return {
+        ...state,
+        currentQuestion: null,
+        timeRemaining: 0,
+      };
 
     case 'GAME_ENDED':
-      return { ...state, gameStarted: false, currentQuestion: null, timeRemaining: 0 };
+      return { ...state, currentQuestion: null, timeRemaining: 0, status: MatchStatus.FINISHED };
 
     case 'RESET':
       return INITIAL_STATE;

@@ -1,21 +1,20 @@
-import { Question } from '@/features/question/types';
+import { Question, QuestionDto } from '@/features/question/types';
 import { Level } from '@/shared/types/common';
 import { CoreEntity } from '@/shared/types/common/cores.type';
-import { OptionDto } from '@/shared/types/question-option/QuestionOption';
+import { QuestionOption } from '@/shared/types/question-option/QuestionOption';
 
 export interface Match {
   roomId: string | null;
   level: Level | null;
   modeMatch: ModeMatch | null;
   status: MatchStatus | null;
-  gameStarted: boolean;
-  currentQuestion: Question | null;
+  currentQuestion: QuestionDto | null;
   questionNumber: number;
   totalQuestions: number;
   timeRemaining: number;
   players: PlayerInfo[];
   error: string | null;
-  lastAnswerResult: { correct: boolean; correctAnswer: OptionDto[] } | null;
+  lastAnswerResult: QuestionResultDto | null;
   user: PlayerInfo;
 }
 
@@ -52,7 +51,6 @@ export interface SocketEvents {
     totalQuestions: number;
     timeLimit: number;
   }) => void;
-  answerResult: (data: { correct: boolean; correctAnswer: OptionDto[] }) => void;
   questionEnded: () => void;
   gameEnded: (data: { results: any[] }) => void;
   playersUpdated: (data: { players: PlayerInfo[] }) => void;
@@ -65,7 +63,11 @@ export interface GameService {
   joinGame(roomId: string): void;
   startGame(): void;
   leaveRoom(): void;
-  submitAnswer(questionId: string, answerId: string): void;
+  submitAnswer(
+    questionId: string,
+    answerId: string,
+    callback: (result: QuestionResultDto | null, error?: string) => void,
+  ): void;
   isConnected(): boolean;
 }
 
@@ -100,4 +102,9 @@ export interface PlayerInfo {
   isConnected: boolean;
   isOwner: boolean;
   avatar?: string;
+}
+
+export interface QuestionResultDto {
+  isCorrect: boolean;
+  correctAnswer: QuestionOption[];
 }

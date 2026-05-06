@@ -24,6 +24,7 @@ const GameLobby: React.FC<GameLobbyProps> = ({
   onStartGame,
   onLeaveRoom,
 }) => {
+  console.log('GameLobby render - Players:', players);
   return (
     <View style={styles.container}>
       <ScrollView

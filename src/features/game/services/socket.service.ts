@@ -1,6 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 import { Level } from '@/shared/types/common';
-import { GameService, ModeMatch, PlayerInfo } from '../types';
+import { GameService, ModeMatch, PlayerInfo, QuestionResultDto } from '../types';
 import { ApiResponse } from '@/shared/api/types';
 import { useAppStore } from '@/store';
 import { EventEmitter } from './EventEmitter';
@@ -86,11 +86,11 @@ export class SocketService extends EventEmitter<ServerToClientEvents> implements
 
     // Eventos de juego
     this.registerGameEventListener('newQuestion');
-    this.registerGameEventListener('answerResult');
     this.registerGameEventListener('questionEnded');
     this.registerGameEventListener('gameEnded');
     this.registerGameEventListener('playersUpdated');
     this.registerGameEventListener('error');
+    this.registerGameEventListener('gameStarted');
   }
 
   /**
@@ -159,10 +159,10 @@ export class SocketService extends EventEmitter<ServerToClientEvents> implements
    * Crear una nueva partida
    */
   createGame(level: Level, modeMatch: ModeMatch): void {
-    this.ensureConnected();
-
-    this.socket!.emit('createGame', { level, modeMatch }, (response) => {
-      this.handleGameActionResponse(response, 'gameCreated', response.data);
+    this.ensureConnected('createGame', () => {
+      this.socket!.emit('createGame', { level, modeMatch }, (response) => {
+        this.handleGameActionResponse(response, 'gameCreated', response.data);
+      });
     });
   }
 
@@ -170,10 +170,10 @@ export class SocketService extends EventEmitter<ServerToClientEvents> implements
    * Unirse a una partida existente
    */
   joinGame(roomId: string): void {
-    this.ensureConnected();
-
-    this.socket!.emit('joinGame', { roomId }, (response) => {
-      this.handleGameActionResponse(response, 'gameJoined', response.data);
+    this.ensureConnected('joinGame', () => {
+      this.socket!.emit('joinGame', { roomId }, (response) => {
+        this.handleGameActionResponse(response, 'gameJoined', response.data);
+      });
     });
   }
 
@@ -181,24 +181,44 @@ export class SocketService extends EventEmitter<ServerToClientEvents> implements
    * Iniciar la partida
    */
   startGame(): void {
-    this.ensureConnected();
-    this.socket!.emit('startGame');
+    this.ensureConnected('startGame', () => {
+      this.socket!.emit('startGame');
+    });
   }
 
   /**
    * Salir de la sala
    */
   leaveRoom(): void {
-    this.ensureConnected();
-    this.socket!.emit('leaveRoom');
+    this.ensureConnected('leaveRoom', () => {
+      this.socket!.emit('leaveRoom');
+    });
   }
 
   /**
    * Enviar respuesta a una pregunta
    */
-  submitAnswer(questionId: string, answerId: string): void {
-    this.ensureConnected();
-    this.socket!.emit('answer', { questionId, answerId });
+  submitAnswer(
+    questionId: string,
+    answerId: string,
+    callback: (result: QuestionResultDto | null, error?: string) => void,
+  ): void {
+    this.socket!.emit(
+      'answer',
+      { questionId, answerId },
+      (response: ApiResponse<QuestionResultDto>) => {
+        if (response.ok && response.data) {
+          callback(response.data);
+          console.log('Answer submitted successfully', response.data);
+        } else {
+          const errorMsg = Array.isArray(response.message)
+            ? response.message.join(', ')
+            : (response.message ?? 'Unknown error');
+
+          callback(null, errorMsg);
+        }
+      },
+    );
   }
 
   // ==============================
@@ -208,10 +228,21 @@ export class SocketService extends EventEmitter<ServerToClientEvents> implements
   /**
    * Verificar que el socket está conectado
    */
-  private ensureConnected(): void {
-    if (!this.isConnected()) {
-      throw new Error('Socket not connected');
+  private ensureConnected(actionName: string, action: () => void): void {
+    if (this.isConnected()) {
+      action();
+      return;
     }
+
+    this.emit('error', {
+      message: `Socket not connected. Retrying ${actionName}...`,
+    });
+
+    this.connect();
+
+    this.once('connect', () => {
+      action();
+    });
   }
 
   /**

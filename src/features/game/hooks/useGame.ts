@@ -50,7 +50,7 @@ export const useGame = () => {
     });
 
     socketService.on('newQuestion', (data) => {
-      const seconds = Math.floor(data.timeLimit / 1000);
+      const seconds = data.timeLimit > 1000 ? Math.floor(data.timeLimit / 1000) : data.timeLimit;
 
       dispatch({
         type: 'NEW_QUESTION',
@@ -65,18 +65,17 @@ export const useGame = () => {
       start(seconds);
     });
 
-    socketService.on('answerResult', (data) => {
-      dispatch({ type: 'ANSWER_RESULT', payload: data });
-    });
-
     socketService.on('questionEnded', () => {
       dispatch({ type: 'QUESTION_ENDED' });
       stop();
     });
-
     socketService.on('gameEnded', () => {
       dispatch({ type: 'GAME_ENDED' });
       stop();
+    });
+
+    socketService.on('gameStarted', () => {
+      dispatch({ type: 'GAME_STARTED' });
     });
 
     socketService.connect();
@@ -103,7 +102,14 @@ export const useGame = () => {
 
     submitAnswer: (answer: string) => {
       if (!state.currentQuestion) return;
-      socketService.submitAnswer(state.currentQuestion.id, answer);
+      socketService.submitAnswer(state.currentQuestion.id, answer, (result, errorr) => {
+        if (errorr) {
+          dispatch({ type: 'ERROR', payload: errorr });
+        } else if (result) {
+          dispatch({ type: 'ANSWER_RESULT', payload: result });
+        }
+      });
+
       stop();
     },
   };

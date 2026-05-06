@@ -1,7 +1,7 @@
 import { Level } from '@/shared/types/common';
-import { ModeMatch, PlayerInfo } from '../types';
+import { ModeMatch, PlayerInfo, QuestionResultDto } from '../types';
 import { OptionDto } from '@/shared/types/question-option';
-import { Question } from '@/features/question/types';
+import { Question, QuestionDto } from '@/features/question/types';
 
 export type GameAction =
   | { type: 'CONNECT'; payload: PlayerInfo }
@@ -13,14 +13,15 @@ export type GameAction =
   | {
       type: 'NEW_QUESTION';
       payload: {
-        question: Question;
+        question: QuestionDto;
         questionNumber: number;
         totalQuestions: number;
         timeRemaining: number;
       };
     }
-  | { type: 'ANSWER_RESULT'; payload: { correct: boolean; correctAnswer: OptionDto[] } }
+  | { type: 'ANSWER_RESULT'; payload: QuestionResultDto }
   | { type: 'QUESTION_ENDED' }
   | { type: 'GAME_ENDED' }
+  | { type: 'GAME_STARTED' }
   | { type: 'SET_TIME'; payload: number }
   | { type: 'RESET' };
