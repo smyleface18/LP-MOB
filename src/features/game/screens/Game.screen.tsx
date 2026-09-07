@@ -39,8 +39,8 @@ const GameScreen: React.FC = () => {
       lastProcessedAnswerRef.current !== JSON.stringify(state.lastAnswerResult)
     ) {
       lastProcessedAnswerRef.current = JSON.stringify(state.lastAnswerResult);
-      setIsCorrect(state.lastAnswerResult.isCorrect);
-      setCorrectAnswer(state.lastAnswerResult.isCorrect ? 'Correct!' : 'Incorrect');
+      setIsCorrect(state.lastAnswerResult.correct);
+      setCorrectAnswer(state.lastAnswerResult.correct ? 'Correct!' : 'Incorrect');
       setShowResult(true);
     }
   }, [state.lastAnswerResult]);
@@ -116,7 +116,7 @@ const GameScreen: React.FC = () => {
             onModalClose={handleCloseResult}
             showResult={showResult}
             isCorrect={isCorrect}
-            correctAnswer={correctAnswer}
+            correctAnswer={[correctAnswer]}
             selectedOption={selectedOption}
           />
 
@@ -133,7 +133,13 @@ const GameScreen: React.FC = () => {
       )}
 
       {state.status === MatchStatus.FINISHED && (
-        <GameResults players={state.players} onPlayAgain={actions.leaveRoom} />
+        <GameResults
+          players={state.players}
+          isMultiplayer={state.modeMatch === ModeMatch.MULTIPLAYER}
+          onPlayAgain={
+            state.modeMatch === ModeMatch.MULTIPLAYER ? actions.requestRematch : actions.playAgain
+          }
+        />
       )}
 
       {state.error && (

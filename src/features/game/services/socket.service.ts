@@ -1,278 +1,204 @@
 import { io, Socket } from 'socket.io-client';
-import { Level } from '@/shared/types/common';
-import { GameService, ModeMatch, PlayerInfo, QuestionResultDto } from '../types';
-import { ApiResponse } from '@/shared/api/types';
+import { API_BASE_URL } from '@/shared/api/apiConfig';
 import { useAppStore } from '@/store';
-import { EventEmitter } from './EventEmitter';
-import { ReconnectionManager } from './ReconnectionManager';
-import { SocketConfig } from './SocketConfig';
-import { ServerToClientEvents, ClientToServerEvents } from './SocketEvents';
+import { GameService, ModeMatch, SocketEvents } from '../types';
+import { Level } from '@/shared/types/common';
 
-// ==============================
-// SERVICE SOCKET
-// ==============================
-
-/**
- * Servicio principal de Socket
- * Responsabilidades:
- * - Gestionar conexión Socket.io
- * - Emitir y escuchar eventos
- * - Exponer métodos de acciones del juego
- */
-export class SocketService extends EventEmitter<ServerToClientEvents> implements GameService {
-  private socket: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;
-  private reconnectionManager: ReconnectionManager;
+export class SocketService implements GameService {
+  private socket: Socket | null = null;
+  private eventListeners: Map<string, Function[]> = new Map();
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = 5;
+  private baseURL = API_BASE_URL;
 
   constructor() {
-    super();
-    this.reconnectionManager = new ReconnectionManager(SocketConfig.getReconnectionConfig());
+    this.connect();
   }
 
-  // ==============================
-  // CONNECTION MANAGEMENT
-  // ==============================
+  connect() {
+    if (this.socket && this.socket.connected) return;
 
-  /**
-   * Establecer conexión con Socket.io
-   */
-  connect(): void {
-    if (this.socket?.connected) return;
-
-    const accessToken = useAppStore.getState().accessToken || '';
-
-    const config = SocketConfig.getConnectionConfig(accessToken);
-    const auth = SocketConfig.getAuthHeaders(accessToken);
-
-    this.socket = io(`${config.url}${config.namespace}`, {
-      transports: config.transports as any,
-      timeout: config.timeout,
-      forceNew: config.forceNew,
-      auth,
+    this.socket = io(`${this.baseURL}/game`, {
+      transports: ['websocket'],
+      timeout: 10000,
+      forceNew: true,
+      auth: {
+        token: this.getAuthToken(), // Necesitas implementar esto
+      },
     });
 
     this.setupEventListeners();
   }
 
-  /**
-   * Desconectar del socket
-   */
-  disconnect(): void {
-    this.reconnectionManager.reset();
+  disconnect() {
+    this.reconnectAttempts = this.maxReconnectAttempts;
     this.socket?.disconnect();
     this.socket = null;
   }
 
-  /**
-   * Verificar si está conectado
-   */
+  private getAuthToken(): string | null {
+    // Acceder al token desde el store de Zustand
+    try {
+      const state = useAppStore.getState();
+      return state.accessToken;
+    } catch (error) {
+      console.error('Error getting auth token:', error);
+      return null;
+    }
+  }
+
+  private setupEventListeners() {
+    if (!this.socket) return;
+
+    this.socket.on('connect', () => {
+      this.reconnectAttempts = 0;
+      this.emit('connect');
+    });
+
+    this.socket.on('disconnect', (reason) => {
+      this.emit('disconnect', { reason });
+      if (reason !== 'io client disconnect') {
+        this.handleReconnection();
+      }
+    });
+
+    this.socket.on('connect_error', (err) => {
+      this.emit('error', { message: err.message });
+      this.handleReconnection();
+    });
+
+    const gameEvents: (keyof SocketEvents)[] = [
+      'error',
+      'newQuestion',
+      'answerResult',
+      'questionEnded',
+      'gameEnded',
+      'playersUpdated',
+      'gameStarted',
+      'rematchStatus',
+      'rematchReady',
+    ];
+
+    gameEvents.forEach((event) => {
+      this.socket?.on(event, (data: any) => {
+        this.emit(event, data);
+      });
+    });
+  }
+
+  private handleReconnection() {
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      this.emit('error', { message: 'Max reconnection attempts reached' });
+      return;
+    }
+
+    this.reconnectAttempts++;
+    const delay = Math.min(1000 * this.reconnectAttempts, 10000);
+
+    setTimeout(() => {
+      if (!this.isConnected()) {
+        this.socket?.connect();
+      }
+    }, delay);
+  }
+
   isConnected(): boolean {
     return this.socket?.connected ?? false;
   }
 
-  // ==============================
-  // SOCKET EVENTS SETUP
-  // ==============================
+  createGame(level: Level, modeMatch: ModeMatch) {
+    if (!this.isConnected()) throw new Error('Socket not connected');
 
-  /**
-   * Configurar listeners de eventos del socket
-   */
-  private setupEventListeners(): void {
-    if (!this.socket) return;
-
-    // Eventos de conexión
-    this.socket.on('connect', () => this.handleConnect());
-    this.socket.on('disconnect', (reason) => this.handleDisconnect(reason));
-    this.socket.on('connect_error', (err) => this.handleConnectError(err));
-
-    // Eventos de juego
-    this.registerGameEventListener('newQuestion');
-    this.registerGameEventListener('questionEnded');
-    this.registerGameEventListener('gameEnded');
-    this.registerGameEventListener('playersUpdated');
-    this.registerGameEventListener('error');
-    this.registerGameEventListener('gameStarted');
-  }
-
-  /**
-   * Registrar listener genérico para eventos de juego
-   */
-  private registerGameEventListener<K extends keyof ServerToClientEvents>(event: K): void {
-    (this.socket as any).on(event, (data: ServerToClientEvents[K]) => {
-      this.emit(event, data);
+    this.socket?.emit('createGame', { level, modeMatch }, (response: any) => {
+      console.log(`[SocketService] 🎮 Creating game with level: ${level}, mode: ${modeMatch}`);
+      console.log('[SocketService] 🎮 createGame response:', response);
+      if (response.ok && response.data) {
+        const { roomId, level, modeMatch } = response.data;
+        console.log('[SocketService] ✅ Emitting gameCreated with:', { roomId, level, modeMatch });
+        // Emitir evento interno para que el hook actualice el estado
+        this.emit('gameCreated', {
+          roomId: roomId,
+          level: level,
+          mode: modeMatch,
+        });
+      } else {
+        console.error('[SocketService] ❌ createGame failed:', response);
+        this.emit('error', { message: response.message || 'Failed to create game' });
+      }
     });
   }
 
-  /**
-   * Manejar evento de conexión exitosa
-   */
-  private handleConnect(): void {
-    this.reconnectionManager.reset();
-    this.emit('connect', undefined);
-  }
-
-  /**
-   * Manejar evento de desconexión
-   */
-  private handleDisconnect(reason: string): void {
-    this.emit('disconnect', { reason });
-
-    // No reintentar si fue una desconexión intencional
-    if (reason !== 'io client disconnect') {
-      this.attemptReconnection();
-    }
-  }
-
-  /**
-   * Manejar error de conexión
-   */
-  private handleConnectError(err: Error): void {
-    this.emit('error', { message: err.message });
-    this.attemptReconnection();
-  }
-
-  /**
-   * Intentar reconectar con exponential backoff
-   */
-  private attemptReconnection(): void {
-    if (this.reconnectionManager.hasReachedMaxAttempts()) {
-      this.emit('error', {
-        message: 'Max reconnection attempts reached',
-      });
-      return;
-    }
-
-    this.reconnectionManager.scheduleReconnection(
-      () => {
-        if (!this.isConnected()) {
-          this.socket?.connect();
-        }
-      },
-      () => this.isConnected(),
-    );
-  }
-
-  // ==============================
-  // 🎮 GAME ACTIONS
-  // ==============================
-
-  /**
-   * Crear una nueva partida
-   */
-  createGame(level: Level, modeMatch: ModeMatch): void {
-    this.ensureConnected('createGame', () => {
-      this.socket!.emit('createGame', { level, modeMatch }, (response) => {
-        this.handleGameActionResponse(response, 'gameCreated', response.data);
-      });
+  joinGame(roomId: string) {
+    if (!this.isConnected()) throw new Error('Socket not connected');
+    this.socket?.emit('joinGame', { roomId }, (response: any) => {
+      console.log('[SocketService] 👥 joinGame response:', response);
+      if (response.ok && response.data) {
+        const { roomId: returnedRoomId, level, modeMatch } = response.data;
+        console.log('[SocketService] ✅ Emitting gameJoined with:', {
+          returnedRoomId,
+          level,
+          modeMatch,
+        });
+        // Emitir evento interno para que el hook actualice el estado
+        this.emit('gameJoined', {
+          roomId: returnedRoomId,
+          level: level,
+          mode: modeMatch,
+        });
+      } else {
+        console.error('[SocketService] ❌ joinGame failed:', response);
+        this.emit('error', { message: response.message || 'Failed to join game' });
+      }
     });
   }
 
-  /**
-   * Unirse a una partida existente
-   */
-  joinGame(roomId: string): void {
-    this.ensureConnected('joinGame', () => {
-      this.socket!.emit('joinGame', { roomId }, (response) => {
-        this.handleGameActionResponse(response, 'gameJoined', response.data);
-      });
+  startGame() {
+    if (!this.isConnected()) throw new Error('Socket not connected');
+    this.socket?.emit('startGame');
+  }
+
+  requestRematch() {
+    if (!this.isConnected()) throw new Error('Socket not connected');
+    this.socket?.emit('requestRematch');
+  }
+
+  leaveRoom() {
+    if (!this.isConnected()) throw new Error('Socket not connected');
+    this.socket?.emit('leaveRoom');
+  }
+
+  submitAnswer(questionId: string, answerId: string) {
+    if (!this.isConnected()) throw new Error('Socket not connected');
+    this.socket?.emit('answer', { questionId, answerId });
+  }
+
+  on<T>(event: string, callback: (data: T) => void) {
+    if (!this.eventListeners.has(event)) this.eventListeners.set(event, []);
+    this.eventListeners.get(event)?.push(callback);
+  }
+
+  off(event: string, callback: (data: any) => void) {
+    const listeners = this.eventListeners.get(event);
+    if (!listeners) return;
+    const index = listeners.indexOf(callback);
+    if (index > -1) listeners.splice(index, 1);
+  }
+
+  private emit(event: string, data?: any) {
+    const listeners = this.eventListeners.get(event);
+    if (!listeners) return;
+    listeners.forEach((cb) => {
+      try {
+        cb(data);
+      } catch (err) {
+        console.error(err);
+      }
     });
   }
 
-  /**
-   * Iniciar la partida
-   */
-  startGame(): void {
-    this.ensureConnected('startGame', () => {
-      this.socket!.emit('startGame');
-    });
-  }
-
-  /**
-   * Salir de la sala
-   */
-  leaveRoom(): void {
-    this.ensureConnected('leaveRoom', () => {
-      this.socket!.emit('leaveRoom');
-    });
-  }
-
-  /**
-   * Enviar respuesta a una pregunta
-   */
-  submitAnswer(
-    questionId: string,
-    answerId: string,
-    callback: (result: QuestionResultDto | null, error?: string) => void,
-  ): void {
-    this.socket!.emit(
-      'answer',
-      { questionId, answerId },
-      (response: ApiResponse<QuestionResultDto>) => {
-        if (response.ok && response.data) {
-          callback(response.data);
-          console.log('Answer submitted successfully', response.data);
-        } else {
-          const errorMsg = Array.isArray(response.message)
-            ? response.message.join(', ')
-            : (response.message ?? 'Unknown error');
-
-          callback(null, errorMsg);
-        }
-      },
-    );
-  }
-
-  // ==============================
-  // 🛠️ UTILITIES
-  // ==============================
-
-  /**
-   * Verificar que el socket está conectado
-   */
-  private ensureConnected(actionName: string, action: () => void): void {
-    if (this.isConnected()) {
-      action();
-      return;
-    }
-
-    this.emit('error', {
-      message: `Socket not connected. Retrying ${actionName}...`,
-    });
-
-    this.connect();
-
-    this.once('connect', () => {
-      action();
-    });
-  }
-
-  /**
-   * Manejar respuesta de acciones del juego
-   */
-  private handleGameActionResponse<K extends keyof ServerToClientEvents>(
-    response: ApiResponse<any>,
-    event: K,
-    data: any,
-  ): void {
-    if (response.ok && data) {
-      this.emit(event, data as ServerToClientEvents[K]);
-    } else {
-      this.emit('error', {
-        message: response.message?.toLocaleString() ?? 'Failed to complete game action',
-      });
-    }
-  }
-
-  // ==============================
-  // 🧹 CLEANUP
-  // ==============================
-
-  /**
-   * Limpiar recursos
-   */
-  destroy(): void {
-    this.reconnectionManager.destroy();
+  destroy() {
+    this.eventListeners.clear();
     this.disconnect();
-    super.destroy();
   }
 }
 

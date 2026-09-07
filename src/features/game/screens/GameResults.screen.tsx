@@ -8,9 +8,10 @@ import PlayerCard from '../components/PlayerCard.component';
 interface GameResultsProps {
   players: PlayerInfo[];
   onPlayAgain: () => void;
+  isMultiplayer: boolean;
 }
 
-const GameResults: React.FC<GameResultsProps> = ({ players, onPlayAgain }) => {
+const GameResults: React.FC<GameResultsProps> = ({ players, onPlayAgain, isMultiplayer }) => {
   // Sort players by score in descending order
   const rankedPlayers = [...players].sort((a, b) => b.matchScore - a.matchScore);
 

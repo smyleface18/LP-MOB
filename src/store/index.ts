@@ -1,34 +1,15 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createAuthSlice, AuthSlice } from './auth.slice';
 import { createUiSlice, UiSlice } from './ui.slice';
 
 // Tipo combinado del store completo
 export type AppStore = AuthSlice & UiSlice;
 
-// Store principal — único create() en toda la app
-export const useAppStore = create<AppStore>()(
-  persist(
-    (...a) => ({
-      ...createAuthSlice(...a),
-      ...createUiSlice(...a),
-    }),
-    {
-      name: 'app-storage',
-      storage: createJSONStorage(() => AsyncStorage),
-      // Solo persistir lo necesario — no funciones
-      partialize: (state) => ({
-        accessToken: state.accessToken,
-        idToken: state.idToken,
-        refreshToken: state.refreshToken,
-        isAuthenticated: state.isAuthenticated,
-        theme: state.theme,
-        user: state.user,
-      }),
-    },
-  ),
-);
+// Store principal — la persistencia de autenticacion la gestiona auth.slice.
+export const useAppStore = create<AppStore>()((...a) => ({
+  ...createAuthSlice(...a),
+  ...createUiSlice(...a),
+}));
 
 // Selectores tipados — GRANULARES para evitar re-renders innecesarios
 // Cada selector solo observa UNA propiedad específica, no crea nuevos objetos
@@ -40,7 +21,7 @@ export const useAccessToken = () => useAppStore((s) => s.accessToken);
 export const useRefreshToken = () => useAppStore((s) => s.refreshToken);
 export const useIdToken = () => useAppStore((s) => s.idToken);
 
-// Auth Actions 
+// Auth Actions
 export const useSignInStatus = () => useAppStore((s) => s.signInStatus);
 export const useSignOut = () => useAppStore((s) => s.signOut);
 export const useRestoreSession = () => useAppStore((s) => s.restoreSession);
@@ -56,7 +37,7 @@ export const useAuthState = () => ({
   idToken: useAppStore((s) => s.idToken),
 });
 
-// Auth Actions 
+// Auth Actions
 export const useAuthActions = () => ({
   signInStatus: useAppStore((s) => s.signInStatus),
   signOut: useAppStore((s) => s.signOut),
@@ -65,7 +46,7 @@ export const useAuthActions = () => ({
   updateTokens: useAppStore((s) => s.updateTokens),
 });
 
-// UI State 
+// UI State
 export const useIsLoading = () => useAppStore((s) => s.isLoading);
 export const useTheme = () => useAppStore((s) => s.theme);
 
@@ -73,13 +54,13 @@ export const useTheme = () => useAppStore((s) => s.theme);
 export const useSetLoading = () => useAppStore((s) => s.setLoading);
 export const useSetTheme = () => useAppStore((s) => s.setTheme);
 
-// UI State 
+// UI State
 export const useUiState = () => ({
   isLoading: useAppStore((s) => s.isLoading),
   theme: useAppStore((s) => s.theme),
 });
 
-// UI Actions 
+// UI Actions
 export const useUiActions = () => ({
   setLoading: useAppStore((s) => s.setLoading),
   setTheme: useAppStore((s) => s.setTheme),

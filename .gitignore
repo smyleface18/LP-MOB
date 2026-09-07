@@ -39,3 +39,9 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+#build web
+.expo-web-debug/
+.expo-web-layout/
+.expo-web-login/
+.expo-web-safearea/

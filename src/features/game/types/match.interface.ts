@@ -54,6 +54,15 @@ export interface SocketEvents {
   questionEnded: () => void;
   gameEnded: (data: { results: any[] }) => void;
   playersUpdated: (data: { players: PlayerInfo[] }) => void;
+  gameStarted: () => void;
+  rematchStatus: (data: { accepted: number; total: number }) => void;
+  rematchReady: (data: {
+    roomId: string;
+    level: Level;
+    modeMatch: ModeMatch;
+    players: PlayerInfo[];
+  }) => void;
+  answerResult: (data: { result: QuestionResultDto }) => void;
 }
 
 export interface GameService {
@@ -62,6 +71,7 @@ export interface GameService {
   createGame(level: Level, modeMatch: ModeMatch): void;
   joinGame(roomId: string): void;
   startGame(): void;
+  requestRematch(): void;
   leaveRoom(): void;
   submitAnswer(
     questionId: string,

@@ -1,5 +1,5 @@
 import { API_BASE_URL } from './apiConfig';
-import * as SecureStore from 'expo-secure-store';
+import { storageAdapter } from '@/shared/adapters/storage.adapter';
 import { ApiResponse } from './types';
 
 class ApiService {
@@ -12,7 +12,7 @@ class ApiService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
     console.log('ejecutando request: ', endpoint, options);
     const url = `${this.baseURL}${endpoint}`;
-    const token = await SecureStore.getItemAsync('accessToken');
+    const token = await storageAdapter.get('accessToken');
 
     const config: RequestInit = {
       headers: {

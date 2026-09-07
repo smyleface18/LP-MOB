@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'https://lqgh9d62-3000.use2.devtunnels.ms';
+export const API_BASE_URL = 'http://localhost:3000';
 export const API_ENDPOINTS = {
   CATEGORIES: '/category-question',
   QUESTIONS: '/question',

@@ -83,7 +83,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       )}
 
       <Text style={styles.optionsText}>
-        Options: {question.options.map((op) => op.text).join(', ')}
+        Options: {question.options.map((op) => op.content.value).join(', ')}
       </Text>
     </View>
   );
