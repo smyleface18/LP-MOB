@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
-import FilterChip from './FilterChip.component';
+import FilterChip from './FilterChip/FilterChip.component';
 
 interface FilterSectionProps {
   title: string;

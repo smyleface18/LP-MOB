@@ -9,7 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import Button from '@/shared/components/Button.component';
+import Button from '@/shared/components/Button/Button.component';
 import { Level } from '@/shared/types/common';
 import { colors } from '@/shared/ui/tokens';
 

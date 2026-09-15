@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import Button from '@/shared/components/Button.component';
+import Button from '@/shared/components/Button/Button.component';
 import PlayerCard from '../components/PlayerCard.component';
 import { PlayerInfo } from '../types';
 import { colors } from '@/shared/ui/tokens';

@@ -12,10 +12,10 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import MetricCard from '@/shared/components/Metric.component';
-import CircularChart from '@/shared/components/Char.component';
+import CircularChart from '@/shared/components/Char/Char.component';
 import ProgressBar from '@/shared/components/ProgressBar.component';
 import StatItem from '@/shared/components/Statitem.component';
-import Button from '@/shared/components/Button.component';
+import Button from '@/shared/components/Button/Button.component';
 import { useGame } from '@/features/game/hooks/useGame';
 import { useUser } from '../hooks/useUser';
 import { useAuth } from '../hooks/useAuth';
@@ -60,7 +60,7 @@ const UserDashboardScreen = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
       {
         text: 'Cancel',
-        onPress: () => {},
+        onPress: () => { },
         style: 'cancel',
       },
       {

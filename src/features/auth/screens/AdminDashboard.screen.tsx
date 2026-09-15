@@ -3,10 +3,10 @@ import { View, Text, ScrollView, StyleSheet, ActivityIndicator, Alert } from 're
 import { useNavigation } from '@react-navigation/native';
 import CategoryItem from '@/features/category/components/CategoryItem.component';
 import MetricCard from '@/shared/components/Metric.component';
-import CircularChart from '@/shared/components/Char.component';
+import CircularChart from '@/shared/components/Char/Char.component';
 import ProgressBar from '@/shared/components/ProgressBar.component';
 import StatItem from '@/shared/components/Statitem.component';
-import Button from '@/shared/components/Button.component';
+import Button from '@/shared/components/Button/Button.component';
 import { useAuth } from '../hooks/useAuth';
 
 const AdminDashboardScreen = () => {
@@ -36,7 +36,7 @@ const AdminDashboardScreen = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
       {
         text: 'Cancel',
-        onPress: () => {},
+        onPress: () => { },
         style: 'cancel',
       },
       {

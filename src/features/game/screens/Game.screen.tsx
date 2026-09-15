@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { useGame } from '../hooks/useGame';
-import Button from '@/shared/components/Button.component';
+import Button from '@/shared/components/Button/Button.component';
 import GameLobby from './GameLobby.screen';
 import GamePlay from './GamePlay.screen';
 import GameMainMenu from './GameMainMenu.screen';
@@ -148,7 +148,7 @@ const GameScreen: React.FC = () => {
         </View>
       )}
 
-      {}
+      { }
     </View>
   );
 };
