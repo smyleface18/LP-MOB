@@ -1,0 +1,70 @@
+export const colors = {
+    brand: {
+        red: '#DC2626',
+        redLight: '#FEE2E2',
+        redDark: '#BE123C',
+
+        yellow: '#F59E0B',
+        yellowLight: '#FEF3C7',
+
+        orange: '#EA580C',
+        orangeLight: '#FFEDD5',
+
+        black: '#18181B',
+
+        green: '#10B981',
+        greenLight: '#D1FAE5',
+    },
+    neutral: {
+        white: '#F8FAFC',
+        gray: '#94A3B8',
+    },
+} as const;
+
+export const spacing = {
+    xs: 4,
+    sm: 8,
+    md: 16,
+    lg: 24,
+    xl: 32,
+} as const;
+
+export const radius = {
+    sm: 4,
+    md: 8,
+    lg: 12,
+    full: 9999,
+} as const;
+
+
+
+export const iconSize = {
+    sm: 16,
+    md: 20,
+    lg: 24,
+    xl: 32,
+} as const;
+
+export const opacity = {
+    disabled: 0.5, // botones, inputs, cards no interactuables
+    pressed: 0.85, // feedback táctil al presionar (además del color pressed)
+    overlay: 0.6, // fondo oscuro detrás de un modal/bottom sheet
+    hint: 0.4, // placeholders, texto de ayuda muy secundario
+} as const;
+
+
+/**
+ * Controla qué se dibuja encima de qué. Úsalo en la prop `style={{ zIndex }}`
+ * de cualquier componente que se superponga a otros.
+ * Deja espacio entre números (10 en 10) por si necesitas insertar algo
+ * entre dos niveles más adelante sin renumerar todo.
+ */
+export const zIndex = {
+    base: 0, // contenido normal de la screen
+    dropdown: 10, // selects, menús desplegables
+    stickyHeader: 20, // headers fijos al hacer scroll
+    overlay: 30, // fondo oscuro detrás de modal/bottom sheet
+    modal: 40, // el modal/bottom sheet en sí
+    toast: 50, // notificaciones tipo "¡Correcto!" flotando arriba de todo
+    tooltip: 60, // el nivel más alto — siempre visible
+} as const;

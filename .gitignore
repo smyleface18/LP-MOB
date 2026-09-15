@@ -45,3 +45,6 @@ yarn-error.*
 .expo-web-layout/
 .expo-web-login/
 .expo-web-safearea/
+
+*storybook.log
+storybook-static
