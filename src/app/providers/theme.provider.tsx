@@ -1,25 +1,9 @@
 import React, { createContext, useContext, useMemo } from 'react';
 import { useUiActions, useUiState } from '@/store';
-import {
-  colors as primitiveColors,
-  spacing,
-  radius,
-  iconSize,
-  opacity,
-  zIndex,
-} from '@/shared/ui/theme/primitives';
-import {
-  lightColors,
-  darkColors,
-  ColorTheme,
-} from '@/shared/ui/theme/semantics';
+import { spacing, radius, iconSize, opacity, zIndex } from '@/shared/ui/theme/primitives';
+import { lightColors, darkColors, ColorTheme } from '@/shared/ui/theme/semantics';
 import { layout } from '@/shared/ui/theme/semanticsLayout';
-import {
-  fontSize,
-  lineHeight,
-  fontWeight,
-  fontFamily,
-} from '@/shared/ui/theme/typography';
+import { fontSize, lineHeight, fontWeight, fontFamily } from '@/shared/ui/theme/typography';
 import { shadow } from '@/shared/ui/theme/Shadows';
 import { breakpoints, maxContentWidth } from '@/shared/ui/theme/breakpoints';
 import { borderWidth } from '@/shared/ui/theme/borderwidth';
@@ -59,14 +43,14 @@ export interface AppTheme {
   maxContentWidth: typeof maxContentWidth;
 
   //animation
-  easing: typeof easing
-  duration: typeof duration
+  easing: typeof easing;
+  duration: typeof duration;
 }
 
 const buildTheme = (
   mode: ThemeMode,
-  toggleTheme: () => void = () => { },
-  setTheme: (m: ThemeMode) => void = () => { }
+  toggleTheme: () => void = () => {},
+  setTheme: (m: ThemeMode) => void = () => {},
 ): AppTheme => {
   const isDark = mode === 'dark';
   const activeColor = isDark ? darkColors : lightColors;
@@ -93,7 +77,7 @@ const buildTheme = (
     breakpoints,
     maxContentWidth,
     easing,
-    duration
+    duration,
   };
 };
 
@@ -107,10 +91,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme(mode === 'light' ? 'dark' : 'light');
   };
 
-  const value = useMemo(
-    () => buildTheme(mode, toggleTheme, setTheme),
-    [mode, setTheme]
-  );
+  const value = useMemo(() => buildTheme(mode, toggleTheme, setTheme), [mode, setTheme]);
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
@@ -118,7 +99,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 export function useTheme(): AppTheme {
   const context = useContext(ThemeContext);
   if (!context) {
-    // Retorna tema por defecto si se usa fuera del Provider (aislamiento, tests, etc.)
     return buildTheme('light');
   }
   return context;

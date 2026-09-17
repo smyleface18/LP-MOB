@@ -1,61 +1,178 @@
-import { colors } from './primitives';
+import { colors, withAlpha } from './primitives';
 
-export const lightColors = {
-  // Fondo general de las screens vs. superficie de cards/inputs
+export interface ColorTheme {
+  /**
+   * Color principal de marca (rojo). Úsalo para:
+   * - CTAs primarios (botón "Continuar", "Empezar lección")
+   * - Elementos que requieren máxima atención del usuario
+   * - Iconos activos/seleccionados en navegación
+   * NO lo uses en: superficies grandes (fondos de pantalla completa),
+   * texto largo, o más de 1-2 elementos por pantalla — pierde su
+   * jerarquía si se satura la UI de rojo.
+   */
+  primary: string;
+
+  /**
+   * Estado "presionado" de primary. Úsalo SOLO en el evento táctil
+   * (onPressIn / active state) de botones y elementos con primary.
+   * Da feedback físico de que el tap fue registrado.
+   */
+  primaryPressed: string;
+
+  /**
+   * Versión tenue del rojo para fondos, nunca para texto ni iconos.
+   * Úsalo para:
+   * - Fondo de badges/chips ("Nuevo", "3 días de racha en riesgo")
+   * - Banners de alerta suave (no error crítico, solo aviso)
+   * - Estado "seleccionado" de una card sin usar borde sólido
+   * NO lo uses como fondo de botón — se confunde con estado disabled.
+   */
+  primarySubtle: string;
+
+  /**
+   * Naranja de marca. Acción secundaria, complementa al rojo sin
+   * competir con él. Úsalo para:
+   * - Botones secundarios ("Omitir", "Más tarde") junto a un primary
+   * - Iconos de categoría (ej. sección "Pronunciación")
+   * - Elementos de energía/motivación que no son el CTA principal
+   */
+  secondary: string;
+
+  /**
+   * Versión tenue del naranja. Mismo uso que primarySubtle pero
+   * para contexto secundario: fondos de tags de categoría,
+   * highlights suaves en listas.
+   */
+  secondarySubtle: string;
+
+  /**
+   * Amarillo — reservado EXCLUSIVAMENTE para gamificación:
+   * - Racha de días (streak)
+   * - XP / puntos ganados
+   * - Insignias y logros desbloqueados
+   * - Estrellas de calificación
+   * No lo uses para botones ni navegación — si se usa fuera de
+   * gamificación, el usuario deja de asociarlo con "logro/recompensa".
+   */
+  accent: string;
+
+  /** Fondo tenue de accent. Úsalo detrás de badges de logros o
+   * contadores de racha cuando necesites un chip, no solo el ícono. */
+  accentSubtle: string;
+
+  /**
+   * Verde semántico de éxito. Úsalo SOLO para estado, nunca como
+   * color decorativo:
+   * - Respuesta correcta en un ejercicio
+   * - Confirmación de acción completada (checkmarks, toasts de éxito)
+   * - Progreso completado (barra de progreso al 100%)
+   */
+  success: string;
+
+  /** Fondo tenue de success: fondo de la card de "¡Correcto!",
+   * fondo de toast de confirmación. */
+  successSubtle: string;
+
+  /**
+   * Fondo base de toda pantalla (el más externo, detrás de todo).
+   * Nunca le pongas texto directamente encima sin pasar antes por
+   * `surface` — está pensado como lienzo, no como superficie de contenido.
+   */
+  background: string;
+
+  /**
+   * Superficie de contenido: cards, inputs, list items, tab bars.
+   * Es un nivel de elevación por encima de `background`. Úsalo en
+   * cualquier contenedor rectangular que agrupe contenido.
+   */
+  surface: string;
+
+  /**
+   * Segundo nivel de elevación, por encima de `surface`. Úsalo para
+   * elementos que "flotan" sobre el contenido normal:
+   * - Modales, bottom sheets, dropdowns, tooltips
+   * - Cualquier cosa con sombra que deba distinguirse de las cards normales
+   */
+  surfaceElevated: string;
+
+  /**
+   * Líneas divisorias y bordes sutiles: separadores de lista,
+   * borde de inputs sin foco, contorno de cards planas.
+   * Nunca lo uses para bordes de énfasis (usa primary o accent para eso).
+   */
+  border: string;
+
+  /** Texto principal: títulos, cuerpo de texto, labels importantes.
+   * Es el color de texto por defecto — úsalo salvo que tengas una
+   * razón específica para usar textSecondary o textInverse. */
+  textPrimary: string;
+
+  /** Texto de menor jerarquía: subtítulos, timestamps, placeholders,
+   * captions, metadata ("hace 2 días", "12 palabras"). */
+  textSecondary: string;
+
+  /**
+   * Texto que va ENCIMA de superficies de color sólido (botones
+   * primary/secondary, badges de accent). El nombre es por función,
+   * no por color fijo: en light es claro sobre fondo oscuro-saturado,
+   * en dark se invierte según el fondo que reciba (ver uso en accent).
+   */
+  textInverse: string;
+
+  /** Fondo semitransparente detrás de modales/sheets para oscurecer
+   * el contenido de atrás y dirigir el foco. Nunca uses esto como
+   * fondo de un componente normal — es solo para overlays. */
+  overlay: string;
+}
+
+export const lightColors: ColorTheme = {
+  primary: colors.brand.red,
+  primaryPressed: colors.brand.redDark,
+  primarySubtle: colors.brand.redLight,
+
+  secondary: colors.brand.orange,
+  secondarySubtle: colors.brand.orangeLight,
+
+  accent: colors.brand.yellow,
+  accentSubtle: colors.brand.yellowLight,
+
+  success: colors.brand.green,
+  successSubtle: colors.brand.greenLight,
+
   background: colors.neutral.white,
-  surface: colors.brand.green,
+  surface: colors.neutral.white,
+  surfaceElevated: colors.neutral.white,
 
-  // Texto
+  border: withAlpha(colors.brand.black, 0.08),
   textPrimary: colors.brand.black,
   textSecondary: colors.neutral.gray,
   textInverse: colors.neutral.white,
 
-  // Marca / acción
+  overlay: withAlpha(colors.brand.black, 0.5),
+};
+
+export const darkColors: ColorTheme = {
   primary: colors.brand.red,
   primaryPressed: colors.brand.redDark,
-  secondary: colors.brand.black,
-  secondaryPressed: '#27272A',
+  primarySubtle: withAlpha(colors.brand.red, 0.16),
 
-  // Estados de feedback
-  success: colors.brand.green,
-  warning: colors.brand.orange,
-  error: colors.brand.redDark,
+  secondary: colors.brand.orange,
+  secondarySubtle: withAlpha(colors.brand.orange, 0.16),
 
-  // Gamificación (streaks, logros)
   accent: colors.brand.yellow,
+  accentSubtle: withAlpha(colors.brand.yellow, 0.16),
 
-  // Bordes/divisores
-  border: colors.neutral.gray,
-} as const;
+  success: colors.brand.green,
+  successSubtle: withAlpha(colors.brand.green, 0.16),
 
-export const darkColors = {
-  // Fondo general de las screens vs. superficie de cards/inputs
-  background: colors.brand.black,
-  surface: '#27272A',
+  background: colors.surfaceDark.base,
+  surface: colors.surfaceDark.raised,
+  surfaceElevated: colors.surfaceDark.overlay2,
 
-  // Texto
+  border: withAlpha(colors.neutral.white, 0.12),
   textPrimary: colors.neutral.white,
   textSecondary: colors.neutral.gray,
   textInverse: colors.brand.black,
 
-  // Marca / acción
-  primary: colors.brand.red,
-  primaryPressed: colors.brand.redDark,
-  secondary: colors.neutral.white,
-  secondaryPressed: '#3F3F46',
-
-  // Estados de feedback
-  success: colors.brand.green,
-  warning: colors.brand.orange,
-  error: colors.brand.redDark,
-
-  // Gamificación (streaks, logros)
-  accent: colors.brand.yellow,
-
-  // Bordes/divisores
-  border: '#3F3F46',
-} as const;
-
-export const color = lightColors;
-
-export type ColorTheme = Record<keyof typeof lightColors, string>;
+  overlay: withAlpha('#000000', 0.65),
+};
