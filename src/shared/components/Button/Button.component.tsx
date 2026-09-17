@@ -10,7 +10,6 @@ import {
   TextStyle,
 } from 'react-native';
 
-
 export interface ButtonProps extends TouchableOpacityProps {
   variant?: 'primary' | 'secondary' | 'outlined';
   title: string;
@@ -28,18 +27,17 @@ export const Button: React.FC<ButtonProps> = ({
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
-
   const variantStyle: Record<
     NonNullable<ButtonProps['variant']>,
     { container: ViewStyle; text: TextStyle }
   > = {
     primary: {
       container: { backgroundColor: theme.color.primary },
-      text: { color: theme.color.textInverse },
+      text: { color: theme.color.onPrimary },
     },
     secondary: {
-      container: { backgroundColor: theme.color.secondary },
-      text: { color: theme.color.textInverse },
+      container: { backgroundColor: theme.color.secondaryButton },
+      text: { color: theme.color.onSecondary },
     },
     outlined: {
       container: {
@@ -51,7 +49,10 @@ export const Button: React.FC<ButtonProps> = ({
     },
   };
 
-  const sizeStyle: Record<NonNullable<ButtonProps['size']>, { container: ViewStyle; text: TextStyle }> = {
+  const sizeStyle: Record<
+    NonNullable<ButtonProps['size']>,
+    { container: ViewStyle; text: TextStyle }
+  > = {
     small: {
       container: { paddingVertical: theme.spacing.xs, paddingHorizontal: theme.spacing.md },
       text: { fontSize: theme.fontSize.sm },
@@ -85,7 +86,6 @@ export const Button: React.FC<ButtonProps> = ({
   );
 };
 
-
 const createStyles = (theme: ReturnType<typeof useTheme>) =>
   StyleSheet.create({
     button: {
@@ -93,7 +93,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>) =>
       justifyContent: 'center',
       alignItems: 'center',
       width: '100%',
-      maxWidth: maxContentWidth
+      maxWidth: maxContentWidth,
     },
     buttonText: {
       fontFamily: theme.fontFamily.heading,

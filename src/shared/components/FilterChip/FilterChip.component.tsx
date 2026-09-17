@@ -2,7 +2,7 @@ import { useTheme } from '@/app/providers/theme.provider';
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text } from 'react-native';
 
-interface FilterChipProps {
+export interface FilterChipProps {
   label: string;
   isActive: boolean;
   onPress: () => void;
@@ -83,4 +83,4 @@ const createStyles = (theme: ReturnType<typeof useTheme>) =>
     },
   });
 
-export default FilterChip;
+export { FilterChip }

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-native';
 import React, { useState } from 'react';
-import FilterChip from './FilterChip.component';
+import { FilterChip } from './FilterChip.component';
+
 
 const meta = {
     title: 'Atoms/FilterChip',
