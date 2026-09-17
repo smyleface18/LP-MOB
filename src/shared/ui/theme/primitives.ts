@@ -8,6 +8,7 @@ export const colors = {
     yellowLight: '#FEF3C7',
 
     orange: '#EA580C',
+    orangeStrong: '#C2410C',
     orangeLight: '#FFEDD5',
 
     black: '#18181B',
@@ -18,11 +19,17 @@ export const colors = {
   neutral: {
     white: '#F8FAFC',
     gray: '#94A3B8',
+    grayLight: '#CBD5E1',
   },
   surfaceDark: {
     base: '#18181B',
     raised: '#221F24',
     overlay2: '#2C2830',
+  },
+  danger: {
+    base: '#E11D48',
+    dark: '#9F1239',
+    light: '#FFE4E6',
   },
 } as const;
 

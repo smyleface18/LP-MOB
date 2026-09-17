@@ -45,6 +45,8 @@ export interface ColorTheme {
    */
   secondarySubtle: string;
 
+  secondaryButton: string; // uso específico: fondo de botones sólidos con texto blanco encima
+
   /**
    * Amarillo — reservado EXCLUSIVAMENTE para gamificación:
    * - Racha de días (streak)
@@ -123,6 +125,39 @@ export interface ColorTheme {
    * el contenido de atrás y dirigir el foco. Nunca uses esto como
    * fondo de un componente normal — es solo para overlays. */
   overlay: string;
+
+  /** Texto sobre botón/superficie primary (rojo). Constante en ambos
+   * themes porque primary no cambia entre light/dark. */
+  onPrimary: string;
+
+  /** Texto sobre botón/superficie secondary (naranja). Igual razón. */
+  onSecondary: string;
+
+  /** Texto sobre superficie accent (amarillo) — necesita oscuro
+   * porque el amarillo es un color claro, sin importar el theme. */
+  onAccent: string;
+
+  /** Texto sobre superficie success (verde). */
+  onSuccess: string;
+
+  /** Texto placeholder en inputs. Más tenue que textSecondary a propósito:
+   * es una pista, no contenido real. Nunca lo uses para texto que el
+   * usuario deba leer como información válida. */
+  textPlaceholder: string;
+
+  /** Color de error para íconos, bordes de input inválido, fondos subtle.
+   * Deliberadamente distinto del rojo de marca (primary) para no
+   * confundir "acción" con "error". */
+  error: string;
+  errorSubtle: string;
+  onError: string; // texto sobre botón/superficie sólida de error
+  onErrorSubtle: string; // texto sobre fondo subtle de error (chips, banners)
+
+  /** Texto de mensajes de error inline (debajo de un input, por ejemplo).
+   * Es más oscuro/saturado que `error` a propósito: un ícono de error
+   * solo necesita 3:1 de contraste (elemento gráfico), pero texto de
+   * error necesita 4.5:1 — por eso son dos tokens distintos. */
+  textError: string;
 }
 
 export const lightColors: ColorTheme = {
@@ -132,6 +167,7 @@ export const lightColors: ColorTheme = {
 
   secondary: colors.brand.orange,
   secondarySubtle: colors.brand.orangeLight,
+  secondaryButton: colors.brand.orangeStrong,
 
   accent: colors.brand.yellow,
   accentSubtle: colors.brand.yellowLight,
@@ -149,6 +185,19 @@ export const lightColors: ColorTheme = {
   textInverse: colors.neutral.white,
 
   overlay: withAlpha(colors.brand.black, 0.5),
+
+  onPrimary: colors.neutral.white,
+  onSecondary: colors.neutral.white,
+  onAccent: colors.brand.black,
+  onSuccess: colors.neutral.white,
+
+  textPlaceholder: colors.neutral.grayLight,
+
+  error: colors.danger.base,
+  errorSubtle: colors.danger.light,
+  onError: colors.neutral.white,
+  onErrorSubtle: colors.danger.dark,
+  textError: colors.danger.dark,
 };
 
 export const darkColors: ColorTheme = {
@@ -158,6 +207,7 @@ export const darkColors: ColorTheme = {
 
   secondary: colors.brand.orange,
   secondarySubtle: withAlpha(colors.brand.orange, 0.16),
+  secondaryButton: colors.brand.orangeStrong,
 
   accent: colors.brand.yellow,
   accentSubtle: withAlpha(colors.brand.yellow, 0.16),
@@ -175,4 +225,17 @@ export const darkColors: ColorTheme = {
   textInverse: colors.brand.black,
 
   overlay: withAlpha('#000000', 0.65),
+
+  onPrimary: colors.neutral.white,
+  onSecondary: colors.neutral.white,
+  onAccent: colors.brand.black,
+  onSuccess: colors.neutral.white,
+
+  textPlaceholder: withAlpha(colors.neutral.white, 0.35),
+
+  error: colors.danger.base,
+  errorSubtle: withAlpha(colors.danger.base, 0.16),
+  onError: colors.neutral.white,
+  onErrorSubtle: '#FDA4AF',
+  textError: '#FB7185',
 };
