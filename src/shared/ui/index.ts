@@ -7,7 +7,7 @@ import { fontFamily, fontSize, fontWeight, lineHeight } from './theme/typography
 import { darkColors, lightColors } from './tokens';
 
 export { default as Button } from '@/shared/components/Button/Button.component';
-export { default as Input } from '@/shared/components/Input.component';
+export { default as Input } from '@/shared/components/Input/Input.component';
 
 export const theme = {
   darkColors,
