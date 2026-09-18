@@ -7,11 +7,6 @@ export enum Level {
   C2 = 'C2',
 }
 
-export enum UserRole {
-  PLAYER = 'PLAYER',
-  ADMIN = 'ADMIN',
-}
-
 export enum ContentType {
   TEXT = 'TEXT',
   IMAGE = 'IMAGE',

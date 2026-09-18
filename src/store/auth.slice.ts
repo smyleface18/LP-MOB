@@ -1,6 +1,6 @@
 import { StateCreator } from 'zustand';
 import { storageAdapter } from '@/shared/adapters/storage.adapter';
-import { Authenticated, AuthState, User, UserRoles } from '@/features/auth/types';
+import { Authenticated, AuthState, User } from '@/features/auth/types';
 
 
 
