@@ -1,332 +1,61 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  Image,
-  Platform,
-  KeyboardAvoidingView,
-  ActivityIndicator,
-  Alert,
-} from 'react-native';
+import React, { useEffect } from 'react';
+import { Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import MetricCard from '@/shared/components/Metric.component';
-import CircularChart from '@/shared/components/Char/Char.component';
-import ProgressBar from '@/shared/components/ProgressBar.component';
-import StatItem from '@/shared/components/Statitem.component';
-import Button from '@/shared/components/Button/Button.component';
 import { useGame } from '@/features/game/hooks/useGame';
 import { useUser } from '../hooks/useUser';
 import { useAuth } from '../hooks/useAuth';
-import { LinearGradient } from 'expo-linear-gradient';
+import { UserDashboardView, LevelProgress } from './UserDashboard.view';
+
+// TODO: reemplazar por datos reales cuando el backend exponga historial de partidas.
+const TOTAL_GAMES_PLAYED = 45;
+const CURRENT_STREAK = 5;
+const AVERAGE_SCORE = 76;
+
+const LEVEL_PROGRESS: LevelProgress[] = [
+  { label: 'Beginner', percentage: 65, color: 'primary' },
+  { label: 'Intermediate', percentage: 25, color: 'secondary' },
+  { label: 'Advanced', percentage: 10, color: 'accent' },
+];
 
 const UserDashboardScreen = () => {
   const navigation = useNavigation();
-  const { actions, state } = useGame();
-  const { user, getMe, loading } = useUser();
+  const { state } = useGame();
+  const { user, getMe } = useUser();
   const { handleSignOut, loading: signOutLoading } = useAuth();
 
   useEffect(() => {
     getMe();
   }, []);
 
-  const userStats = {
-    totalGames: 45,
-    gamesWon: user?.score,
-    currentStreak: 5,
-    bestStreak: 12,
-    averageScore: 76,
-  };
-
-  const handleQuickPlay = () => {
-    if (!state.user.isConnected) {
-      alert('Please check your connection and try again');
-      return;
-    }
-
-    navigation.navigate('GameScreen' as never);
-  };
-
-  const handleSelectCategory = () => {
-    navigation.navigate('CategorySelection' as never);
-  };
-
-  const handleHowToPlay = () => {
-    navigation.navigate('GameScreen' as never);
-  };
-
-  const handleSignOutPress = async () => {
+  const handleSignOutPress = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
-      {
-        text: 'Cancel',
-        onPress: () => { },
-        style: 'cancel',
-      },
-      {
-        text: 'Sign Out',
-        onPress: async () => {
-          await handleSignOut();
-          // Navigation will be handled by the app's auth state listener
-        },
-        style: 'destructive',
-      },
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Sign Out', style: 'destructive', onPress: () => handleSignOut() },
     ]);
   };
 
+  const gamesWon = user?.score ?? 0;
+
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* Header */}
-        <LinearGradient
-          colors={['#fd4863ff', '#F4F4F5']}
-          start={{ x: 0.5, y: 0 }}
-          end={{ x: 0.5, y: 1 }}
-          style={styles.header}
-        >
-          <View style={styles.header}>
-            {/* Contenido */}
-
-            <View style={styles.avatarContainer}>
-              <View style={styles.avatar}>
-                <Image
-                  source={{
-                    uri: 'https://cdn-icons-png.flaticon.com/512/7178/7178489.png',
-                  }}
-                  style={styles.avatarImage}
-                  resizeMode="cover"
-                  onError={() => {
-                    // Fallback a avatar por defecto
-                  }}
-                />
-              </View>
-            </View>
-            <Text style={styles.nickname}>{user?.username}</Text>
-            <View style={styles.connectionStatus}>
-              <View
-                style={[
-                  styles.statusDot,
-                  state.user.isConnected ? styles.connected : styles.disconnected,
-                ]}
-              />
-              <Text style={styles.statusText}>
-                {state.user.isConnected ? 'Connected' : 'Disconnected'}
-              </Text>
-            </View>
-          </View>
-        </LinearGradient>
-
-        {/* Main Metrics */}
-        <View style={styles.metricsGrid}>
-          <MetricCard value={`${user?.score} XP`} label="Score" />
-          <MetricCard value={userStats.gamesWon || 0} label="Games Won" />
-          <MetricCard value={userStats.currentStreak} label="Current Streak" />
-          <MetricCard value={0} label="Categories" />
-        </View>
-
-        {/* Performance Charts */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Performance</Text>
-          <View style={styles.chartsRow}>
-            <CircularChart
-              percentage={userStats.averageScore}
-              label="Average Score"
-              color="#FF0000"
-            />
-            <CircularChart
-              percentage={Math.round(
-                ((userStats.gamesWon || 0) / (userStats.totalGames || 1)) * 100,
-              )}
-              label="Win Rate"
-              color="#000000"
-            />
-            <CircularChart
-              percentage={userStats.currentStreak * 10}
-              label="Streak Power"
-              color="#FF4444"
-            />
-          </View>
-        </View>
-
-        {/* Level Progress */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Level Progress</Text>
-          <View style={styles.statsContainer}>
-            <ProgressBar percentage={65} label="Beginner" color="#FF0000" />
-            <ProgressBar percentage={25} label="Intermediate" color="#000000" />
-            <ProgressBar percentage={10} label="Advanced" color="#CC0000" />
-          </View>
-        </View>
-
-        {/* Action Buttons */}
-        <View style={styles.section}>
-          <Button
-            title="How to Play"
-            variant="secondary"
-            size="large"
-            onPress={handleHowToPlay}
-            style={styles.actionButton}
-          />
-
-          {/* Sign Out Button */}
-          <Button
-            title="Sign Out"
-            variant="outlined"
-            size="large"
-            onPress={handleSignOutPress}
-            disabled={signOutLoading}
-            style={[styles.actionButton, styles.signOutButton]}
-          />
-          {signOutLoading && (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="small" color="#ef4444" />
-              <Text style={styles.loadingText}>Signing out...</Text>
-            </View>
-          )}
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+    <UserDashboardView
+      username={user?.username}
+      avatarUrl={user?.avatar?.url}
+      isConnected={state.user.isConnected}
+      stats={{
+        scoreLabel: `${user?.score ?? 0} XP`,
+        gamesWon,
+        currentStreak: CURRENT_STREAK,
+        categoriesCount: 0,
+        averageScore: AVERAGE_SCORE,
+        winRatePercentage: Math.round((gamesWon / TOTAL_GAMES_PLAYED) * 100),
+        streakPowerPercentage: CURRENT_STREAK * 10,
+      }}
+      levelProgress={LEVEL_PROGRESS}
+      onHowToPlay={() => navigation.navigate('GameScreen' as never)}
+      onSignOut={handleSignOutPress}
+      signOutLoading={signOutLoading}
+    />
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    minHeight: 0,
-  },
-  scrollView: {
-    flex: 1,
-    minHeight: 0,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: 24,
-  },
-  header: {
-    padding: 20,
-    paddingTop: 40,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    alignItems: 'center',
-  },
-  avatarContainer: {
-    marginBottom: 10,
-  },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-  },
-  avatarImage: {
-    width: '100%',
-    height: '100%',
-  },
-  nickname: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#18181B',
-    marginBottom: 10,
-  },
-  connectionStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 8,
-  },
-  connected: {
-    backgroundColor: '#00FF00',
-  },
-  disconnected: {
-    backgroundColor: '#FF0000',
-  },
-  statusText: {
-    fontSize: 14,
-    color: '#18181B',
-    opacity: 0.9,
-  },
-  avatarText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 5,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    opacity: 0.9,
-    marginBottom: 10,
-  },
-  metricsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    padding: 15,
-    justifyContent: 'space-between',
-  },
-  section: {
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#000000',
-    marginBottom: 15,
-  },
-  chartsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  statsContainer: {
-    marginBottom: 20,
-  },
-  additionalStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  actionsSection: {
-    padding: 20,
-  },
-  actionButton: {
-    marginBottom: 15,
-  },
-  signOutButton: {
-    marginBottom: 20,
-    borderColor: '#ef4444',
-  },
-  loadingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    gap: 8,
-  },
-  loadingText: {
-    color: '#ef4444',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-});
 
 export default UserDashboardScreen;
