@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { useTheme } from '@/app/providers/theme.provider';
 import { useBreakpoint } from '@/shared/ui/theme/useBreakpoint';
-import CategoryItem from '@/features/category/components/CategoryItem.component';
+import CategoryItem from '@/features/category/components/CategoryItem/CategoryItem.component';
 import { MetricCard } from '@/shared/components/Metric/Metric.component';
 import { CircularProgress } from '@/shared/components/CircularProgress/CircularProgress.component';
 import { ProgressBar } from '@/shared/components/ProgressBar/ProgressBar.component';

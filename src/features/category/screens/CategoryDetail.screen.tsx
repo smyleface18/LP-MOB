@@ -1,128 +1,207 @@
-﻿import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, Alert, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { View, Text, ScrollView, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { Button, Input, FilterSection } from '@/shared/ui';
-import { useCategories } from '../hooks/useCategories';
-import { CategoryQuestion, TypeQuestionCategory } from '@/shared/types/category-question';
-import { Level } from '@/shared/types/common/enum.type';
+import { useTheme } from '@/app/providers/theme.provider';
+import { useBreakpoint } from '@/shared/ui/theme/useBreakpoint';
+import Button from '@/shared/components/Button/Button.component';
+import CategoryForm, { CategoryFormErrors, CategoryFormValues, MIN_DESCRIPTION_LENGTH } from '../components/CategoryForm';
+import { categoryService } from '../services/category.service';
+import { getErrorMessage } from '@/shared/api/getErrorMessage';
+import { CategoryQuestion } from '@/shared/types/category-question';
 
 interface RouteParams {
   categoryId: string;
   category?: CategoryQuestion;
 }
 
+const PAGE_MAX_WIDTH = 640;
+
+const toFormValues = (category: CategoryQuestion): CategoryFormValues => ({
+  descriptionCategory: category.descriptionCategory,
+  level: category.level,
+  type: category.type,
+});
+
 const CategoryDetailScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { categoryId, category: initialCategory } = route.params as RouteParams;
-  const { categories, loading: categoriesLoading, updateCategory, deleteCategory } = useCategories();
+
+  const theme = useTheme();
+  const { isDesktop } = useBreakpoint();
+  const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
+
   const [loading, setLoading] = useState(!initialCategory);
   const [saving, setSaving] = useState(false);
-  const [category, setCategory] = useState<CategoryQuestion | null>(initialCategory || null);
-  const [formData, setFormData] = useState({ descriptionCategory: '', level: '' as Level | '', type: '' as TypeQuestionCategory | '', active: true });
+  const [category, setCategory] = useState<CategoryQuestion | null>(initialCategory ?? null);
+  const [formValues, setFormValues] = useState<CategoryFormValues>(
+    initialCategory ? toFormValues(initialCategory) : { descriptionCategory: '', level: '', type: '' },
+  );
+  const [errors, setErrors] = useState<CategoryFormErrors>({});
 
   useEffect(() => {
-    if (!initialCategory && categoryId) { loadCategory(); }
+    if (initialCategory || !categoryId) return;
+
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      const response = await categoryService.getById(categoryId);
+      if (cancelled) return;
+
+      if (!response.ok || !response.data) {
+        Alert.alert('Error', getErrorMessage(response.message, 'No se pudo cargar la categoría'));
+        setLoading(false);
+        return;
+      }
+
+      setCategory(response.data);
+      setFormValues(toFormValues(response.data));
+      setLoading(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [categoryId, initialCategory]);
 
-  useEffect(() => {
-    if (category) {
-      setFormData({ descriptionCategory: category.descriptionCategory, level: category.level, type: category.type, active: category.active });
+  const validateForm = (): boolean => {
+    const newErrors: CategoryFormErrors = {};
+    const description = formValues.descriptionCategory.trim();
+
+    if (!description) {
+      newErrors.descriptionCategory = 'Descripción requerida';
+    } else if (description.length < MIN_DESCRIPTION_LENGTH) {
+      newErrors.descriptionCategory = `Mínimo ${MIN_DESCRIPTION_LENGTH} caracteres`;
     }
-  }, [category]);
+    if (!formValues.level) newErrors.level = 'Nivel requerido';
+    if (!formValues.type) newErrors.type = 'Tipo requerido';
 
-  const loadCategory = () => {
-    try {
-      setLoading(true);
-      const found = categories.find((cat) => cat.id === categoryId);
-      if (found) { setCategory(found); }
-      else { throw new Error('Categoria no encontrada'); }
-    } catch (error) {
-      Alert.alert('Error', 'No se pudo cargar la categoria');
-    } finally { setLoading(false); }
-  };
-
-  const levelOptions = Object.values(Level).map((l) => ({ value: l, label: l }));
-  const typeOptions = Object.values(TypeQuestionCategory).map((t) => ({ value: t, label: t }));
-
-  const handleInputChange = (field: string, value: string) => setFormData((prev) => ({ ...prev, [field]: value }));
-
-  const validateForm = () => {
-    if (!formData.descriptionCategory.trim()) { Alert.alert('Error', 'Descripcion requerida'); return false; }
-    if (!formData.level) { Alert.alert('Error', 'Nivel requerido'); return false; }
-    if (!formData.type) { Alert.alert('Error', 'Tipo requerido'); return false; }
-    return true;
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSave = async () => {
-    if (!validateForm()) return;
-    try {
-      setSaving(true);
-      await updateCategory(categoryId, formData);
-      Alert.alert('Exito', 'Categoria actualizada', [{ text: 'OK', onPress: () => navigation.goBack() }]);
-    } catch { Alert.alert('Error', 'No se pudo actualizar'); }
-    finally { setSaving(false); }
+    if (!validateForm() || !formValues.level || !formValues.type) return;
+
+    setSaving(true);
+    const response = await categoryService.update(categoryId, {
+      descriptionCategory: formValues.descriptionCategory.trim(),
+      level: formValues.level,
+      type: formValues.type,
+    });
+    setSaving(false);
+
+    if (!response.ok) {
+      Alert.alert('Error', getErrorMessage(response.message, 'No se pudo actualizar la categoría'));
+      return;
+    }
+
+    Alert.alert('Éxito', 'Categoría actualizada correctamente', [
+      { text: 'OK', onPress: () => navigation.goBack() },
+    ]);
   };
 
   const handleDelete = () => {
-    Alert.alert('Eliminar', '¿Seguro?', [
+    Alert.alert('Eliminar Categoría', '¿Estás seguro de que quieres eliminar esta categoría?', [
       { text: 'Cancelar', style: 'cancel' },
-      { text: 'Eliminar', style: 'destructive', onPress: async () => {
-        try {
-          await deleteCategory(categoryId);
-          Alert.alert('Exito', 'Eliminada', [{ text: 'OK', onPress: () => navigation.goBack() }]);
-        } catch { Alert.alert('Error', 'No se pudo eliminar'); }
-      }},
+      {
+        text: 'Eliminar',
+        style: 'destructive',
+        onPress: async () => {
+          const response = await categoryService.delete(categoryId);
+          if (!response.ok) {
+            Alert.alert('Error', getErrorMessage(response.message, 'No se pudo eliminar la categoría'));
+            return;
+          }
+          Alert.alert('Éxito', 'Categoría eliminada correctamente', [
+            { text: 'OK', onPress: () => navigation.goBack() },
+          ]);
+        },
+      },
     ]);
   };
 
   const handleToggleActive = async () => {
-    try {
-      setSaving(true);
-      await updateCategory(categoryId, { active: !formData.active });
-      setFormData((prev) => ({ ...prev, active: !prev.active }));
-    } catch { Alert.alert('Error', 'No se pudo actualizar el estado'); }
-    finally { setSaving(false); }
+    if (!category) return;
+
+    setSaving(true);
+    const response = await categoryService.update(categoryId, { active: !category.active });
+    setSaving(false);
+
+    if (!response.ok) {
+      Alert.alert('Error', getErrorMessage(response.message, 'No se pudo actualizar el estado'));
+      return;
+    }
+
+    setCategory((prev) => (prev ? { ...prev, active: !prev.active } : prev));
   };
 
-  if (loading || categoriesLoading) {
-    return <View style={styles.loadingContainer}><ActivityIndicator size="large" color="#000000" /><Text style={styles.loadingText}>Cargando...</Text></View>;
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={theme.color.primary} />
+        <Text style={styles.loadingText}>Cargando categoría...</Text>
+      </View>
+    );
   }
 
   if (!category) {
-    return <View style={styles.errorContainer}><Text style={styles.errorText}>No se pudo cargar la categoria</Text><Button title="Volver" variant="primary" onPress={() => navigation.goBack()} style={styles.retryButton} /></View>;
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.errorText}>No se pudo cargar la categoría</Text>
+        <Button title="Volver" variant="primary" onPress={() => navigation.goBack()} />
+      </View>
+    );
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Editar Categoria</Text>
-        <Text style={styles.subtitle}>ID: {categoryId}</Text>
-      </View>
-      <View style={styles.statusContainer}>
-        <Text style={styles.statusLabel}>Estado:</Text>
-        <TouchableOpacity style={[styles.statusButton, formData.active ? styles.statusActive : styles.statusInactive]} onPress={handleToggleActive} disabled={saving}>
-          <Text style={styles.statusText}>{formData.active ? 'Activa' : 'Inactiva'}</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.formContainer}>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Descripcion</Text>
-          <Input placeholder="Descripcion..." value={formData.descriptionCategory} onChangeText={(v) => handleInputChange('descriptionCategory', v)} variant="outlined" style={styles.input} />
+    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+      <View style={styles.page}>
+        <View style={styles.header}>
+          <View style={styles.headerRow}>
+            <View>
+              <Text style={styles.title}>Editar Categoría</Text>
+              <Text style={styles.subtitle}>ID: {categoryId}</Text>
+            </View>
+            <Button
+              title={category.active ? 'Activa' : 'Inactiva'}
+              variant={category.active ? 'primary' : 'outlined'}
+              size="small"
+              onPress={handleToggleActive}
+              disabled={saving}
+              style={styles.statusButton}
+            />
+          </View>
         </View>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Nivel</Text>
-          <FilterSection title="" options={levelOptions} selectedValue={formData.level} onValueChange={(v) => handleInputChange('level', v as Level)} />
-        </View>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Tipo</Text>
-          <FilterSection title="" options={typeOptions} selectedValue={formData.type} onValueChange={(v) => handleInputChange('type', v as TypeQuestionCategory)} />
-        </View>
-        <View style={styles.actionsContainer}>
-          <Button title="Eliminar" variant="outlined" onPress={handleDelete} style={styles.deleteButton} />
-          <View style={styles.saveActions}>
-            <Button title="Cancelar" variant="outlined" onPress={() => navigation.goBack()} style={styles.cancelButton} />
-            <Button title={saving ? 'Guardando...' : 'Guardar'} variant="primary" onPress={handleSave} disabled={saving} style={styles.saveButton} />
+
+        <View style={styles.formContainer}>
+          <CategoryForm
+            values={formValues}
+            errors={errors}
+            onDescriptionChange={(descriptionCategory) =>
+              setFormValues((prev) => ({ ...prev, descriptionCategory }))
+            }
+            onLevelChange={(level) => setFormValues((prev) => ({ ...prev, level }))}
+            onTypeChange={(type) => setFormValues((prev) => ({ ...prev, type }))}
+          />
+
+          <View style={styles.actionsContainer}>
+            <View style={styles.deleteButtonWrap}>
+              <Button title="Eliminar" variant="outlined" onPress={handleDelete} />
+            </View>
+            <View style={styles.saveActions}>
+              <View style={styles.actionButton}>
+                <Button title="Cancelar" variant="outlined" onPress={() => navigation.goBack()} />
+              </View>
+              <View style={styles.submitButton}>
+                <Button
+                  title={saving ? 'Guardando...' : 'Guardar Cambios'}
+                  variant="primary"
+                  onPress={handleSave}
+                  disabled={saving}
+                />
+              </View>
+            </View>
           </View>
         </View>
       </View>
@@ -130,31 +209,90 @@ const CategoryDetailScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
-  header: { padding: 20, backgroundColor: '#000000', borderBottomLeftRadius: 20, borderBottomRightRadius: 20 },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 5 },
-  subtitle: { fontSize: 14, color: '#FFFFFF', opacity: 0.8 },
-  statusContainer: { padding: 15, backgroundColor: '#F8F8F8', borderBottomWidth: 1, borderBottomColor: '#E0E0E0', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  statusLabel: { fontSize: 16, fontWeight: 'bold', color: '#000000' },
-  statusButton: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
-  statusActive: { backgroundColor: '#4CAF50' },
-  statusInactive: { backgroundColor: '#FF9800' },
-  statusText: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 14 },
-  formContainer: { padding: 20 },
-  section: { marginBottom: 25 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#000000', marginBottom: 10 },
-  input: { marginBottom: 0 },
-  actionsContainer: { marginTop: 20 },
-  deleteButton: { marginBottom: 15, backgroundColor: '#ffffffff' },
-  saveActions: { flexDirection: 'row', justifyContent: 'space-between' },
-  cancelButton: { flex: 1, marginRight: 10 },
-  saveButton: { flex: 1, marginLeft: 10 },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFFFF' },
-  loadingText: { marginTop: 16, fontSize: 16, color: '#666666' },
-  errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFFFF', padding: 20 },
-  errorText: { fontSize: 18, fontWeight: 'bold', color: '#FF0000', marginBottom: 20, textAlign: 'center' },
-  retryButton: { minWidth: 120 },
-});
+const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.color.background,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      alignItems: 'center',
+      paddingBottom: theme.spacing.xl,
+    },
+    page: {
+      width: '100%',
+      maxWidth: PAGE_MAX_WIDTH,
+    },
+    header: {
+      padding: isDesktop ? theme.spacing.xl : theme.spacing.lg,
+      backgroundColor: theme.color.surfaceElevated,
+      borderBottomWidth: theme.borderWidth.xs,
+      borderBottomColor: theme.color.border,
+      borderBottomLeftRadius: theme.radius.lg,
+      borderBottomRightRadius: theme.radius.lg,
+    },
+    headerRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    title: {
+      fontSize: theme.fontSize.xxl,
+      fontFamily: theme.fontFamily.headingExtra,
+      color: theme.color.textPrimary,
+      marginBottom: theme.spacing.xs,
+    },
+    subtitle: {
+      fontSize: theme.fontSize.md,
+      fontFamily: theme.fontFamily.body,
+      color: theme.color.textSecondary,
+    },
+    statusButton: {
+      width: 120,
+    },
+    formContainer: {
+      padding: isDesktop ? theme.spacing.xl : theme.spacing.lg,
+    },
+    actionsContainer: {
+      marginTop: theme.spacing.lg,
+      flexDirection: isDesktop ? 'row' : 'column',
+      justifyContent: 'space-between',
+      alignItems: isDesktop ? 'center' : 'stretch',
+      gap: theme.spacing.md,
+    },
+    deleteButtonWrap: {
+      width: 140,
+    },
+    saveActions: {
+      flexDirection: 'row',
+      gap: theme.spacing.sm,
+    },
+    actionButton: {
+      width: 140,
+    },
+    submitButton: {
+      width: 200,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: theme.color.background,
+      gap: theme.spacing.sm,
+      padding: theme.spacing.lg,
+    },
+    loadingText: {
+      fontSize: theme.fontSize.md,
+      color: theme.color.textSecondary,
+    },
+    errorText: {
+      fontSize: theme.fontSize.lg,
+      fontFamily: theme.fontFamily.bodyBold,
+      color: theme.color.error,
+      marginBottom: theme.spacing.md,
+      textAlign: 'center',
+    },
+  });
 
 export default CategoryDetailScreen;

@@ -1,16 +1,24 @@
-﻿import { apiService } from '@/shared/api/api.service';
+import { apiService } from '@/shared/api/api.service';
 import { API_ENDPOINTS } from '@/shared/api/apiConfig';
 import { ApiResponse } from '@/shared/api/types';
-import { CategoryQuestion } from '@/shared/types/category-question';
+import { CategoryQuestion, TypeQuestionCategory } from '@/shared/types/category-question';
+import { Level } from '@/shared/types/common';
 
+/**
+ * Coincide con CreateCategoryQuestionDto del backend: OmitType(CategoryQuestion,
+ * ['id','active','createdAt','updatedAt','questions']). `active` no se puede
+ * enviar al crear — el ValidationPipe del backend (forbidNonWhitelisted) lo
+ * rechazaría con 400.
+ */
 export interface CreateCategoryDto {
-  level: string;
+  level: Level;
   descriptionCategory: string;
-  type: string;
-  active?: boolean;
+  type: TypeQuestionCategory;
 }
 
-export interface UpdateCategoryDto extends Partial<CreateCategoryDto> {}
+export interface UpdateCategoryDto extends Partial<CreateCategoryDto> {
+  active?: boolean;
+}
 
 export const categoryService = {
   getAll: async (): Promise<ApiResponse<CategoryQuestion[]>> => {

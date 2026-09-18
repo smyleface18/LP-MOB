@@ -1,62 +1,127 @@
-﻿import { useState, useEffect } from 'react';
-import { CategoryQuestion } from '@/shared/types/category-question';
-import { categoryService } from '../services/category.service';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { CategoryQuestion, TypeQuestionCategory } from '@/shared/types/category-question';
+import { Level } from '@/shared/types/common';
+import { getErrorMessage } from '@/shared/api/getErrorMessage';
+import { categoryService, CreateCategoryDto, UpdateCategoryDto } from '../services/category.service';
 
 export const useCategories = () => {
   const [categories, setCategories] = useState<CategoryQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const isMountedRef = useRef(true);
 
-  const loadCategories = async () => {
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const loadCategories = useCallback(async () => {
     setLoading(true);
     setError(null);
+
     const response = await categoryService.getAll();
-    if (!response.ok) { setError('Error al cargar las categorias'); return; }
-    setCategories(response.data!);
+    if (!isMountedRef.current) return;
+
+    if (!response.ok) {
+      setError(getErrorMessage(response.message, 'Error al cargar las categorías'));
+      setLoading(false);
+      return;
+    }
+
+    setCategories(response.data ?? []);
     setLoading(false);
-  };
+  }, []);
 
-  const createCategory = async (data: any) => {
+  const createCategory = useCallback(async (data: CreateCategoryDto) => {
+    setError(null);
     const response = await categoryService.create(data);
-    if (!response.ok) { setError('Error al crear'); return; }
-    setCategories((prev) => [...prev, response.data!]);
-    return response;
-  };
+    if (!isMountedRef.current) return response;
 
-  const updateCategory = async (id: string, data: any) => {
+    if (!response.ok) {
+      setError(getErrorMessage(response.message, 'Error al crear la categoría'));
+      return response;
+    }
+
+    if (response.data) {
+      setCategories((prev) => [...prev, response.data!]);
+    }
+    return response;
+  }, []);
+
+  const updateCategory = useCallback(async (id: string, data: UpdateCategoryDto) => {
+    setError(null);
     const response = await categoryService.update(id, data);
-    if (!response.ok) { setError('Error al actualizar'); return; }
-    setCategories((prev) => prev.map((cat) => (cat.id === id ? response.data! : cat)));
-    return response.data;
-  };
+    if (!isMountedRef.current) return response;
 
-  const deleteCategory = async (id: string) => {
-    const response = await categoryService.delete(id);
-    if (!response.ok) { setError('Error al eliminar'); return; }
-    setCategories((prev) => prev.filter((cat) => cat.id !== id));
-  };
+    if (!response.ok) {
+      setError(getErrorMessage(response.message, 'Error al actualizar la categoría'));
+      return response;
+    }
 
-  const toggleCategoryActive = async (id: string) => {
-    const category = categories.find((cat) => cat.id === id);
-    if (!category) return;
-    const response = await categoryService.update(id, { active: !category.active });
-    if (!response.ok) { setError('Error al cambiar estado'); return; }
-    setCategories((prev) => prev.map((cat) => (cat.id === id ? response.data! : cat)));
+    if (response.data) {
+      setCategories((prev) => prev.map((cat) => (cat.id === id ? response.data! : cat)));
+    }
     return response;
-  };
+  }, []);
 
-  const getCategoryById = (id: string) => categories.find((cat) => cat.id === id);
-  const getCategoriesByLevel = (level: string) => categories.filter((cat) => cat.level === level);
-  const getCategoriesByType = (type: string) => categories.filter((cat) => cat.type === type);
+  const deleteCategory = useCallback(async (id: string) => {
+    setError(null);
+    const response = await categoryService.delete(id);
+    if (!isMountedRef.current) return response;
 
-  useEffect(() => { loadCategories(); }, []);
+    if (!response.ok) {
+      setError(getErrorMessage(response.message, 'Error al eliminar la categoría'));
+      return response;
+    }
+
+    setCategories((prev) => prev.filter((cat) => cat.id !== id));
+    return response;
+  }, []);
+
+  const toggleCategoryActive = useCallback(
+    async (id: string) => {
+      const category = categories.find((cat) => cat.id === id);
+      if (!category) return;
+      return updateCategory(id, { active: !category.active });
+    },
+    [categories, updateCategory],
+  );
+
+  useEffect(() => {
+    loadCategories();
+  }, [loadCategories]);
+
+  const getCategoryById = useCallback(
+    (id: string) => categories.find((cat) => cat.id === id),
+    [categories],
+  );
+  const getCategoriesByLevel = useCallback(
+    (level: Level) => categories.filter((cat) => cat.level === level),
+    [categories],
+  );
+  const getCategoriesByType = useCallback(
+    (type: TypeQuestionCategory) => categories.filter((cat) => cat.type === type),
+    [categories],
+  );
+
+  const activeCategories = useMemo(() => categories.filter((cat) => cat.active), [categories]);
+  const inactiveCategories = useMemo(() => categories.filter((cat) => !cat.active), [categories]);
 
   return {
-    categories, loading, error,
-    loadCategories, createCategory, updateCategory, deleteCategory, toggleCategoryActive,
-    getCategoryById, getCategoriesByLevel, getCategoriesByType,
-    activeCategories: categories.filter((cat) => cat.active),
-    inactiveCategories: categories.filter((cat) => !cat.active),
+    categories,
+    loading,
+    error,
+    loadCategories,
+    createCategory,
+    updateCategory,
+    deleteCategory,
+    toggleCategoryActive,
+    getCategoryById,
+    getCategoriesByLevel,
+    getCategoriesByType,
+    activeCategories,
+    inactiveCategories,
     totalCategories: categories.length,
   };
 };
