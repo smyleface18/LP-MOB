@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTokenRefresh } from './useTokenRefresh';
+import { useTokenRefresh } from '../hooks/useTokenRefresh';
 
 /**
  * Componente que inicializa el sistema de refresh automático de tokens

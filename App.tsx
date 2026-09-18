@@ -16,7 +16,7 @@ import {
 } from '@expo-google-fonts/nunito';
 import { AppNavigator } from '@/app/navigation/AppNavigator';
 import { ThemeProvider } from '@/app/providers/theme.provider';
-import TokenRefreshProvider from '@/features/auth/hooks/TokenRefreshProvider';
+import TokenRefreshProvider from '@/features/auth/providers/TokenRefreshProvider';
 
 SplashScreen.preventAutoHideAsync();
 
