@@ -17,9 +17,9 @@ const meta: Meta<typeof UserDashboardView> = {
       streakPowerPercentage: 50,
     },
     levelProgress: [
-      { label: 'Beginner', percentage: 65, color: 'primary' },
-      { label: 'Intermediate', percentage: 25, color: 'secondary' },
-      { label: 'Advanced', percentage: 10, color: 'accent' },
+      { label: 'Beginner', percentage: 65 },
+      { label: 'Intermediate', percentage: 25 },
+      { label: 'Advanced', percentage: 10 },
     ],
     onHowToPlay: () => {},
     onSignOut: () => {},

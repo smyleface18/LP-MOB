@@ -1,5 +1,5 @@
 import GameScreen from '@/features/game/screens/Game.screen';
-import UserDashboardScreen from '@/features/auth/screens/UserDashboard.screen';
+import UserDashboardScreen from '@/features/auth/screens/UserDashboard';
 import { createStackNavigator } from '@react-navigation/stack';
 
 const Stack = createStackNavigator();

@@ -18,9 +18,9 @@ const meta: Meta<typeof AdminDashboardView> = {
       retentionRate: 72,
     },
     levelUsage: [
-      { label: 'Beginners', percentage: 65, color: 'primary' },
-      { label: 'Intermediate', percentage: 25, color: 'secondary' },
-      { label: 'Advanced', percentage: 10, color: 'accent' },
+      { label: 'Beginners', percentage: 65 },
+      { label: 'Intermediate', percentage: 25 },
+      { label: 'Advanced', percentage: 10 },
     ],
     categoryDistribution: [
       { label: 'Vocabulary', percentage: 35 },

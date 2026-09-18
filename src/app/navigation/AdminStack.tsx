@@ -1,4 +1,4 @@
-import AdminDashboardScreen from '@/features/auth/screens/AdminDashboard.screen';
+import AdminDashboardScreen from '@/features/auth/screens/AdminDashboard';
 import { createStackNavigator } from '@react-navigation/stack';
 
 const Stack = createStackNavigator();

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth';
 import {
   AdminDashboardView,
   AdminDashboardMetrics,
@@ -24,9 +24,9 @@ const METRICS: AdminDashboardMetrics = {
 };
 
 const LEVEL_USAGE: LevelUsage[] = [
-  { label: 'Beginners', percentage: 65, color: 'primary' },
-  { label: 'Intermediate', percentage: 25, color: 'secondary' },
-  { label: 'Advanced', percentage: 10, color: 'accent' },
+  { label: 'Beginners', percentage: 65 },
+  { label: 'Intermediate', percentage: 25 },
+  { label: 'Advanced', percentage: 10 },
 ];
 
 const CATEGORY_DISTRIBUTION: CategoryShare[] = [

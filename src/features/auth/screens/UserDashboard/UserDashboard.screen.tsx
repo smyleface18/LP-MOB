@@ -2,8 +2,8 @@ import React, { useEffect } from 'react';
 import { Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useGame } from '@/features/game/hooks/useGame';
-import { useUser } from '../hooks/useUser';
-import { useAuth } from '../hooks/useAuth';
+import { useUser } from '../../hooks/useUser';
+import { useAuth } from '../../hooks/useAuth';
 import { UserDashboardView, LevelProgress } from './UserDashboard.view';
 
 // TODO: reemplazar por datos reales cuando el backend exponga historial de partidas.
@@ -12,9 +12,9 @@ const CURRENT_STREAK = 5;
 const AVERAGE_SCORE = 76;
 
 const LEVEL_PROGRESS: LevelProgress[] = [
-  { label: 'Beginner', percentage: 65, color: 'primary' },
-  { label: 'Intermediate', percentage: 25, color: 'secondary' },
-  { label: 'Advanced', percentage: 10, color: 'accent' },
+  { label: 'Beginner', percentage: 65 },
+  { label: 'Intermediate', percentage: 25 },
+  { label: 'Advanced', percentage: 10 },
 ];
 
 const UserDashboardScreen = () => {

@@ -16,9 +16,16 @@ import { MetricCard } from '@/shared/components/Metric/Metric.component';
 import { CircularProgress } from '@/shared/components/CircularProgress/CircularProgress.component';
 import { ProgressBar } from '@/shared/components/ProgressBar/ProgressBar.component';
 import Button from '@/shared/components/Button/Button.component';
+import { GRADIENT_PRESETS } from '@/shared/ui/theme/progressGradients';
 
 const PAGE_MAX_WIDTH = 720;
 const DEFAULT_AVATAR_URL = 'https://cdn-icons-png.flaticon.com/512/7178/7178489.png';
+
+const LEVEL_PROGRESS_GRADIENTS = [
+  GRADIENT_PRESETS.secondaryToPrimary,
+  GRADIENT_PRESETS.secondaryToAccent,
+  GRADIENT_PRESETS.tricolorProgress,
+];
 
 export interface UserDashboardStats {
   scoreLabel: string;
@@ -33,7 +40,6 @@ export interface UserDashboardStats {
 export interface LevelProgress {
   label: string;
   percentage: number;
-  color: 'primary' | 'secondary' | 'accent';
 }
 
 export interface UserDashboardViewProps {
@@ -114,17 +120,17 @@ const UserDashboardView: React.FC<UserDashboardViewProps> = ({
               <CircularProgress
                 percentage={stats.averageScore}
                 label="Average Score"
-                color={theme.color.primary}
+                colors={GRADIENT_PRESETS.secondaryToPrimary}
               />
               <CircularProgress
                 percentage={stats.winRatePercentage}
                 label="Win Rate"
-                color={theme.color.success}
+                colors={GRADIENT_PRESETS.successToPrimary}
               />
               <CircularProgress
                 percentage={stats.streakPowerPercentage}
                 label="Streak Power"
-                color={theme.color.accent}
+                colors={GRADIENT_PRESETS.tricolorEnergy}
               />
             </View>
           </View>
@@ -133,12 +139,12 @@ const UserDashboardView: React.FC<UserDashboardViewProps> = ({
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Level Progress</Text>
             <View style={styles.statsContainer}>
-              {levelProgress.map((level) => (
+              {levelProgress.map((level, index) => (
                 <ProgressBar
                   key={level.label}
                   percentage={level.percentage}
                   label={level.label}
-                  color={level.color}
+                  colors={LEVEL_PROGRESS_GRADIENTS[index % LEVEL_PROGRESS_GRADIENTS.length]}
                 />
               ))}
             </View>

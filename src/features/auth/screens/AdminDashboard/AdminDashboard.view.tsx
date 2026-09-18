@@ -8,6 +8,13 @@ import { CircularProgress } from '@/shared/components/CircularProgress/CircularP
 import { ProgressBar } from '@/shared/components/ProgressBar/ProgressBar.component';
 import { StatItem } from '@/shared/components/StatItem/Statitem.component';
 import Button from '@/shared/components/Button/Button.component';
+import { GRADIENT_PRESETS } from '@/shared/ui/theme/progressGradients';
+
+const LEVEL_USAGE_GRADIENTS = [
+  GRADIENT_PRESETS.secondaryToPrimary,
+  GRADIENT_PRESETS.secondaryToAccent,
+  GRADIENT_PRESETS.tricolorProgress,
+];
 
 const PAGE_MAX_WIDTH = 960;
 
@@ -27,7 +34,6 @@ export interface AdminDashboardMetrics {
 export interface LevelUsage {
   label: string;
   percentage: number;
-  color: 'primary' | 'secondary' | 'accent';
 }
 
 export interface CategoryShare {
@@ -118,17 +124,17 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             <CircularProgress
               percentage={metrics.averageScore}
               label="Average Score"
-              color={theme.color.primary}
+              colors={GRADIENT_PRESETS.secondaryToPrimary}
             />
             <CircularProgress
               percentage={metrics.completionRate}
               label="Completion Rate"
-              color={theme.color.success}
+              colors={GRADIENT_PRESETS.successToPrimary}
             />
             <CircularProgress
               percentage={metrics.retentionRate}
               label="Retention"
-              color={theme.color.secondary}
+              colors={GRADIENT_PRESETS.tricolorEnergy}
             />
           </View>
         </View>
@@ -137,12 +143,12 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Usage Statistics</Text>
           <View style={styles.statsContainer}>
-            {levelUsage.map((level) => (
+            {levelUsage.map((level, index) => (
               <ProgressBar
                 key={level.label}
                 percentage={level.percentage}
                 label={level.label}
-                color={level.color}
+                colors={LEVEL_USAGE_GRADIENTS[index % LEVEL_USAGE_GRADIENTS.length]}
               />
             ))}
           </View>
