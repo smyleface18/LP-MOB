@@ -25,6 +25,6 @@ export const fontWeight = {
 export const fontFamily = {
     heading: 'Baloo2_700Bold',
     headingExtra: 'Baloo2_800ExtraBold',
-    body: 'NunitoSans_400Regular',
-    bodyBold: 'NunitoSans_700Bold',
+    body: 'Nunito_400Regular',
+    bodyBold: 'Nunito_700Bold',
 } as const;
