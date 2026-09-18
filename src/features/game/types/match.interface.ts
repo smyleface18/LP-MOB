@@ -1,22 +1,7 @@
 import { Question, QuestionDto } from '@/features/question/types';
 import { Level } from '@/shared/types/common';
 import { CoreEntity } from '@/shared/types/common/cores.type';
-import { QuestionOption } from '@/shared/types/question-option/QuestionOption';
-
-export interface Match {
-  roomId: string | null;
-  level: Level | null;
-  modeMatch: ModeMatch | null;
-  status: MatchStatus | null;
-  currentQuestion: QuestionDto | null;
-  questionNumber: number;
-  totalQuestions: number;
-  timeRemaining: number;
-  players: PlayerInfo[];
-  error: string | null;
-  lastAnswerResult: QuestionResultDto | null;
-  user: PlayerInfo;
-}
+import { OptionDto } from '@/shared/types/question-option';
 
 export enum ModeMatch {
   SINGLEPLAYER = 'SINGLEPLAYER',
@@ -62,7 +47,9 @@ export interface SocketEvents {
     modeMatch: ModeMatch;
     players: PlayerInfo[];
   }) => void;
-  answerResult: (data: { result: QuestionResultDto }) => void;
+  // El gateway (game.gateway.ts handleAnswer) emite {correct, correctAnswer} plano,
+  // no envuelto en un campo "result".
+  answerResult: (data: AnswerResult) => void;
 }
 
 export interface GameService {
@@ -73,11 +60,7 @@ export interface GameService {
   startGame(): void;
   requestRematch(): void;
   leaveRoom(): void;
-  submitAnswer(
-    questionId: string,
-    answerId: string,
-    callback: (result: QuestionResultDto | null, error?: string) => void,
-  ): void;
+  submitAnswer(questionId: string, answerId: string): void;
   isConnected(): boolean;
 }
 
@@ -114,7 +97,8 @@ export interface PlayerInfo {
   avatar?: string;
 }
 
-export interface QuestionResultDto {
-  isCorrect: boolean;
-  correctAnswer: QuestionOption[];
+// Payload real del evento de socket 'answerResult' (game.gateway.ts handleAnswer).
+export interface AnswerResult {
+  correct: boolean;
+  correctAnswer: OptionDto[];
 }

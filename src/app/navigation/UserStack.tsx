@@ -1,4 +1,4 @@
-import GameScreen from '@/features/game/screens/Game.screen';
+import GameScreen from '@/features/game/screens/Game';
 import UserDashboardScreen from '@/features/auth/screens/UserDashboard';
 import { createStackNavigator } from '@react-navigation/stack';
 

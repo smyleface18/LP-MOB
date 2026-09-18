@@ -5,6 +5,7 @@ import { OptionButton } from '@/shared/components/OptionButton/OptionButton.comp
 import { ResultModal } from '@/shared/components/ResultModal/ResultModal.component';
 import { QuestionDto } from '@/features/question/types';
 import { useTheme } from '@/app/providers/theme.provider';
+import { useBreakpoint } from '@/shared/ui/theme/useBreakpoint';
 
 const PAGE_MAX_WIDTH = 640;
 
@@ -36,7 +37,8 @@ const GamePlay: React.FC<GamePlayProps> = ({
   selectedOption,
 }) => {
   const theme = useTheme();
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const { isDesktop } = useBreakpoint();
+  const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 
   const getOptionVariant = useCallback(
     (optionId: string): 'default' | 'correct' | 'incorrect' => {
@@ -107,7 +109,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
   );
 };
 
-const createStyles = (theme: ReturnType<typeof useTheme>) =>
+const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -119,7 +121,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>) =>
     scrollContent: {
       flexGrow: 1,
       alignItems: 'center',
-      padding: theme.spacing.lg,
+      padding: isDesktop ? theme.spacing.xl : theme.spacing.lg,
     },
     page: {
       width: '100%',

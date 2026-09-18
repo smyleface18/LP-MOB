@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import GamePlay from './GamePlay.screen';
+import GamePlay from './GamePlay.view';
 import { QuestionDto } from '@/features/question/types';
 import { ContentType, Level } from '@/shared/types/common';
 import { TypeQuestionCategory } from '@/shared/types/category-question';

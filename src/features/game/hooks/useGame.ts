@@ -2,8 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useAuthState } from '@/store';
 import { socketService } from '../services/socket.service';
 import { Question, QuestionDto } from '@/features/question/types';
-import { OptionDto } from '@/shared/types/question-option';
-import { MatchStatus, ModeMatch, PlayerInfo } from '../types';
+import { MatchStatus, ModeMatch, PlayerInfo, AnswerResult } from '../types';
 import { Level } from '@/shared/types/common';
 
 interface Game {
@@ -19,7 +18,7 @@ interface Game {
   timeRemaining: number;
   players: PlayerInfo[];
   error: string | null;
-  lastAnswerResult: { correct: boolean; correctAnswer: OptionDto[] } | null;
+  lastAnswerResult: AnswerResult | null;
 }
 
 const INITIAL_STATE: Game = {
@@ -120,7 +119,6 @@ export const useGame = () => {
         gameStarted: false,
         currentQuestion: null,
         timeRemaining: 0,
-        score: 0,
         error: null,
       }));
       stopTimer();
@@ -248,7 +246,7 @@ export const useGame = () => {
       startTimer(timeRemaining);
     };
 
-    const handleAnswerResult = (data: { correct: boolean; correctAnswer: OptionDto[] }) => {
+    const handleAnswerResult = (data: AnswerResult) => {
       setGameState((prev) => ({
         ...prev,
         lastAnswerResult: data,
@@ -308,7 +306,6 @@ export const useGame = () => {
         questionNumber: 0,
         totalQuestions: 0,
         timeRemaining: 0,
-        score: 0,
         lastAnswerResult: null,
         error: null,
       }));
