@@ -1,24 +1,18 @@
 import { useState } from 'react';
 import { AuthService } from '../services/auth.service';
-import { Authenticated, SignUpDto } from '../types';
+import { Authenticated, SignUpDto, SignUpResponse } from '../types';
 import { useAppStore } from '@/store';
 import { ApiResponse } from '@/shared/api/types';
 
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
-  const [signUpForm, setSignUpForm] = useState({
-    email: '',
-    nickname: '',
-    password: '',
-    confirmPassword: '',
-  });
 
   const signInStatus = useAppStore((s) => s.signInStatus);
   const signOut = useAppStore((s) => s.signOut);
   const refreshToken = useAppStore((s) => s.refreshToken);
 
-  const signUp = async (dto: SignUpDto): Promise<ApiResponse<null> | null> => {
+  const signUp = async (dto: SignUpDto): Promise<ApiResponse<SignUpResponse> | null> => {
     setLoading(true);
     setError(undefined);
     const response = await AuthService.signUp(dto);
@@ -72,5 +66,5 @@ export const useAuth = () => {
     }
   };
 
-  return { signUp, signIn, handleSignOut, loading, error, signUpForm, setSignUpForm };
+  return { signUp, signIn, handleSignOut, loading, error };
 };

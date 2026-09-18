@@ -1,5 +1,5 @@
-import SignInScreen from '@/features/auth/screens/SignIn.screen';
-import SignupScreen from '@/features/auth/screens/Signup.screen';
+import SignInScreen from '@/features/auth/screens/SignIn';
+import SignupScreen from '@/features/auth/screens/Signup';
 import { createStackNavigator } from '@react-navigation/stack';
 
 const Stack = createStackNavigator();

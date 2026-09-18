@@ -1,11 +1,11 @@
 import { ApiResponse } from '@/shared/api/types';
-import { Authenticated, SignUpDto } from '../types';
+import { Authenticated, SignUpDto, SignUpResponse } from '../types';
 import { apiService } from '@/shared/api/api.service';
 import { API_ENDPOINTS } from '@/shared/api/apiConfig';
 
 export const AuthService = {
-  async signUp(signUpDto: SignUpDto): Promise<ApiResponse<null>> {
-    return await apiService.post<null>(API_ENDPOINTS.AUTH.SIGN_UP, {
+  async signUp(signUpDto: SignUpDto): Promise<ApiResponse<SignUpResponse>> {
+    return await apiService.post<SignUpResponse>(API_ENDPOINTS.AUTH.SIGN_UP, {
       ...signUpDto,
     });
   },

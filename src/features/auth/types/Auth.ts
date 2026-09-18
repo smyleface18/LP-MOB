@@ -42,6 +42,11 @@ export interface SignUpDto {
   password: string;
 }
 
+export interface SignUpResponse {
+  userSub: string;
+  message: string;
+}
+
 export interface TokenPayload {
   exp: number;
   iat: number;
