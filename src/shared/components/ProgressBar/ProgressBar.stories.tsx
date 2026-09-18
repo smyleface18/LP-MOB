@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { ProgressBar } from './ProgressBar.component';
+import { GRADIENT_PRESETS } from '@/shared/ui/theme/progressGradients';
 
 const meta: Meta<typeof ProgressBar> = {
   title: 'Atoms/ProgressBar',
@@ -7,7 +8,6 @@ const meta: Meta<typeof ProgressBar> = {
   args: {
     percentage: 65,
     label: 'Progreso de la lección',
-    color: 'primary',
   },
   argTypes: {
     percentage: {
@@ -17,11 +17,6 @@ const meta: Meta<typeof ProgressBar> = {
         max: 100,
         step: 1,
       },
-    },
-    color: {
-      control: 'select',
-      options: ['primary', 'secondary', 'success', 'accent'],
-      description: 'Color semántico del progreso. Accent se reserva para métricas de gamificación.',
     },
   },
 };
@@ -34,31 +29,38 @@ export const Default: Story = {
   args: {
     percentage: 65,
     label: 'Progreso de la lección',
-    color: 'primary',
   },
 };
 
-export const Secondary: Story = {
+export const SecondaryToAccent: Story = {
   args: {
     percentage: 45,
     label: 'Progreso secundario',
-    color: 'secondary',
+    colors: GRADIENT_PRESETS.secondaryToAccent,
   },
 };
 
-export const Success: Story = {
+export const SuccessToPrimary: Story = {
   args: {
     percentage: 100,
     label: 'Lección completada',
-    color: 'success',
+    colors: GRADIENT_PRESETS.successToPrimary,
   },
 };
 
-export const Gamification: Story = {
+export const TricolorEnergy: Story = {
+  args: {
+    percentage: 100,
+    label: 'Progreso de XP',
+    colors: GRADIENT_PRESETS.tricolorEnergy,
+  },
+};
+
+export const CustomColors: Story = {
   args: {
     percentage: 80,
-    label: 'Progreso de XP',
-    color: 'accent',
+    label: 'Combinación custom',
+    colors: ['accentSubtle', 'accent', 'primary'],
   },
 };
 
@@ -66,6 +68,5 @@ export const Empty: Story = {
   args: {
     percentage: 0,
     label: 'Sin progreso',
-    color: 'primary',
   },
 };
