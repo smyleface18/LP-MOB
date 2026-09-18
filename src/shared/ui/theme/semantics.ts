@@ -39,7 +39,7 @@ export interface ColorTheme {
   secondary: string;
 
   /**
-   * Versión tenue del naranja. Mismo uso que primarySubtle pero
+   * Versión tenue del negro. Mismo uso que primarySubtle pero
    * para contexto secundario: fondos de tags de categoría,
    * highlights suaves en listas.
    */
@@ -165,9 +165,9 @@ export const lightColors: ColorTheme = {
   primaryPressed: colors.brand.redDark,
   primarySubtle: colors.brand.redLight,
 
-  secondary: colors.brand.orange,
-  secondarySubtle: colors.brand.orangeLight,
-  secondaryButton: colors.brand.orangeStrong,
+  secondary: colors.surfaceDark.base,
+  secondarySubtle: colors.neutral.gray,
+  secondaryButton: colors.neutral.gray,
 
   accent: colors.brand.yellow,
   accentSubtle: colors.brand.yellowLight,
@@ -179,16 +179,16 @@ export const lightColors: ColorTheme = {
   surface: colors.neutral.white,
   surfaceElevated: colors.neutral.white,
 
-  border: withAlpha(colors.brand.black, 0.08),
-  textPrimary: colors.brand.black,
-  textSecondary: colors.neutral.gray,
+  border: withAlpha(colors.surfaceDark.base, 0.08),
+  textPrimary: colors.surfaceDark.base,
+  textSecondary: colors.neutral.grayStrong,
   textInverse: colors.neutral.white,
 
-  overlay: withAlpha(colors.brand.black, 0.5),
+  overlay: withAlpha(colors.surfaceDark.base, 0.5),
 
   onPrimary: colors.neutral.white,
-  onSecondary: colors.neutral.white,
-  onAccent: colors.brand.black,
+  onSecondary: colors.surfaceDark.base,
+  onAccent: colors.surfaceDark.base,
   onSuccess: colors.neutral.white,
 
   textPlaceholder: colors.neutral.grayLight,
@@ -205,9 +205,9 @@ export const darkColors: ColorTheme = {
   primaryPressed: colors.brand.redDark,
   primarySubtle: withAlpha(colors.brand.red, 0.16),
 
-  secondary: colors.brand.orange,
-  secondarySubtle: withAlpha(colors.brand.orange, 0.16),
-  secondaryButton: colors.brand.orangeStrong,
+  secondary: colors.neutral.white,
+  secondarySubtle: colors.neutral.gray,
+  secondaryButton: colors.surfaceDark.base,
 
   accent: colors.brand.yellow,
   accentSubtle: withAlpha(colors.brand.yellow, 0.16),
@@ -221,14 +221,14 @@ export const darkColors: ColorTheme = {
 
   border: withAlpha(colors.neutral.white, 0.12),
   textPrimary: colors.neutral.white,
-  textSecondary: colors.neutral.gray,
-  textInverse: colors.brand.black,
+  textSecondary: colors.neutral.grayStrong,
+  textInverse: colors.surfaceDark.base,
 
-  overlay: withAlpha('#000000', 0.65),
+  overlay: withAlpha(colors.surfaceDark.base, 0.65),
 
   onPrimary: colors.neutral.white,
   onSecondary: colors.neutral.white,
-  onAccent: colors.brand.black,
+  onAccent: colors.surfaceDark.base,
   onSuccess: colors.neutral.white,
 
   textPlaceholder: withAlpha(colors.neutral.white, 0.35),

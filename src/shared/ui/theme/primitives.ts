@@ -1,30 +1,30 @@
 export const colors = {
   brand: {
-    red: '#DC2626',
+    red: '#E7274F', //#E01C48 E01C48
     redLight: '#FEE2E2',
     redDark: '#BE123C',
 
-    yellow: '#F59E0B',
-    yellowLight: '#FEF3C7',
+    yellow: '#E69010',
+    yellowLight: '#FABC22',
 
     orange: '#EA580C',
     orangeStrong: '#C2410C',
     orangeLight: '#FFEDD5',
 
-    black: '#18181B',
-
-    green: '#10B981',
-    greenLight: '#D1FAE5',
+    green: '#39977B',
+    greenLight: '#7EDABA',
+    greenExtraLight: '#ECFDF5',
   },
   neutral: {
     white: '#F8FAFC',
-    gray: '#94A3B8',
+    gray: '#E4E1E6',
     grayLight: '#CBD5E1',
+    grayStrong: '#9DA3AE',
   },
   surfaceDark: {
-    base: '#18181B',
-    raised: '#221F24',
-    overlay2: '#2C2830',
+    base: '#1F2937',
+    raised: '#374151',
+    overlay2: '#1F2937',
   },
   danger: {
     base: '#E11D48',

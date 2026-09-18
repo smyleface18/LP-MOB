@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 
 export interface ButtonProps extends TouchableOpacityProps {
-  variant?: 'primary' | 'secondary' | 'outlined';
+  variant?: 'primary' | 'secondary' | 'outlined' | 'outlinedSecondary';
   title: string;
   size?: 'small' | 'medium' | 'large';
 }
@@ -46,6 +46,14 @@ export const Button: React.FC<ButtonProps> = ({
         borderColor: theme.color.primary,
       },
       text: { color: theme.color.primary },
+    },
+    outlinedSecondary: {
+      container: {
+        backgroundColor: 'transparent',
+        borderWidth: 1,
+        borderColor: theme.color.secondaryButton,
+      },
+      text: { color: theme.color.textPrimary },
     },
   };
 
