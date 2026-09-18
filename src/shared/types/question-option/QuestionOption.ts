@@ -15,3 +15,15 @@ export interface OptionDto {
   id: string;
   content: ContentObject;
 }
+
+/**
+ * Coincide con CreateQuestionOptionDto del backend: OmitType(QuestionOption,
+ * ['id','createdAt','updatedAt','active','question']).
+ */
+export interface CreateQuestionOptionDto {
+  content: ContentObject;
+  isCorrect: boolean;
+  questionId: string;
+}
+
+export interface UpdateQuestionOptionDto extends Partial<CreateQuestionOptionDto> {}

@@ -9,6 +9,7 @@ if (!API_BASE_URL) {
 export const API_ENDPOINTS = {
   CATEGORIES: '/category-question',
   QUESTIONS: '/question',
+  QUESTION_OPTIONS: '/question-options',
   AUTH: {
     SIGN_UP: '/auth/signUp',
     SIGN_IN: '/auth/signIn',

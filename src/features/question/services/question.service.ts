@@ -3,7 +3,11 @@ import { apiService } from '@/shared/api/api.service';
 import { API_ENDPOINTS } from '@/shared/api/apiConfig';
 import { CreateQuestionDto, Question } from '../types';
 
-export interface UpdateQuestionDto extends Partial<CreateQuestionDto> {}
+// A diferencia de CreateQuestionDto, el backend sí permite actualizar `active`
+// en un update (ver UpdateQuestionDto en apps/LP-API).
+export interface UpdateQuestionDto extends Partial<CreateQuestionDto> {
+  active?: boolean;
+}
 
 export const questionService = {
   // Obtener todas las preguntas
@@ -23,7 +27,7 @@ export const questionService = {
 
   // Crear múltiples preguntas
   createMany: async (data: CreateQuestionDto[]): Promise<ApiResponse<Question[]>> => {
-    return apiService.post<Question[]>(`${API_ENDPOINTS.QUESTIONS}/bulk`, data);
+    return apiService.post<Question[]>(`${API_ENDPOINTS.QUESTIONS}/batch`, data);
   },
 
   // Actualizar una pregunta

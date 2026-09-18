@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import QuestionView from '@/features/question/components/QuestionView.component';
+import QuestionView from '@/features/question/components/QuestionView/QuestionView.component';
 import { OptionButton } from '@/shared/components/OptionButton/OptionButton.component';
 import { ResultModal } from '@/shared/components/ResultModal/ResultModal.component';
 import { QuestionDto } from '@/features/question/types';

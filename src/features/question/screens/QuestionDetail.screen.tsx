@@ -1,251 +1,237 @@
-﻿import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  Alert,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { View, Text, ScrollView, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { Button } from '@/shared/ui';
-import { Input } from '@/shared/ui';
-import { FilterSection } from '@/shared/ui';
+import { useTheme } from '@/app/providers/theme.provider';
+import { useBreakpoint } from '@/shared/ui/theme/useBreakpoint';
+import Button from '@/shared/components/Button/Button.component';
+import QuestionForm, {
+  LevelFilter,
+  QuestionFormValues,
+  TypeFilter,
+} from '../components/QuestionForm';
 import { useCategories } from '@/features/category/hooks/useCategories';
 import { questionService } from '../services/question.service';
+import { questionOptionsService } from '../services/question-options.service';
+import { getErrorMessage } from '@/shared/api/getErrorMessage';
 import { Question } from '../types';
-import { Level } from '@/shared/types/common';
-import { TypeQuestionCategory } from '@/shared/types/category-question';
+import { ContentType } from '@/shared/types/common';
 
 interface RouteParams {
   questionId: string;
   question?: Question;
 }
 
+const PAGE_MAX_WIDTH = 1100;
+
+const toFormValues = (question: Question): QuestionFormValues => ({
+  content: question.content,
+  moreInfo: question.moreInfo ?? '',
+  timeLimit: question.timeLimit,
+  categoryId: question.categoryId,
+  options: (question.options ?? []).map((option) => ({
+    id: option.id,
+    content: option.content,
+    isCorrect: option.isCorrect,
+  })),
+});
+
 const QuestionDetailScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { questionId, question: initialQuestion } = route.params as RouteParams;
 
+  const theme = useTheme();
+  const { isDesktop } = useBreakpoint();
+  const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
   const { categories, loading: categoriesLoading } = useCategories();
+
   const [loading, setLoading] = useState(!initialQuestion);
   const [saving, setSaving] = useState(false);
-  const [question, setQuestion] = useState<Question | null>(initialQuestion || null);
+  const [question, setQuestion] = useState<Question | null>(initialQuestion ?? null);
+  // Opciones tal como están en el backend — se usa para saber cuáles borrar
+  // al guardar (las que ya no aparecen en formValues.options).
+  const [originalOptionIds, setOriginalOptionIds] = useState<string[]>(
+    initialQuestion?.options?.map((o) => o.id) ?? [],
+  );
+  const [formValues, setFormValues] = useState<QuestionFormValues>(
+    initialQuestion
+      ? toFormValues(initialQuestion)
+      : {
+          content: { type: ContentType.TEXT, value: '' },
+          moreInfo: '',
+          timeLimit: 15,
+          categoryId: '',
+          options: [],
+        },
+  );
+  const [selectedLevel, setSelectedLevel] = useState<LevelFilter>(
+    initialQuestion?.category?.level ?? 'all',
+  );
+  const [selectedType, setSelectedType] = useState<TypeFilter>(
+    initialQuestion?.category?.type ?? 'all',
+  );
 
-  const [formData, setFormData] = useState({
-    questionText: '',
-    questionImage: '',
-    options: ['', '', '', ''],
-    correctAnswer: '',
-    categoryId: '',
-    active: true,
-  });
-
-  const [selectedLevel, setSelectedLevel] = useState<Level | ''>('');
-  const [selectedType, setSelectedType] = useState<TypeQuestionCategory | ''>('');
-
-  // Cargar la pregunta si no viene en los params
   useEffect(() => {
-    if (!initialQuestion && questionId) {
-      loadQuestion();
-    }
+    if (initialQuestion || !questionId) return;
+
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      const response = await questionService.getById(questionId);
+      if (cancelled) return;
+
+      if (!response.ok || !response.data) {
+        Alert.alert('Error', getErrorMessage(response.message, 'No se pudo cargar la pregunta'));
+        setLoading(false);
+        return;
+      }
+
+      setQuestion(response.data);
+      setFormValues(toFormValues(response.data));
+      setOriginalOptionIds((response.data.options ?? []).map((o) => o.id));
+      setSelectedLevel(response.data.category?.level ?? 'all');
+      setSelectedType(response.data.category?.type ?? 'all');
+      setLoading(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [questionId, initialQuestion]);
 
-  // Actualizar formData cuando la pregunta se carga
-  useEffect(() => {
-    if (question) {
-      setFormData({
-        questionText: question.questionText || '',
-        questionImage: question.media?.url || '',
-        options: question.options
-          .map((o) => o.content.value ?? '')
-          .concat(['', '', ''])
-          .slice(0, 4),
-        correctAnswer: '',
-        categoryId: question.categoryId,
-        active: question.active,
-      });
-
-      // Setear filtros basados en la categorÃ­a actual
-      if (question.category) {
-        setSelectedLevel(question.category.level);
-        setSelectedType(question.category.type);
-      }
-    }
-  }, [question]);
-
-  const loadQuestion = async () => {
-    try {
-      setLoading(true);
-      const questionData = await questionService.getById(questionId);
-      setQuestion(questionData.data ?? null);
-    } catch (error) {
-      Alert.alert('Error', 'No se pudo cargar la pregunta');
-      console.error('Error loading question:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Filtrar categorÃ­as basado en nivel y tipo seleccionados
-  const filteredCategories = categories.filter((category) => {
-    const matchesLevel = !selectedLevel || category.level === selectedLevel;
-    const matchesType = !selectedType || category.type === selectedType;
-    return matchesLevel && matchesType;
-  });
-
-  const categoryOptions = filteredCategories.map((cat) => ({
-    value: cat.id,
-    label: cat.descriptionCategory,
-  }));
-
-  const levelOptions = Object.values(Level).map((level) => ({
-    value: level,
-    label: level,
-  }));
-
-  const typeOptions = Object.values(TypeQuestionCategory).map((type) => ({
-    value: type,
-    label: type,
-  }));
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleOptionChange = (index: number, value: string) => {
-    const newOptions = [...formData.options];
-    newOptions[index] = value;
-    setFormData((prev) => ({
-      ...prev,
-      options: newOptions,
-    }));
-  };
-
   const handleAddOption = () => {
-    if (formData.options.length < 6) {
-      setFormData((prev) => ({
-        ...prev,
-        options: [...prev.options, ''],
-      }));
-    }
+    setFormValues((prev) =>
+      prev.options.length < 6
+        ? {
+            ...prev,
+            options: [...prev.options, { content: { type: ContentType.TEXT, value: '' }, isCorrect: false }],
+          }
+        : prev,
+    );
   };
 
   const handleRemoveOption = (index: number) => {
-    if (formData.options.length > 2) {
-      const newOptions = formData.options.filter((_, i) => i !== index);
-      setFormData((prev) => ({
-        ...prev,
-        options: newOptions,
-        correctAnswer: prev.correctAnswer === prev.options[index] ? '' : prev.correctAnswer,
-      }));
-    }
+    setFormValues((prev) =>
+      prev.options.length <= 2
+        ? prev
+        : { ...prev, options: prev.options.filter((_, i) => i !== index) },
+    );
   };
 
-  const handleSetCorrectAnswer = (answer: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      correctAnswer: answer,
-    }));
-  };
-
-  const validateForm = () => {
-    if (!formData.questionText && !formData.questionImage) {
-      Alert.alert('Error', 'Debe proporcionar texto de pregunta o imagen');
+  const validateForm = (): boolean => {
+    if (!formValues.content.value.trim()) {
+      Alert.alert('Error', 'Debe proporcionar el contenido de la pregunta');
       return false;
     }
-
-    const validOptions = formData.options.filter((opt) => opt.trim() !== '');
-    if (validOptions.length < 2) {
+    const filledOptions = formValues.options.filter((opt) => opt.content.value.trim() !== '');
+    if (filledOptions.length < 2) {
       Alert.alert('Error', 'Debe proporcionar al menos 2 opciones');
       return false;
     }
-
-    if (!formData.correctAnswer) {
-      Alert.alert('Error', 'Debe seleccionar una respuesta correcta');
+    if (!formValues.options.some((opt) => opt.isCorrect)) {
+      Alert.alert('Error', 'Debe marcar una opción como la respuesta correcta');
       return false;
     }
-
-    if (!formData.categoryId) {
-      Alert.alert('Error', 'Debe seleccionar una categorÃ­a');
+    if (!formValues.categoryId) {
+      Alert.alert('Error', 'Debe seleccionar una categoría');
       return false;
     }
-
     return true;
   };
 
   const handleSave = async () => {
-    if (!validateForm()) return;
+    if (!validateForm() || !question) return;
 
-    try {
-      setSaving(true);
-      const submitData = {
-        ...formData,
-        options: formData.options.filter((opt) => opt.trim() !== ''),
-      };
+    setSaving(true);
 
-      await questionService.update(questionId, submitData);
-      Alert.alert('Ã‰xito', 'Pregunta actualizada correctamente', [
-        {
-          text: 'OK',
-          onPress: () => navigation.goBack(),
-        },
-      ]);
-    } catch (error) {
-      Alert.alert('Error', 'No se pudo actualizar la pregunta');
-      console.error('Error updating question:', error);
-    } finally {
+    const questionResponse = await questionService.update(questionId, {
+      content: formValues.content,
+      moreInfo: formValues.moreInfo || undefined,
+      categoryId: formValues.categoryId,
+      timeLimit: formValues.timeLimit,
+    });
+
+    if (!questionResponse.ok) {
       setSaving(false);
+      Alert.alert('Error', getErrorMessage(questionResponse.message, 'No se pudo actualizar la pregunta'));
+      return;
     }
+
+    const currentOptionIds = formValues.options
+      .map((opt) => opt.id)
+      .filter((id): id is string => Boolean(id));
+    const removedOptionIds = originalOptionIds.filter((id) => !currentOptionIds.includes(id));
+
+    const optionWrites = await Promise.all([
+      ...formValues.options
+        .filter((opt) => opt.content.value.trim() !== '')
+        .map((opt) =>
+          opt.id
+            ? questionOptionsService.update(opt.id, { content: opt.content, isCorrect: opt.isCorrect })
+            : questionOptionsService.create({
+                content: opt.content,
+                isCorrect: opt.isCorrect,
+                questionId,
+              }),
+        ),
+      ...removedOptionIds.map((id) => questionOptionsService.delete(id)),
+    ]);
+
+    setSaving(false);
+
+    const failed = optionWrites.some((response) => !response.ok);
+    if (failed) {
+      Alert.alert('Error', 'La pregunta se guardó, pero algunas opciones no se pudieron actualizar');
+      return;
+    }
+
+    Alert.alert('Éxito', 'Pregunta actualizada correctamente', [
+      { text: 'OK', onPress: () => navigation.goBack() },
+    ]);
   };
 
   const handleDelete = () => {
-    Alert.alert('Eliminar Pregunta', 'Â¿EstÃ¡s seguro de que quieres eliminar esta pregunta?', [
+    Alert.alert('Eliminar Pregunta', '¿Estás seguro de que quieres eliminar esta pregunta?', [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Eliminar',
         style: 'destructive',
         onPress: async () => {
-          try {
-            await questionService.delete(questionId);
-            Alert.alert('Ã‰xito', 'Pregunta eliminada correctamente', [
-              {
-                text: 'OK',
-                onPress: () => navigation.goBack(),
-              },
-            ]);
-          } catch (error) {
-            Alert.alert('Error', 'No se pudo eliminar la pregunta');
+          const response = await questionService.delete(questionId);
+          if (!response.ok) {
+            Alert.alert('Error', getErrorMessage(response.message, 'No se pudo eliminar la pregunta'));
+            return;
           }
+          Alert.alert('Éxito', 'Pregunta eliminada correctamente', [
+            { text: 'OK', onPress: () => navigation.goBack() },
+          ]);
         },
       },
     ]);
   };
 
   const handleToggleActive = async () => {
-    try {
-      setSaving(true);
-      await questionService.update(questionId, { active: !formData.active });
-      setFormData((prev) => ({ ...prev, active: !prev.active }));
+    if (!question) return;
+
+    setSaving(true);
+    const response = await questionService.update(questionId, { active: !question.active });
+    setSaving(false);
+
+    if (!response.ok) {
       Alert.alert(
-        'Ã‰xito',
-        `Pregunta ${!formData.active ? 'activada' : 'desactivada'} correctamente`,
+        'Error',
+        getErrorMessage(response.message, 'No se pudo actualizar el estado de la pregunta'),
       );
-    } catch (error) {
-      Alert.alert('Error', 'No se pudo actualizar el estado de la pregunta');
-    } finally {
-      setSaving(false);
+      return;
     }
+
+    setQuestion((prev) => (prev ? { ...prev, active: !prev.active } : prev));
   };
 
   if (loading || categoriesLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#FF0000" />
+        <ActivityIndicator size="large" color={theme.color.primary} />
         <Text style={styles.loadingText}>Cargando pregunta...</Text>
       </View>
     );
@@ -253,195 +239,78 @@ const QuestionDetailScreen = () => {
 
   if (!question) {
     return (
-      <View style={styles.errorContainer}>
+      <View style={styles.loadingContainer}>
         <Text style={styles.errorText}>No se pudo cargar la pregunta</Text>
-        <Button
-          title="Volver"
-          variant="primary"
-          onPress={() => navigation.goBack()}
-          style={styles.retryButton}
-        />
+        <Button title="Volver" variant="primary" onPress={() => navigation.goBack()} />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Editar Pregunta</Text>
-        <Text style={styles.subtitle}>ID: {questionId}</Text>
-      </View>
-
-      {/* Estado de la Pregunta */}
-      <View style={styles.statusContainer}>
-        <View style={styles.statusRow}>
-          <Text style={styles.statusLabel}>Estado:</Text>
-          <TouchableOpacity
-            style={[
-              styles.statusButton,
-              formData.active ? styles.statusActive : styles.statusInactive,
-            ]}
-            onPress={handleToggleActive}
-            disabled={saving}
-          >
-            <Text style={styles.statusText}>{formData.active ? 'Activa' : 'Inactiva'}</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Formulario */}
-      <View style={styles.formContainer}>
-        {/* Texto de la Pregunta */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Texto de la Pregunta</Text>
-          <Input
-            placeholder="Ingrese el texto de la pregunta..."
-            value={formData.questionText}
-            onChangeText={(value) => handleInputChange('questionText', value)}
-            variant="outlined"
-            multiline
-            numberOfLines={3}
-            style={styles.textArea}
-          />
-        </View>
-
-        {/* Imagen de la Pregunta (Opcional) */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Imagen de la Pregunta (Opcional)</Text>
-          <Input
-            placeholder="URL de la imagen..."
-            value={formData.questionImage}
-            onChangeText={(value) => handleInputChange('questionImage', value)}
-            variant="outlined"
-          />
-        </View>
-
-        {/* Filtros para CategorÃ­as */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Filtrar CategorÃ­as</Text>
-          <FilterSection
-            title="Nivel"
-            options={[{ value: '', label: 'Todos los niveles' }, ...levelOptions]}
-            selectedValue={selectedLevel}
-            onValueChange={(value) => setSelectedLevel(value as Level | '')}
-          />
-
-          <FilterSection
-            title="Tipo"
-            options={[{ value: '', label: 'Todos los tipos' }, ...typeOptions]}
-            selectedValue={selectedType}
-            onValueChange={(value) => setSelectedType(value as TypeQuestionCategory | '')}
-          />
-        </View>
-
-        {/* SelecciÃ³n de CategorÃ­a */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>CategorÃ­a</Text>
-          {categoryOptions.length > 0 ? (
-            <FilterSection
-              title=""
-              options={categoryOptions}
-              selectedValue={formData.categoryId}
-              onValueChange={(value) => handleInputChange('categoryId', value)}
+    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+      <View style={styles.page}>
+        <View style={styles.header}>
+          <View style={styles.headerRow}>
+            <View>
+              <Text style={styles.title}>Editar Pregunta</Text>
+              <Text style={styles.subtitle}>ID: {questionId}</Text>
+            </View>
+            <Button
+              title={question.active ? 'Activa' : 'Inactiva'}
+              variant={question.active ? 'primary' : 'outlined'}
+              size="small"
+              onPress={handleToggleActive}
+              disabled={saving}
+              style={styles.statusButton}
             />
-          ) : (
-            <Text style={styles.noCategoriesText}>
-              No hay categorÃ­as disponibles con los filtros seleccionados
-            </Text>
-          )}
+          </View>
         </View>
 
-        {/* Opciones de Respuesta */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Opciones de Respuesta</Text>
-            <Text style={styles.optionCount}>
-              {formData.options.filter((opt) => opt.trim() !== '').length}/6
-            </Text>
-          </View>
+        <View style={styles.formContainer}>
+          <QuestionForm
+            values={formValues}
+            categories={categories}
+            selectedLevel={selectedLevel}
+            selectedType={selectedType}
+            onLevelFilterChange={setSelectedLevel}
+            onTypeFilterChange={setSelectedType}
+            onContentChange={(content) => setFormValues((prev) => ({ ...prev, content }))}
+            onMoreInfoChange={(moreInfo) => setFormValues((prev) => ({ ...prev, moreInfo }))}
+            onTimeLimitChange={(timeLimit) => setFormValues((prev) => ({ ...prev, timeLimit }))}
+            onCategoryChange={(categoryId) => setFormValues((prev) => ({ ...prev, categoryId }))}
+            onOptionContentChange={(index, content) =>
+              setFormValues((prev) => ({
+                ...prev,
+                options: prev.options.map((opt, i) => (i === index ? { ...opt, content } : opt)),
+              }))
+            }
+            onAddOption={handleAddOption}
+            onRemoveOption={handleRemoveOption}
+            onSetCorrectOption={(index) =>
+              setFormValues((prev) => ({
+                ...prev,
+                options: prev.options.map((opt, i) => ({ ...opt, isCorrect: i === index })),
+              }))
+            }
+          />
 
-          {formData.options.map((option, index) => (
-            <View key={index} style={styles.optionRow}>
-              <Input
-                placeholder={`OpciÃ³n ${index + 1}`}
-                value={option}
-                onChangeText={(value) => handleOptionChange(index, value)}
-                variant="outlined"
-                style={styles.optionInput}
-              />
-              <View style={styles.optionActions}>
-                <TouchableOpacity
-                  style={[
-                    styles.correctAnswerButton,
-                    formData.correctAnswer === option && styles.correctAnswerButtonActive,
-                  ]}
-                  onPress={() => option.trim() && handleSetCorrectAnswer(option)}
-                >
-                  <Text
-                    style={[
-                      styles.correctAnswerText,
-                      formData.correctAnswer === option && styles.correctAnswerTextActive,
-                    ]}
-                  >
-                    âœ“
-                  </Text>
-                </TouchableOpacity>
-                {formData.options.length > 2 && (
-                  <TouchableOpacity
-                    style={styles.removeButton}
-                    onPress={() => handleRemoveOption(index)}
-                  >
-                    <Text style={styles.removeButtonText}>Ã—</Text>
-                  </TouchableOpacity>
-                )}
+          <View style={styles.actionsContainer}>
+            <View style={styles.deleteButtonWrap}>
+              <Button title="Eliminar" variant="outlined" onPress={handleDelete} />
+            </View>
+            <View style={styles.saveActions}>
+              <View style={styles.actionButton}>
+                <Button title="Cancelar" variant="outlined" onPress={() => navigation.goBack()} />
+              </View>
+              <View style={styles.submitButton}>
+                <Button
+                  title={saving ? 'Guardando...' : 'Guardar Cambios'}
+                  variant="primary"
+                  onPress={handleSave}
+                  disabled={saving}
+                />
               </View>
             </View>
-          ))}
-
-          {formData.options.length < 6 && (
-            <Button
-              title="+ Agregar OpciÃ³n"
-              variant="outlined"
-              size="small"
-              onPress={handleAddOption}
-              style={styles.addOptionButton}
-            />
-          )}
-        </View>
-
-        {/* Respuesta Correcta */}
-        {formData.correctAnswer && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Respuesta Correcta Seleccionada</Text>
-            <View style={styles.correctAnswerDisplay}>
-              <Text style={styles.correctAnswerDisplayText}>{formData.correctAnswer}</Text>
-            </View>
-          </View>
-        )}
-
-        {/* Botones de AcciÃ³n */}
-        <View style={styles.actionsContainer}>
-          <Button
-            title="Eliminar"
-            variant="outlined"
-            onPress={handleDelete}
-            style={styles.deleteButton}
-          />
-          <View style={styles.saveActions}>
-            <Button
-              title="Cancelar"
-              variant="outlined"
-              onPress={() => navigation.goBack()}
-              style={styles.cancelButton}
-            />
-            <Button
-              title={saving ? 'Guardando...' : 'Guardar Cambios'}
-              variant="primary"
-              onPress={handleSave}
-              disabled={saving}
-              style={styles.saveButton}
-            />
           </View>
         </View>
       </View>
@@ -449,203 +318,90 @@ const QuestionDetailScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  header: {
-    padding: 20,
-    backgroundColor: '#000000ff',
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 5,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#FFFFFF',
-    opacity: 0.8,
-  },
-  statusContainer: {
-    padding: 15,
-    backgroundColor: '#F8F8F8',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-  },
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  statusLabel: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000000',
-  },
-  statusButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  statusActive: {
-    backgroundColor: '#4CAF50',
-  },
-  statusInactive: {
-    backgroundColor: '#FF9800',
-  },
-  statusText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  formContainer: {
-    padding: 20,
-  },
-  section: {
-    marginBottom: 25,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000000',
-    marginBottom: 10,
-  },
-  textArea: {
-    minHeight: 80,
-    textAlignVertical: 'top',
-  },
-  noCategoriesText: {
-    color: '#666666',
-    fontStyle: 'italic',
-    textAlign: 'center',
-    marginTop: 10,
-  },
-  optionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  optionInput: {
-    flex: 1,
-    marginRight: 10,
-  },
-  optionActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  correctAnswerButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: '#CCCCCC',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  correctAnswerButtonActive: {
-    borderColor: '#4CAF50',
-    backgroundColor: '#4CAF50',
-  },
-  correctAnswerText: {
-    fontSize: 16,
-    color: '#CCCCCC',
-    fontWeight: 'bold',
-  },
-  correctAnswerTextActive: {
-    color: '#FFFFFF',
-  },
-  removeButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#FF4444',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  removeButtonText: {
-    fontSize: 18,
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-  },
-  addOptionButton: {
-    marginTop: 10,
-  },
-  optionCount: {
-    fontSize: 14,
-    color: '#666666',
-    fontWeight: 'bold',
-  },
-  correctAnswerDisplay: {
-    backgroundColor: '#E8F5E8',
-    padding: 15,
-    borderRadius: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: '#4CAF50',
-  },
-  correctAnswerDisplayText: {
-    fontSize: 16,
-    color: '#2E7D32',
-    fontWeight: 'bold',
-  },
-  actionsContainer: {
-    marginTop: 20,
-  },
-  deleteButton: {
-    marginBottom: 15,
-    backgroundColor: '#ffffffff',
-  },
-  saveActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  cancelButton: {
-    flex: 1,
-    marginRight: 10,
-  },
-  saveButton: {
-    flex: 1,
-    marginLeft: 10,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#666666',
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    padding: 20,
-  },
-  errorText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FF0000',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  retryButton: {
-    minWidth: 120,
-  },
-});
+const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.color.background,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      alignItems: 'center',
+      paddingBottom: theme.spacing.xl,
+    },
+    page: {
+      width: '100%',
+      maxWidth: PAGE_MAX_WIDTH,
+    },
+    header: {
+      padding: isDesktop ? theme.spacing.xl : theme.spacing.lg,
+      backgroundColor: theme.color.surfaceElevated,
+      borderBottomWidth: theme.borderWidth.xs,
+      borderBottomColor: theme.color.border,
+      borderBottomLeftRadius: theme.radius.lg,
+      borderBottomRightRadius: theme.radius.lg,
+    },
+    headerRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    title: {
+      fontSize: theme.fontSize.xxl,
+      fontFamily: theme.fontFamily.headingExtra,
+      color: theme.color.textPrimary,
+      marginBottom: theme.spacing.xs,
+    },
+    subtitle: {
+      fontSize: theme.fontSize.md,
+      fontFamily: theme.fontFamily.body,
+      color: theme.color.textSecondary,
+    },
+    statusButton: {
+      width: 120,
+    },
+    formContainer: {
+      padding: isDesktop ? theme.spacing.xl : theme.spacing.lg,
+    },
+    actionsContainer: {
+      marginTop: theme.spacing.lg,
+      flexDirection: isDesktop ? 'row' : 'column',
+      justifyContent: 'space-between',
+      alignItems: isDesktop ? 'center' : 'stretch',
+      gap: theme.spacing.md,
+    },
+    deleteButtonWrap: {
+      width: 140,
+    },
+    saveActions: {
+      flexDirection: 'row',
+      gap: theme.spacing.sm,
+    },
+    actionButton: {
+      width: 140,
+    },
+    submitButton: {
+      width: 200,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: theme.color.background,
+      gap: theme.spacing.sm,
+      padding: theme.spacing.lg,
+    },
+    loadingText: {
+      fontSize: theme.fontSize.md,
+      color: theme.color.textSecondary,
+    },
+    errorText: {
+      fontSize: theme.fontSize.lg,
+      fontFamily: theme.fontFamily.bodyBold,
+      color: theme.color.error,
+      marginBottom: theme.spacing.md,
+      textAlign: 'center',
+    },
+  });
 
 export default QuestionDetailScreen;
