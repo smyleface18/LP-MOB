@@ -1,8 +1,9 @@
 import React, { useMemo } from 'react';
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useTheme } from '@/app/providers/theme.provider';
 import { useBreakpoint } from '@/shared/ui/theme/useBreakpoint';
 import CategoryItem from '@/features/category/components/CategoryItem/CategoryItem.component';
+import { Loading } from '@/shared/components/Loading';
 import { MetricCard } from '@/shared/components/Metric/Metric.component';
 import { CircularProgress } from '@/shared/components/CircularProgress/CircularProgress.component';
 import { ProgressBar } from '@/shared/components/ProgressBar/ProgressBar.component';
@@ -209,7 +210,7 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           />
           {signOutLoading && (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="small" color={theme.color.error} />
+              <Loading size={24} />
               <Text style={styles.loadingText}>Signing out...</Text>
             </View>
           )}

@@ -7,11 +7,11 @@ import {
   Image,
   Platform,
   KeyboardAvoidingView,
-  ActivityIndicator,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/app/providers/theme.provider';
 import { useBreakpoint } from '@/shared/ui/theme/useBreakpoint';
+import DashboardBackground from '@/features/auth/components/DashboardBackground';
+import { Loading } from '@/shared/components/Loading';
 import { MetricCard } from '@/shared/components/Metric/Metric.component';
 import { CircularProgress } from '@/shared/components/CircularProgress/CircularProgress.component';
 import { ProgressBar } from '@/shared/components/ProgressBar/ProgressBar.component';
@@ -20,6 +20,12 @@ import { GRADIENT_PRESETS } from '@/shared/ui/theme/progressGradients';
 
 const PAGE_MAX_WIDTH = 720;
 const DEFAULT_AVATAR_URL = 'https://cdn-icons-png.flaticon.com/512/7178/7178489.png';
+
+// DashboardBackground renders a fixed brand-red banner (same hex in both
+// themes), so the text sitting on top of it needs a fixed light color too —
+// theme.color.textInverse can't be used here since it flips to a dark tone
+// in dark mode, which would be unreadable against the red.
+const HEADER_TEXT_ON_BANNER = '#F8FAFC';
 
 const LEVEL_PROGRESS_GRADIENTS = [
   GRADIENT_PRESETS.secondaryToPrimary,
@@ -80,12 +86,9 @@ const UserDashboardView: React.FC<UserDashboardViewProps> = ({
       >
         <View style={styles.page}>
           {/* Header */}
-          <LinearGradient
-            colors={[theme.color.primarySubtle, theme.color.background]}
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 1 }}
-            style={styles.header}
-          >
+          <View style={styles.header}>
+            <DashboardBackground />
+
             <View style={styles.avatar}>
               <Image
                 source={{ uri: avatarUrl }}
@@ -103,7 +106,7 @@ const UserDashboardView: React.FC<UserDashboardViewProps> = ({
               />
               <Text style={styles.statusText}>{isConnected ? 'Connected' : 'Disconnected'}</Text>
             </View>
-          </LinearGradient>
+          </View>
 
           {/* Main Metrics */}
           <View style={styles.metricsGrid}>
@@ -170,7 +173,7 @@ const UserDashboardView: React.FC<UserDashboardViewProps> = ({
             />
             {signOutLoading && (
               <View style={styles.loadingContainer}>
-                <ActivityIndicator size="small" color={theme.color.error} />
+                <Loading size={24} />
                 <Text style={styles.loadingText}>Signing out...</Text>
               </View>
             )}
@@ -205,6 +208,8 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
       borderBottomLeftRadius: theme.radius.lg,
       borderBottomRightRadius: theme.radius.lg,
       alignItems: 'center',
+      overflow: 'hidden',
+      backgroundColor: theme.color.background,
     },
     avatar: {
       width: 80,
@@ -215,6 +220,8 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
       overflow: 'hidden',
       marginBottom: theme.spacing.sm,
       backgroundColor: theme.color.surface,
+      borderWidth: theme.borderWidth.sm,
+      borderColor: HEADER_TEXT_ON_BANNER,
     },
     avatarImage: {
       width: '100%',
@@ -223,7 +230,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
     nickname: {
       fontSize: theme.fontSize.xl,
       fontFamily: theme.fontFamily.headingExtra,
-      color: theme.color.textPrimary,
+      color: HEADER_TEXT_ON_BANNER,
       marginBottom: theme.spacing.sm,
     },
     connectionStatus: {
@@ -239,7 +246,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
     statusText: {
       fontSize: theme.fontSize.sm,
       fontFamily: theme.fontFamily.body,
-      color: theme.color.textSecondary,
+      color: HEADER_TEXT_ON_BANNER,
     },
     metricsGrid: {
       flexDirection: 'row',

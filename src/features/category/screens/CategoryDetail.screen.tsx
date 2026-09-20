@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTheme } from '@/app/providers/theme.provider';
 import { useBreakpoint } from '@/shared/ui/theme/useBreakpoint';
 import Button from '@/shared/components/Button/Button.component';
+import { Loading } from '@/shared/components/Loading';
 import CategoryForm, { CategoryFormErrors, CategoryFormValues, MIN_DESCRIPTION_LENGTH } from '../components/CategoryForm';
 import { categoryService } from '../services/category.service';
 import { getErrorMessage } from '@/shared/api/getErrorMessage';
@@ -139,7 +140,7 @@ const CategoryDetailScreen = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={theme.color.primary} />
+        <Loading size={80} />
         <Text style={styles.loadingText}>Cargando categoría...</Text>
       </View>
     );

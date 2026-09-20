@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useMemo } from 'react';
+import { useColorScheme } from 'react-native';
 import { useUiActions, useUiState } from '@/store';
 import { spacing, radius, iconSize, opacity, zIndex } from '@/shared/ui/theme/primitives';
 import { lightColors, darkColors, ColorTheme } from '@/shared/ui/theme/semantics';
@@ -86,6 +87,16 @@ const ThemeContext = createContext<AppTheme | undefined>(undefined);
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { theme: mode } = useUiState();
   const { setTheme } = useUiActions();
+  const systemScheme = useColorScheme();
+
+  // Sigue el tema del sistema si cambia con la app abierta (ej. el usuario
+  // activa modo oscuro en el SO). No pisa un futuro toggle manual porque
+  // hoy no hay ningún control en la UI que llame a setTheme/toggleTheme.
+  useEffect(() => {
+    if (systemScheme) {
+      setTheme(systemScheme);
+    }
+  }, [systemScheme, setTheme]);
 
   const toggleTheme = () => {
     setTheme(mode === 'light' ? 'dark' : 'light');

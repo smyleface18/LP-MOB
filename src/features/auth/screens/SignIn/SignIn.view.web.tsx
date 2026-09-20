@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '@/app/providers/theme.provider';
 import { useBreakpoint } from '@/shared/ui/theme/useBreakpoint';
 import Input from '@/shared/components/Input/Input.component';
 import Button from '@/shared/components/Button/Button.component';
 import AuthBackground from '@/features/auth/components/AuthBackground';
-import { Logo } from '@/assets';
+import { Logo } from '@/shared/components/Logo';
 import { SignInViewProps } from './SignIn.types';
 
 const FORM_MAX_WIDTH = 400;
@@ -38,7 +38,7 @@ const SignInView: React.FC<SignInViewProps> = ({
         <View style={styles.marketingPanel}>
           <AuthBackground />
 
-          <Image source={Logo} style={styles.logo} resizeMode="contain" />
+          <Logo imageSize={48} layout="horizontal" textSize={theme.fontSize.lg} style={styles.logo} />
 
           <View style={styles.badge}>
             <Text style={styles.badgeText}>Plataforma gamificada de idiomas</Text>
@@ -143,8 +143,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
       overflow: 'hidden',
     },
     logo: {
-      width: 48,
-      height: 48,
+      alignSelf: 'flex-start',
       marginBottom: theme.spacing.lg,
     },
     badge: {
@@ -173,7 +172,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
     marketingSubtitle: {
       fontSize: theme.fontSize.md,
       fontFamily: theme.fontFamily.body,
-      color: theme.color.textSecondary,
+      color: theme.color.textPrimary,
       marginBottom: theme.spacing.lg,
       maxWidth: 440,
     },

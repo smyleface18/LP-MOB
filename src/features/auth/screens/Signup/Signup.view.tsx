@@ -1,11 +1,10 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, Image } from 'react-native';
+import { View, Text, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { useTheme } from '@/app/providers/theme.provider';
 import { useBreakpoint } from '@/shared/ui/theme/useBreakpoint';
 import Input from '@/shared/components/Input/Input.component';
 import Button from '@/shared/components/Button/Button.component';
-import AuthBackground from '@/features/auth/components/AuthBackground';
-import { Logo } from '@/assets';
+import { Logo } from '@/shared/components/Logo';
 import { SignupViewProps } from './Signup.types';
 import { PasswordChecklist } from './PasswordChecklist';
 
@@ -27,82 +26,79 @@ const SignupView: React.FC<SignupViewProps> = ({
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 
   return (
-    <View style={styles.container}>
-      <AuthBackground />
-      <KeyboardAvoidingView
-        style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <View style={styles.formContainer}>
-          <Image source={Logo} style={styles.logo} resizeMode="contain" />
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <View style={styles.formContainer}>
+        <Logo imageSize={96} style={styles.logo} />
 
-          <Text style={styles.title}>Crea tu cuenta</Text>
-          <Text style={styles.subtitle}>Empieza tu aventura en inglés hoy</Text>
+        <Text style={styles.title}>Crea tu cuenta</Text>
+        <Text style={styles.subtitle}>Empieza tu aventura en inglés hoy</Text>
 
-          <Input
-            placeholder="Correo electrónico"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            variant="outlined"
-            style={styles.input}
-            value={form.email}
-            onChangeText={onEmailChange}
-          />
+        <Input
+          placeholder="Correo electrónico"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          variant="outlined"
+          style={styles.input}
+          value={form.email}
+          onChangeText={onEmailChange}
+        />
 
-          <Input
-            placeholder="Nickname"
-            autoCapitalize="none"
-            variant="outlined"
-            style={styles.input}
-            value={form.nickname}
-            onChangeText={onNicknameChange}
-          />
+        <Input
+          placeholder="Nickname"
+          autoCapitalize="none"
+          variant="outlined"
+          style={styles.input}
+          value={form.nickname}
+          onChangeText={onNicknameChange}
+        />
 
-          <Input
-            placeholder="Contraseña"
-            secureTextEntry
-            autoCapitalize="none"
-            variant="outlined"
-            style={styles.input}
-            value={form.password}
-            onChangeText={onPasswordChange}
-          />
+        <Input
+          placeholder="Contraseña"
+          secureTextEntry
+          autoCapitalize="none"
+          variant="outlined"
+          style={styles.input}
+          value={form.password}
+          onChangeText={onPasswordChange}
+        />
 
-          {form.password.length > 0 && <PasswordChecklist password={form.password} />}
+        {form.password.length > 0 && <PasswordChecklist password={form.password} />}
 
-          <Input
-            placeholder="Confirmar contraseña"
-            secureTextEntry
-            autoCapitalize="none"
-            variant="outlined"
-            style={styles.input}
-            value={form.confirmPassword}
-            onChangeText={onConfirmPasswordChange}
-            onSubmitEditing={onSubmit}
-          />
+        <Input
+          placeholder="Confirmar contraseña"
+          secureTextEntry
+          autoCapitalize="none"
+          variant="outlined"
+          style={styles.input}
+          value={form.confirmPassword}
+          onChangeText={onConfirmPasswordChange}
+          onSubmitEditing={onSubmit}
+        />
 
-          {error && <Text style={styles.errorText}>{error}</Text>}
+        {error && <Text style={styles.errorText}>{error}</Text>}
 
-          <Button
-            title={loading ? 'Registrando...' : 'Crear cuenta'}
-            variant="primary"
-            size="medium"
-            style={styles.signupButton}
-            onPress={onSubmit}
-            disabled={loading}
-          />
+        <Button
+          title={loading ? 'Registrando...' : 'Crear cuenta'}
+          variant="primary"
+          size="medium"
+          style={styles.signupButton}
+          onPress={onSubmit}
+          disabled={loading}
+        />
 
-          <View style={styles.loginContainer}>
-            <Text style={styles.loginText}>
-              ¿Ya estás registrado?{' '}
-              <Text style={styles.loginLink} onPress={onLoginRedirect}>
-                Inicia sesión aquí
-              </Text>
+        <View style={styles.loginContainer}>
+          <Text style={styles.loginText}>
+            ¿Ya estás registrado?{' '}
+            <Text style={styles.loginLink} onPress={onLoginRedirect}>
+              Inicia sesión aquí
             </Text>
-          </View>
+          </Text>
         </View>
-      </KeyboardAvoidingView>
-    </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -110,9 +106,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
-    },
-    keyboardView: {
-      flex: 1,
+      backgroundColor: theme.color.background,
       justifyContent: 'center',
       alignItems: 'center',
     },
@@ -123,8 +117,6 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
       alignItems: 'center',
     },
     logo: {
-      width: 96,
-      height: 96,
       marginBottom: theme.spacing.md,
     },
     title: {

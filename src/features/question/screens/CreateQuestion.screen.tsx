@@ -1,9 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/app/providers/theme.provider';
 import { useBreakpoint } from '@/shared/ui/theme/useBreakpoint';
 import Button from '@/shared/components/Button/Button.component';
+import { Loading } from '@/shared/components/Loading';
 import QuestionForm, {
   LevelFilter,
   QuestionFormValues,
@@ -129,7 +130,7 @@ const CreateQuestionScreen = () => {
   if (categoriesLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={theme.color.primary} />
+        <Loading size={80} />
         <Text style={styles.loadingText}>Loading categories...</Text>
       </View>
     );

@@ -4,7 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 const Stack = createStackNavigator();
 
 export const AdminStack = () => (
-  <Stack.Navigator screenOptions={{ headerShown: false }}>
+  <Stack.Navigator screenOptions={{ headerShown: false, cardStyle: { flex: 1 } }}>
     <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} />
   </Stack.Navigator>
 );

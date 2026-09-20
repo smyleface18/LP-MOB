@@ -1,2 +1,2 @@
-export const Logo = require('./LinguaPlay.png')
-
+export const LogoDark = require('./logo_dark.png');
+export const LogoLight = require('./logo_light.png');

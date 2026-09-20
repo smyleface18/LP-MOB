@@ -1,8 +1,10 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/app/providers/theme.provider';
+import { withAlpha } from '@/shared/ui/theme/primitives';
 import { useGame } from '../../hooks/useGame';
 import Button from '@/shared/components/Button/Button.component';
+import { Loading } from '@/shared/components/Loading';
 import { useAnswerFeedback } from './useAnswerFeedback';
 import GameLobby from './GameLobby.view';
 import GamePlay from './GamePlay.view';
@@ -29,7 +31,7 @@ const GameScreen: React.FC = () => {
   if (!state.user.isConnected) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color={theme.color.primary} />
+        <Loading size={80} />
         <Text style={styles.loadingText}>Connecting to game server...</Text>
         <Text style={styles.userId}>Your ID: {state.user.userId}</Text>
         {state.error && <Text style={styles.errorText}>{state.error}</Text>}
@@ -121,8 +123,15 @@ const GameHeader: React.FC<{ connected: boolean; score: number; roomId: string |
     <View style={styles.header}>
       <Text style={styles.headerTitle}>🎮 LinguaPlay</Text>
       <View style={styles.statusContainer}>
-        <View style={[styles.statusIndicator, { backgroundColor: connected ? theme.color.success : theme.color.error }]} />
-        <Text style={styles.statusText}>{connected ? 'Connected' : 'Disconnected'}</Text>
+        <View style={styles.statusChip}>
+          <View
+            style={[
+              styles.statusIndicator,
+              { backgroundColor: connected ? theme.color.success : theme.color.error },
+            ]}
+          />
+          <Text style={styles.statusText}>{connected ? 'Connected' : 'Disconnected'}</Text>
+        </View>
         {roomId && <Text style={styles.roomId}>Room: {roomId}</Text>}
         <Text style={styles.score}>Score: {score}</Text>
       </View>
@@ -146,9 +155,10 @@ const createStyles = (theme: ReturnType<typeof useTheme>) =>
     header: {
       padding: theme.spacing.md,
       paddingTop: theme.spacing.xl,
-      backgroundColor: theme.color.secondary,
+      backgroundColor: theme.color.secondaryButton,
       borderBottomLeftRadius: theme.radius.lg,
       borderBottomRightRadius: theme.radius.lg,
+      ...theme.shadow.sm,
     },
     headerTitle: {
       fontSize: theme.fontSize.xl,
@@ -159,9 +169,16 @@ const createStyles = (theme: ReturnType<typeof useTheme>) =>
     statusContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'space-between',
       flexWrap: 'wrap',
-      gap: theme.spacing.xs,
+      gap: theme.spacing.sm,
+    },
+    statusChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: withAlpha(theme.color.onSecondary, 0.12),
+      borderRadius: theme.radius.full,
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: theme.spacing.xs / 2,
     },
     statusIndicator: {
       width: 8,
@@ -171,18 +188,26 @@ const createStyles = (theme: ReturnType<typeof useTheme>) =>
     },
     statusText: {
       fontSize: theme.fontSize.sm,
+      fontFamily: theme.fontFamily.bodyBold,
       color: theme.color.onSecondary,
-      marginRight: theme.spacing.sm,
     },
     roomId: {
       fontSize: theme.fontSize.sm,
       color: theme.color.onSecondary,
       fontFamily: theme.fontFamily.bodyBold,
-      marginRight: theme.spacing.sm,
+      backgroundColor: withAlpha(theme.color.onSecondary, 0.12),
+      borderRadius: theme.radius.full,
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: theme.spacing.xs / 2,
     },
     score: {
       fontSize: theme.fontSize.sm,
+      fontFamily: theme.fontFamily.bodyBold,
       color: theme.color.onSecondary,
+      backgroundColor: withAlpha(theme.color.onSecondary, 0.12),
+      borderRadius: theme.radius.full,
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: theme.spacing.xs / 2,
     },
     loadingText: {
       marginTop: theme.spacing.md,

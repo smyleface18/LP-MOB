@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '@/app/providers/theme.provider';
 import { useBreakpoint } from '@/shared/ui/theme/useBreakpoint';
 import Input from '@/shared/components/Input/Input.component';
 import Button from '@/shared/components/Button/Button.component';
 import AuthBackground from '@/features/auth/components/AuthBackground';
-import { Logo } from '@/assets';
+import { Logo } from '@/shared/components/Logo';
 import { SignupViewProps } from './Signup.types';
 import { PasswordChecklist } from './PasswordChecklist';
 
@@ -53,7 +53,12 @@ const SignupView: React.FC<SignupViewProps> = ({
         <View style={styles.marketingPanel}>
           <AuthBackground />
 
-          <Image source={Logo} style={styles.logo} resizeMode="contain" />
+          <Logo
+            imageSize={theme.iconSize.lg * 2}
+            layout="horizontal"
+            textSize={theme.fontSize.lg}
+            style={styles.logo}
+          />
 
           <View style={styles.badge}>
             <Text style={styles.badgeText}>Plataforma interactiva</Text>
@@ -64,8 +69,8 @@ const SignupView: React.FC<SignupViewProps> = ({
           </Text>
 
           <Text style={styles.marketingSubtitle}>
-            Aprende idiomas compitiendo, superando desafíos diarios y midiendo tu dominio en
-            tiempo real.
+            Aprende idiomas compitiendo, superando desafíos diarios y midiendo tu dominio en tiempo
+            real.
           </Text>
 
           {isDesktop && (
@@ -90,47 +95,42 @@ const SignupView: React.FC<SignupViewProps> = ({
               Comienza a practicar gratis en menos de un minuto.
             </Text>
 
-            <View style={styles.fieldGrid}>
-              <Input
-                placeholder="Nombre de usuario"
-                autoCapitalize="none"
-                variant="outlined"
-                style={styles.gridInput}
-                value={form.nickname}
-                onChangeText={onNicknameChange}
-              />
-              <Input
-                placeholder="Correo electrónico"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                variant="outlined"
-                style={styles.gridInput}
-                value={form.email}
-                onChangeText={onEmailChange}
-              />
-            </View>
-
-            <View style={styles.fieldGrid}>
-              <Input
-                placeholder="Contraseña"
-                secureTextEntry
-                autoCapitalize="none"
-                variant="outlined"
-                style={styles.gridInput}
-                value={form.password}
-                onChangeText={onPasswordChange}
-              />
-              <Input
-                placeholder="Confirmar contraseña"
-                secureTextEntry
-                autoCapitalize="none"
-                variant="outlined"
-                style={styles.gridInput}
-                value={form.confirmPassword}
-                onChangeText={onConfirmPasswordChange}
-                onSubmitEditing={onSubmit}
-              />
-            </View>
+            <Input
+              placeholder="Nombre de usuario"
+              autoCapitalize="none"
+              variant="outlined"
+              style={styles.gridInput}
+              value={form.nickname}
+              onChangeText={onNicknameChange}
+            />
+            <Input
+              placeholder="Correo electrónico"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              variant="outlined"
+              style={styles.gridInput}
+              value={form.email}
+              onChangeText={onEmailChange}
+            />
+            <Input
+              placeholder="Contraseña"
+              secureTextEntry
+              autoCapitalize="none"
+              variant="outlined"
+              style={styles.gridInput}
+              value={form.password}
+              onChangeText={onPasswordChange}
+            />
+            <Input
+              placeholder="Confirmar contraseña"
+              secureTextEntry
+              autoCapitalize="none"
+              variant="outlined"
+              style={styles.gridInput}
+              value={form.confirmPassword}
+              onChangeText={onConfirmPasswordChange}
+              onSubmitEditing={onSubmit}
+            />
 
             {form.password.length > 0 && <PasswordChecklist password={form.password} />}
 
@@ -181,8 +181,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
       overflow: 'hidden',
     },
     logo: {
-      width: 48,
-      height: 48,
+      alignSelf: 'flex-start',
       marginBottom: theme.spacing.lg,
     },
     badge: {
@@ -199,8 +198,8 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
       fontFamily: theme.fontFamily.bodyBold,
     },
     headline: {
-      fontSize: isDesktop ? 32 : theme.fontSize.xxl,
-      lineHeight: isDesktop ? 38 : undefined,
+      fontSize: isDesktop ? 36 : theme.fontSize.xxl,
+      lineHeight: isDesktop ? 42 : undefined,
       fontFamily: theme.fontFamily.headingExtra,
       color: theme.color.textPrimary,
       marginBottom: theme.spacing.md,
@@ -211,9 +210,9 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
     marketingSubtitle: {
       fontSize: theme.fontSize.md,
       fontFamily: theme.fontFamily.body,
-      color: theme.color.textSecondary,
+      color: theme.color.textPrimary,
       marginBottom: theme.spacing.lg,
-      maxWidth: 440,
+      maxWidth: theme.maxContentWidth,
     },
     featureList: {
       gap: theme.spacing.md,
@@ -237,14 +236,14 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
     featureDescription: {
       fontFamily: theme.fontFamily.body,
       fontSize: theme.fontSize.sm,
-      color: theme.color.textSecondary,
+      color: theme.color.textPrimary,
     },
     formPanel: {
       flex: isDesktop ? 1 : undefined,
       alignItems: 'center',
       justifyContent: 'center',
       padding: theme.spacing.xl,
-      backgroundColor: theme.color.surface,
+      backgroundColor: theme.color.background,
     },
     formInner: {
       width: '100%',
@@ -262,12 +261,8 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
       color: theme.color.textSecondary,
       marginBottom: theme.spacing.xl,
     },
-    fieldGrid: {
-      flexDirection: isDesktop ? 'row' : 'column',
-      gap: theme.spacing.md,
-    },
     gridInput: {
-      flex: 1,
+      height: 56,
       marginBottom: theme.spacing.md,
     },
     errorText: {
@@ -283,11 +278,13 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
     },
     loginContainer: {
       marginTop: theme.spacing.lg,
+      alignItems: 'center',
     },
     loginText: {
       color: theme.color.textPrimary,
       fontSize: theme.fontSize.sm,
       fontFamily: theme.fontFamily.body,
+      textAlign: 'center',
     },
     loginLink: {
       color: theme.color.primary,

@@ -1,7 +1,7 @@
-import React from 'react';
-import { Alert } from 'react-native';
+import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../hooks/useAuth';
+import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import {
   AdminDashboardView,
   AdminDashboardMetrics,
@@ -40,24 +40,36 @@ const CATEGORY_DISTRIBUTION: CategoryShare[] = [
 const AdminDashboardScreen = () => {
   const navigation = useNavigation();
   const { handleSignOut, loading: signOutLoading } = useAuth();
+  const [confirmSignOutVisible, setConfirmSignOutVisible] = useState(false);
 
-  const handleSignOutPress = () => {
-    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Sign Out', style: 'destructive', onPress: () => handleSignOut() },
-    ]);
+  const handleConfirmSignOut = () => {
+    setConfirmSignOutVisible(false);
+    handleSignOut();
   };
 
   return (
-    <AdminDashboardView
-      metrics={METRICS}
-      levelUsage={LEVEL_USAGE}
-      categoryDistribution={CATEGORY_DISTRIBUTION}
-      onNavigateToQuestions={() => navigation.navigate('ManageQuestionsScreen' as never)}
-      onNavigateToCategories={() => navigation.navigate('ManageCategoriesScreen' as never)}
-      onSignOut={handleSignOutPress}
-      signOutLoading={signOutLoading}
-    />
+    <>
+      <AdminDashboardView
+        metrics={METRICS}
+        levelUsage={LEVEL_USAGE}
+        categoryDistribution={CATEGORY_DISTRIBUTION}
+        onNavigateToQuestions={() => navigation.navigate('ManageQuestionsScreen' as never)}
+        onNavigateToCategories={() => navigation.navigate('ManageCategoriesScreen' as never)}
+        onSignOut={() => setConfirmSignOutVisible(true)}
+        signOutLoading={signOutLoading}
+      />
+
+      <ConfirmDialog
+        visible={confirmSignOutVisible}
+        title="Sign Out"
+        message="Are you sure you want to sign out?"
+        confirmLabel="Sign Out"
+        cancelLabel="Cancel"
+        destructive
+        onConfirm={handleConfirmSignOut}
+        onCancel={() => setConfirmSignOutVisible(false)}
+      />
+    </>
   );
 };
 

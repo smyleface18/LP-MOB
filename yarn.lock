@@ -2526,7 +2526,7 @@
     ts-dedent "^2.0.0"
     unplugin "^2.3.5"
 
-"@storybook/addon-ondevice-actions@latest":
+"@storybook/addon-ondevice-actions@^10.6.0":
   version "10.6.0"
   resolved "https://registry.npmjs.org/@storybook/addon-ondevice-actions/-/addon-ondevice-actions-10.6.0.tgz#e1d8e936a46813e38d72d6b5c6c3bac0452a30fd"
   integrity sha512-0qa/iAyrlvjABEVWx/UzbMyzlZT3YFmok7Zb3cgruboxXfvDGKYJ76jnLCd83SfcXyuZPbscidsYRKGn9T8c3w==
@@ -2534,7 +2534,7 @@
     "@storybook/react-native-theming" "^10.6.0"
     fast-deep-equal "^3.1.3"
 
-"@storybook/addon-ondevice-controls@latest":
+"@storybook/addon-ondevice-controls@^10.6.0":
   version "10.6.0"
   resolved "https://registry.npmjs.org/@storybook/addon-ondevice-controls/-/addon-ondevice-controls-10.6.0.tgz#f2bb3257a65006e7727ece6aa84b68cdb16ac577"
   integrity sha512-KHfLSKiAtSKHF8dBTZsFv6IfEP8Aee7Vpd1OZlK8ByBq6MvkN5SxNQLDz0egBS4MOq+rGxqe69TYOZ+4daXmUw==
@@ -2605,7 +2605,7 @@
     memoizerific "^1.11.3"
     ts-dedent "^2.3.0"
 
-"@storybook/react-native-ui-lite@latest":
+"@storybook/react-native-ui-lite@^10.6.0":
   version "10.6.0"
   resolved "https://registry.npmjs.org/@storybook/react-native-ui-lite/-/react-native-ui-lite-10.6.0.tgz#88d1d9015ae2daae1fcad57ae7aca9ca65f3afe7"
   integrity sha512-PXBbjC1tl/Qt0FOpIX6nZetwIdFyf93Jo/1jOE6L4Bgy9NtzTyOXSk8+tEDfJca1lYrFRhCzNP99QHn78SEt9A==
@@ -2641,7 +2641,7 @@
     vite-plugin-rnw "^0.0.11"
     vite-tsconfig-paths "^6.1.1"
 
-"@storybook/react-native@latest":
+"@storybook/react-native@^10.6.0":
   version "10.6.0"
   resolved "https://registry.npmjs.org/@storybook/react-native/-/react-native-10.6.0.tgz#feb93e4bf4636ac392084cdb6ba9818d96a07668"
   integrity sha512-g/NJg7mQ9Rdkc9cCp2oYsR1PiyN11QZu+jwvWg5VtjqTfTlUQ+uKvMjRLWlhkvGzXmQlvb+ihTGGN1/0RZJhmw==
@@ -6230,6 +6230,23 @@ loose-envify@^1.0.0, loose-envify@^1.4.0:
   integrity sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==
   dependencies:
     js-tokens "^3.0.0 || ^4.0.0"
+
+lottie-react-native@~7.3.1:
+  version "7.3.8"
+  resolved "https://registry.npmjs.org/lottie-react-native/-/lottie-react-native-7.3.8.tgz#266a9630f5009a83fdff489a9d6ae3b01c2d2eb8"
+  integrity sha512-GAOl99TKi0c6xCcB1AJ+o70mgOPIAI/7K2G+Gs+o4po/qBhgvWijPNCKH8h6yNmlwFTg+RN3DmzRvHNFGxZMKQ==
+
+lottie-react@^3.1.2:
+  version "3.1.2"
+  resolved "https://registry.npmjs.org/lottie-react/-/lottie-react-3.1.2.tgz#fae1f68f1732c32217fde1cbcc8ec2f25fb8864f"
+  integrity sha512-otbTz+Kk1ksYzcWFAlcH8xFGBWkW/hUNEHy6gLvYf7kgEkZxyPT8lXJeBu/5o0xo0cdMwvd/lwkpuXCTSQmJdQ==
+  dependencies:
+    lottie-web "^5.13.0"
+
+lottie-web@^5.13.0:
+  version "5.13.0"
+  resolved "https://registry.npmjs.org/lottie-web/-/lottie-web-5.13.0.tgz#441d3df217cc8ba302338c3f168e1a3af0f221d3"
+  integrity sha512-+gfBXl6sxXMPe8tKQm7qzLnUy5DUPJPKIyRHwtpCpyUEYjHYRJC/5gjUvdkuO2c3JllrPtHXH5UJJK8LRYl5yQ==
 
 loupe@^3.1.0, loupe@^3.1.4:
   version "3.2.1"

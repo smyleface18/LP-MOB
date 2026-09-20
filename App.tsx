@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useEffect, useMemo } from 'react';
+import { StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -15,10 +15,47 @@ import {
   Nunito_700Bold,
 } from '@expo-google-fonts/nunito';
 import { AppNavigator } from '@/app/navigation/AppNavigator';
-import { ThemeProvider } from '@/app/providers/theme.provider';
+import { ThemeProvider, useTheme } from '@/app/providers/theme.provider';
 import TokenRefreshProvider from '@/features/auth/providers/TokenRefreshProvider';
 
 SplashScreen.preventAutoHideAsync();
+
+// Sin esto, la versión web no sincroniza la pantalla actual con la URL/
+// historial del navegador: el botón "atrás" del navegador no navega dentro
+// de la app. AppNavigator monta AuthStack/UserStack/AdminStack como árboles
+// separados (no anidados bajo un navigator raíz común), pero linking igual
+// resuelve por nombre de pantalla sin importar cuál esté montado.
+const linking = {
+  prefixes: [],
+  config: {
+    screens: {
+      SignIn: 'sign-in',
+      Signup: 'sign-up',
+      UserDashboard: 'dashboard',
+      GameScreen: 'game',
+      AdminDashboard: 'admin',
+    },
+  },
+};
+
+// Separado de App() porque necesita useTheme(), que solo funciona dentro de
+// ThemeProvider (App() todavía no está "adentro" del Provider que él mismo
+// renderiza).
+function AppShell() {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
+  return (
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <NavigationContainer linking={linking}>
+        <TokenRefreshProvider>
+          <AppNavigator />
+        </TokenRefreshProvider>
+      </NavigationContainer>
+      <StatusBar style={theme.isDark ? 'light' : 'dark'} />
+    </SafeAreaView>
+  );
+}
 
 export default function App() {
   const [balooLoaded] = useBaloo({
@@ -44,26 +81,18 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-          <NavigationContainer>
-            <TokenRefreshProvider>
-              <AppNavigator />
-            </TokenRefreshProvider>
-          </NavigationContainer>
-          <StatusBar style="dark" />
-        </SafeAreaView>
+        <AppShell />
       </ThemeProvider>
     </SafeAreaProvider>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    width: '100%',
-    maxWidth: Platform.OS === 'web' ? 1280 : undefined,
-    alignSelf: 'center',
-  },
-});
+const createStyles = (theme: ReturnType<typeof useTheme>) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      width: '100%',
+      backgroundColor: theme.color.background,
+    },
+  });
 

@@ -1,9 +1,10 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Alert } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/app/providers/theme.provider';
 import { useBreakpoint } from '@/shared/ui/theme/useBreakpoint';
 import Button from '@/shared/components/Button/Button.component';
+import { Loading } from '@/shared/components/Loading';
 import Input from '@/shared/components/Input/Input.component';
 import { FilterSection } from '@/shared/components/FilterSection/FilterSection.component';
 import QuestionCard from '../components/QuestionCard';
@@ -126,7 +127,7 @@ const ManageQuestionsScreen = () => {
   if (loading || categoriesLoading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color={theme.color.primary} />
+        <Loading size={80} />
         <Text style={styles.loadingText}>Loading questions...</Text>
       </View>
     );
