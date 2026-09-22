@@ -74,34 +74,35 @@ const GameLobby: React.FC<GameLobbyProps> = ({
             <View style={styles.readyContainer}>
               <Text style={styles.waitingText}>✅ Ready to start!</Text>
               {user.isOwner ? (
-                <Text style={styles.hostText}>You are the host. Click below to start the game.</Text>
+                <Text style={styles.hostText}>
+                  You are the host. Click below to start the game.
+                </Text>
               ) : (
                 <Text style={styles.hostText}>Waiting for host to start the game...</Text>
               )}
             </View>
           )}
         </View>
-      </ScrollView>
-
-      {/* Actions - Always visible at bottom */}
-      <View style={styles.actions}>
-        <View style={styles.actionsPage}>
-          {user.isOwner && players.length > 0 && (
+        {/* Actions - Always visible at bottom */}
+        <View style={styles.actions}>
+          <View style={styles.actionsPage}>
+            {user.isOwner && players.length > 0 && (
+              <Button
+                title="🚀 Start Game"
+                variant="primary"
+                onPress={onStartGame}
+                style={styles.actionButton}
+              />
+            )}
             <Button
-              title="🚀 Start Game"
-              variant="primary"
-              onPress={onStartGame}
+              title="← Leave Room"
+              variant="outlined"
+              onPress={onLeaveRoom}
               style={styles.actionButton}
             />
-          )}
-          <Button
-            title="← Leave Room"
-            variant="outlined"
-            onPress={onLeaveRoom}
-            style={styles.actionButton}
-          />
+          </View>
         </View>
-      </View>
+      </ScrollView>
     </View>
   );
 };
@@ -192,6 +193,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
       textAlign: 'center',
     },
     actions: {
+      width: '100%',
       padding: theme.spacing.md,
       paddingBottom: theme.spacing.xl,
       borderTopWidth: theme.borderWidth.xs,

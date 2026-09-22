@@ -3,8 +3,8 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/app/providers/theme.provider';
 import { withAlpha } from '@/shared/ui/theme/primitives';
 import { useGame } from '../../hooks/useGame';
-import Button from '@/shared/components/Button/Button.component';
 import { Loading } from '@/shared/components/Loading';
+import { ExitGameButton } from '../../components/ExitGameButton';
 import { useAnswerFeedback } from './useAnswerFeedback';
 import GameLobby from './GameLobby.view';
 import GamePlay from './GamePlay.view';
@@ -41,7 +41,12 @@ const GameScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <GameHeader connected={state.user.isConnected} score={state.user.matchScore} roomId={state.roomId} />
+      <GameHeader
+        connected={state.user.isConnected}
+        score={state.user.matchScore}
+        roomId={state.roomId}
+        onLeave={state.roomId ? actions.leaveRoom : undefined}
+      />
 
       {!state.roomId && !state.status && (
         <GameMainMenu
@@ -66,30 +71,19 @@ const GameScreen: React.FC = () => {
       )}
 
       {state.status === MatchStatus.STARTING && (
-        <>
-          <GamePlay
-            currentQuestion={state.currentQuestion}
-            questionNumber={state.questionNumber}
-            totalQuestions={state.totalQuestions}
-            timeRemaining={state.timeRemaining}
-            score={state.user.matchScore}
-            onOptionPress={handleOptionPress}
-            onModalClose={handleCloseResult}
-            showResult={showResult}
-            isCorrect={isCorrect}
-            correctAnswer={correctAnswerText}
-            selectedOption={selectedOption}
-          />
-
-          <View style={styles.leaveContainer}>
-            <Button
-              title="Leave Game"
-              variant="outlined"
-              onPress={actions.leaveRoom}
-              style={styles.leaveButton}
-            />
-          </View>
-        </>
+        <GamePlay
+          currentQuestion={state.currentQuestion}
+          questionNumber={state.questionNumber}
+          totalQuestions={state.totalQuestions}
+          timeRemaining={state.timeRemaining}
+          score={state.user.matchScore}
+          onOptionPress={handleOptionPress}
+          onModalClose={handleCloseResult}
+          showResult={showResult}
+          isCorrect={isCorrect}
+          correctAnswer={correctAnswerText}
+          selectedOption={selectedOption}
+        />
       )}
 
       {state.status === MatchStatus.FINISHED && (
@@ -111,17 +105,23 @@ const GameScreen: React.FC = () => {
   );
 };
 
-const GameHeader: React.FC<{ connected: boolean; score: number; roomId: string | null }> = ({
-  connected,
-  score,
-  roomId,
-}) => {
+const GameHeader: React.FC<{
+  connected: boolean;
+  score: number;
+  roomId: string | null;
+  onLeave?: () => void;
+}> = ({ connected, score, roomId, onLeave }) => {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   return (
     <View style={styles.header}>
-      <Text style={styles.headerTitle}>🎮 LinguaPlay</Text>
+      <View style={styles.headerTopRow}>
+        <Text style={styles.headerTitle}>🎮 LinguaPlay</Text>
+        {onLeave && (
+          <ExitGameButton onPress={onLeave} color={theme.color.onSecondary} style={styles.exitButton} />
+        )}
+      </View>
       <View style={styles.statusContainer}>
         <View style={styles.statusChip}>
           <View
@@ -160,11 +160,19 @@ const createStyles = (theme: ReturnType<typeof useTheme>) =>
       borderBottomRightRadius: theme.radius.lg,
       ...theme.shadow.sm,
     },
+    headerTopRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: theme.spacing.sm,
+    },
     headerTitle: {
       fontSize: theme.fontSize.xl,
       fontFamily: theme.fontFamily.headingExtra,
       color: theme.color.onSecondary,
-      marginBottom: theme.spacing.sm,
+    },
+    exitButton: {
+      backgroundColor: withAlpha(theme.color.onSecondary, 0.12),
     },
     statusContainer: {
       flexDirection: 'row',
@@ -225,15 +233,6 @@ const createStyles = (theme: ReturnType<typeof useTheme>) =>
       fontSize: theme.fontSize.sm,
       color: theme.color.error,
       textAlign: 'center',
-    },
-    leaveContainer: {
-      padding: theme.spacing.md,
-      paddingBottom: theme.spacing.xl,
-      borderTopWidth: theme.borderWidth.xs,
-      borderTopColor: theme.color.border,
-    },
-    leaveButton: {
-      width: '100%',
     },
     errorBanner: {
       backgroundColor: theme.color.errorSubtle,

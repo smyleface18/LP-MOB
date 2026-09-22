@@ -117,6 +117,7 @@ export const useGame = () => {
         roomId: null,
         players: [],
         gameStarted: false,
+        finished: false,
         currentQuestion: null,
         timeRemaining: 0,
         error: null,
