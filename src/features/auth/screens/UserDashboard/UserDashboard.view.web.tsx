@@ -14,10 +14,6 @@ import type { UserDashboardViewProps } from './UserDashboard.view';
 const PAGE_MAX_WIDTH = 1120;
 const DEFAULT_AVATAR_URL = 'https://cdn-icons-png.flaticon.com/512/7178/7178489.png';
 
-// Igual que en la versión mobile: DashboardBackground es un rojo fijo en
-// ambos themes, así que el texto encima necesita un color fijo también.
-const HEADER_TEXT_ON_BANNER = '#F8FAFC';
-
 const LEVEL_PROGRESS_GRADIENTS = [
   GRADIENT_PRESETS.secondaryToPrimary,
   GRADIENT_PRESETS.secondaryToAccent,
@@ -54,7 +50,6 @@ const UserDashboardView: React.FC<UserDashboardViewProps> = ({
         {/* Header */}
         <View style={styles.header}>
           <DashboardBackground />
-
           <View style={styles.avatar}>
             <Image source={{ uri: avatarUrl }} style={styles.avatarImage} resizeMode="cover" />
           </View>
@@ -120,14 +115,6 @@ const UserDashboardView: React.FC<UserDashboardViewProps> = ({
 
             <View style={styles.actionsSection}>
               <Button
-                title="How to Play"
-                variant="secondary"
-                size="large"
-                onPress={onHowToPlay}
-                style={styles.actionButton}
-              />
-
-              <Button
                 title="Sign Out"
                 variant="outlined"
                 size="large"
@@ -183,7 +170,6 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
       marginBottom: theme.spacing.sm,
       backgroundColor: theme.color.surface,
       borderWidth: theme.borderWidth.sm,
-      borderColor: HEADER_TEXT_ON_BANNER,
     },
     avatarImage: {
       width: '100%',
@@ -192,7 +178,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
     nickname: {
       fontSize: isDesktop ? theme.fontSize.xxl : theme.fontSize.xl,
       fontFamily: theme.fontFamily.headingExtra,
-      color: HEADER_TEXT_ON_BANNER,
+      color: theme.color.secondary,
       marginBottom: theme.spacing.sm,
     },
     connectionStatus: {
@@ -208,7 +194,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
     statusText: {
       fontSize: theme.fontSize.sm,
       fontFamily: theme.fontFamily.body,
-      color: HEADER_TEXT_ON_BANNER,
+      color: theme.color.secondary,
     },
     layout: {
       flexDirection: isDesktop ? 'row' : 'column',

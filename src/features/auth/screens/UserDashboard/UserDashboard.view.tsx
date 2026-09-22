@@ -21,12 +21,6 @@ import { GRADIENT_PRESETS } from '@/shared/ui/theme/progressGradients';
 const PAGE_MAX_WIDTH = 720;
 const DEFAULT_AVATAR_URL = 'https://cdn-icons-png.flaticon.com/512/7178/7178489.png';
 
-// DashboardBackground renders a fixed brand-red banner (same hex in both
-// themes), so the text sitting on top of it needs a fixed light color too —
-// theme.color.textInverse can't be used here since it flips to a dark tone
-// in dark mode, which would be unreadable against the red.
-const HEADER_TEXT_ON_BANNER = '#F8FAFC';
-
 const LEVEL_PROGRESS_GRADIENTS = [
   GRADIENT_PRESETS.secondaryToPrimary,
   GRADIENT_PRESETS.secondaryToAccent,
@@ -90,11 +84,7 @@ const UserDashboardView: React.FC<UserDashboardViewProps> = ({
             <DashboardBackground />
 
             <View style={styles.avatar}>
-              <Image
-                source={{ uri: avatarUrl }}
-                style={styles.avatarImage}
-                resizeMode="cover"
-              />
+              <Image source={{ uri: avatarUrl }} style={styles.avatarImage} resizeMode="cover" />
             </View>
             <Text style={styles.nickname}>{username}</Text>
             <View style={styles.connectionStatus}>
@@ -156,14 +146,6 @@ const UserDashboardView: React.FC<UserDashboardViewProps> = ({
           {/* Action Buttons */}
           <View style={styles.actionsSection}>
             <Button
-              title="How to Play"
-              variant="secondary"
-              size="large"
-              onPress={onHowToPlay}
-              style={styles.actionButton}
-            />
-
-            <Button
               title="Sign Out"
               variant="outlined"
               size="large"
@@ -221,7 +203,6 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
       marginBottom: theme.spacing.sm,
       backgroundColor: theme.color.surface,
       borderWidth: theme.borderWidth.sm,
-      borderColor: HEADER_TEXT_ON_BANNER,
     },
     avatarImage: {
       width: '100%',
@@ -230,7 +211,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
     nickname: {
       fontSize: theme.fontSize.xl,
       fontFamily: theme.fontFamily.headingExtra,
-      color: HEADER_TEXT_ON_BANNER,
+      color: theme.color.secondary,
       marginBottom: theme.spacing.sm,
     },
     connectionStatus: {
@@ -246,7 +227,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
     statusText: {
       fontSize: theme.fontSize.sm,
       fontFamily: theme.fontFamily.body,
-      color: HEADER_TEXT_ON_BANNER,
+      color: theme.color.secondary,
     },
     metricsGrid: {
       flexDirection: 'row',
