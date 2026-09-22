@@ -4,11 +4,11 @@
     "slug": "LP-MOB",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./src/assets/LinguaPlay-bg.png",
+    "icon": "./src/assets/logo_light.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./src/assets/LinguaPlay-bg.png",
+      "image": "./src/assets/logo_light.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -17,14 +17,14 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./src/assets/LinguaPlay-bg.png",
+        "foregroundImage": "./src/assets/logo_light.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./src/assets/LinguaPlay-bg.png"
+      "favicon": "./src/assets/logo_light.png"
     },
     "plugins": [
       "expo-video",
