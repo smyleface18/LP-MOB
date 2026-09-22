@@ -166,8 +166,8 @@ export const lightColors: ColorTheme = {
   primarySubtle: colors.brand.redLight,
 
   secondary: colors.surfaceDark.base,
-  secondarySubtle: colors.neutral.gray,
-  secondaryButton: colors.neutral.gray,
+  secondarySubtle: colors.surfaceLight.raised,
+  secondaryButton: colors.surfaceLight.raised,
 
   accent: colors.brand.yellow,
   accentSubtle: colors.brand.yellowLight,
@@ -175,27 +175,27 @@ export const lightColors: ColorTheme = {
   success: colors.brand.green,
   successSubtle: colors.brand.greenLight,
 
-  background: colors.neutral.white,
-  surface: colors.neutral.white,
-  surfaceElevated: colors.neutral.white,
+  background: colors.surfaceLight.base,
+  surface: colors.surfaceLight.raised,
+  surfaceElevated: colors.surfaceLight.overlay2,
 
   border: withAlpha(colors.surfaceDark.base, 0.08),
   textPrimary: colors.surfaceDark.base,
-  textSecondary: colors.neutral.grayStrong,
-  textInverse: colors.neutral.white,
+  textSecondary: withAlpha(colors.surfaceDark.base, 0.65),
+  textInverse: colors.surfaceLight.overlay2,
 
   overlay: withAlpha(colors.surfaceDark.base, 0.5),
 
-  onPrimary: colors.neutral.white,
+  onPrimary: colors.surfaceLight.overlay2,
   onSecondary: colors.surfaceDark.base,
   onAccent: colors.surfaceDark.base,
-  onSuccess: colors.neutral.white,
+  onSuccess: colors.surfaceLight.overlay2,
 
-  textPlaceholder: colors.neutral.grayLight,
+  textPlaceholder: withAlpha(colors.surfaceDark.base, 0.35),
 
   error: colors.danger.base,
   errorSubtle: colors.danger.light,
-  onError: colors.neutral.white,
+  onError: colors.surfaceLight.overlay2,
   onErrorSubtle: colors.danger.dark,
   textError: colors.danger.dark,
 };
@@ -205,8 +205,8 @@ export const darkColors: ColorTheme = {
   primaryPressed: colors.brand.redDark,
   primarySubtle: withAlpha(colors.brand.red, 0.16),
 
-  secondary: colors.neutral.white,
-  secondarySubtle: colors.neutral.gray,
+  secondary: colors.surfaceLight.overlay2,
+  secondarySubtle: colors.surfaceDark.raised,
   secondaryButton: colors.surfaceDark.base,
 
   accent: colors.brand.yellow,
@@ -217,25 +217,25 @@ export const darkColors: ColorTheme = {
 
   background: colors.surfaceDark.base,
   surface: colors.surfaceDark.raised,
-  surfaceElevated: colors.surfaceDark.overlay2,
+  surfaceElevated: colors.surfaceDark.raised,
 
-  border: withAlpha(colors.neutral.white, 0.12),
-  textPrimary: colors.neutral.white,
-  textSecondary: colors.neutral.grayStrong,
+  border: withAlpha(colors.surfaceLight.overlay2, 0.12),
+  textPrimary: colors.surfaceLight.overlay2,
+  textSecondary: withAlpha(colors.surfaceLight.overlay2, 0.65),
   textInverse: colors.surfaceDark.base,
 
   overlay: withAlpha(colors.surfaceDark.base, 0.65),
 
-  onPrimary: colors.neutral.white,
-  onSecondary: colors.neutral.white,
+  onPrimary: colors.surfaceLight.overlay2,
+  onSecondary: colors.surfaceLight.overlay2,
   onAccent: colors.surfaceDark.base,
-  onSuccess: colors.neutral.white,
+  onSuccess: colors.surfaceLight.overlay2,
 
-  textPlaceholder: withAlpha(colors.neutral.white, 0.35),
+  textPlaceholder: withAlpha(colors.surfaceLight.overlay2, 0.35),
 
   error: colors.danger.base,
   errorSubtle: withAlpha(colors.danger.base, 0.16),
-  onError: colors.neutral.white,
-  onErrorSubtle: '#FDA4AF',
-  textError: '#FB7185',
+  onError: colors.surfaceLight.overlay2,
+  onErrorSubtle: colors.danger.onDarkSubtle,
+  textError: colors.danger.onDarkText,
 };

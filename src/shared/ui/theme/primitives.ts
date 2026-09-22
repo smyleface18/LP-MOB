@@ -15,21 +15,22 @@ export const colors = {
     greenLight: '#7EDABA',
     greenExtraLight: '#ECFDF5',
   },
-  neutral: {
-    white: '#F8FAFC',
-    gray: '#E4E1E6',
-    grayLight: '#CBD5E1',
-    grayStrong: '#9DA3AE',
+  surfaceLight: {
+    base: '#E5E7EB', // gray-200 — el más tintado de los tres (fondo de pantalla)
+    raised: '#F3F4F6', // gray-100 — cards, inputs
+    overlay2: '#F9FAFB', // gray-50 — modales/sheets, el más cercano a blanco (pero nunca blanco puro)
   },
   surfaceDark: {
     base: '#1F2937',
     raised: '#374151',
-    overlay2: '#1F2937',
+    overlay2: '#4B5563',
   },
   danger: {
     base: '#E11D48',
     dark: '#9F1239',
     light: '#FFE4E6',
+    onDarkSubtle: '#FDA4AF',
+    onDarkText: '#FB7185',
   },
 } as const;
 
