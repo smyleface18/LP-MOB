@@ -168,7 +168,7 @@ const ManageQuestionsScreen = () => {
               title="+ Create New Question"
               variant="primary"
               size="medium"
-              onPress={() => navigation.navigate('CreateQuestionScreen' as never)}
+              onPress={() => navigation.navigate('CreateQuestion' as never)}
             />
           </View>
         </View>

@@ -53,8 +53,16 @@ const AdminDashboardScreen = () => {
         metrics={METRICS}
         levelUsage={LEVEL_USAGE}
         categoryDistribution={CATEGORY_DISTRIBUTION}
-        onNavigateToQuestions={() => navigation.navigate('ManageQuestionsScreen' as never)}
-        onNavigateToCategories={() => navigation.navigate('ManageCategoriesScreen' as never)}
+        onNavigateToQuestions={() =>
+          (navigation.navigate as (name: string, params?: object) => void)('Preguntas', {
+            screen: 'ManageQuestions',
+          })
+        }
+        onNavigateToCategories={() =>
+          (navigation.navigate as (name: string, params?: object) => void)('Categorias', {
+            screen: 'ManageCategories',
+          })
+        }
         onSignOut={() => setConfirmSignOutVisible(true)}
         signOutLoading={signOutLoading}
       />

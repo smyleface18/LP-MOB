@@ -1,6 +1,5 @@
 import { AuthStack } from './AuthStack';
-import { UserStack } from './UserStack';
-import { AdminStack } from './AdminStack';
+import { MainTabs } from './MainTabs';
 import { useAuthState } from '@/store';
 
 export const AppNavigator = () => {
@@ -10,9 +9,5 @@ export const AppNavigator = () => {
     return <AuthStack />;
   }
 
-  if (user?.userRole === 'ADMIN') {
-    return <AdminStack />;
-  }
-
-  return <UserStack />;
+  return <MainTabs role={user?.userRole} />;
 };

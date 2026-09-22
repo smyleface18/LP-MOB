@@ -22,7 +22,7 @@ SplashScreen.preventAutoHideAsync();
 
 // Sin esto, la versión web no sincroniza la pantalla actual con la URL/
 // historial del navegador: el botón "atrás" del navegador no navega dentro
-// de la app. AppNavigator monta AuthStack/UserStack/AdminStack como árboles
+// de la app. AppNavigator monta AuthStack o MainTabs como árboles
 // separados (no anidados bajo un navigator raíz común), pero linking igual
 // resuelve por nombre de pantalla sin importar cuál esté montado.
 const linking = {
@@ -31,9 +31,29 @@ const linking = {
     screens: {
       SignIn: 'sign-in',
       Signup: 'sign-up',
-      UserDashboard: 'dashboard',
-      GameScreen: 'game',
-      AdminDashboard: 'admin',
+      Dashboard: 'dashboard',
+      Arena: 'game',
+      Ranking: 'ranking',
+      Perfil: 'perfil',
+      // Solo existen en MainTabs.web.tsx (admin + web) — no rompen el
+      // linking en mobile/no-admin porque esas rutas simplemente no existen
+      // ahí y React Navigation las ignora.
+      Categorias: {
+        path: 'admin/categorias',
+        screens: {
+          ManageCategories: '',
+          CreateCategory: 'crear',
+          CategoryDetail: ':categoryId',
+        },
+      },
+      Preguntas: {
+        path: 'admin/preguntas',
+        screens: {
+          ManageQuestions: '',
+          CreateQuestion: 'crear',
+          QuestionDetail: ':questionId',
+        },
+      },
     },
   },
 };
