@@ -40,3 +40,11 @@ export const Medium: Story = {
 export const Small: Story = {
   args: { title: 'small', size: 'small' },
 };
+
+export const WithIcon: Story = {
+  args: { title: 'Crear categoría', variant: 'primary', icon: 'PlusCircleIcon' },
+};
+
+export const OutlinedWithIcon: Story = {
+  args: { title: 'Reintentar', variant: 'outlined', icon: 'ArrowCounterClockwiseIcon' },
+};
