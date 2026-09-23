@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
@@ -18,6 +18,7 @@ import { AppNavigator } from '@/app/navigation/AppNavigator';
 import { ThemeProvider, useTheme } from '@/app/providers/theme.provider';
 import { AppAlertProvider } from '@/app/providers/alert.provider';
 import TokenRefreshProvider from '@/features/auth/providers/TokenRefreshProvider';
+import { useRestoreSession } from '@/store';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -91,13 +92,26 @@ export default function App() {
     Nunito_700Bold,
   });
 
+  // La sesión guardada se restaura antes de mostrar la app: si no, arrancaría
+  // siempre en el login aunque haya tokens válidos.
+  const restoreSession = useRestoreSession();
+  const [sessionRestored, setSessionRestored] = useState(false);
+
   useEffect(() => {
-    if (balooLoaded && nunitoLoaded) {
+    restoreSession()
+      .catch((error: unknown) => console.error('restoreSession failed:', error))
+      .finally(() => setSessionRestored(true));
+  }, [restoreSession]);
+
+  const ready = balooLoaded && nunitoLoaded && sessionRestored;
+
+  useEffect(() => {
+    if (ready) {
       SplashScreen.hideAsync();
     }
-  }, [balooLoaded, nunitoLoaded]);
+  }, [ready]);
 
-  if (!balooLoaded || !nunitoLoaded) {
+  if (!ready) {
     return null;
   }
 
@@ -118,4 +132,3 @@ const createStyles = (theme: ReturnType<typeof useTheme>) =>
       backgroundColor: theme.color.background,
     },
   });
-

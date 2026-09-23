@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { AuthStack } from './AuthStack';
 import { MainTabs } from './MainTabs';
 import { useAuthState, useAuthActions } from '@/store';
@@ -13,30 +13,43 @@ import { Loading } from '@/shared/components/Loading';
  * tabs de Categorías/Preguntas si ese fetch particular fallaba o tardaba.
  * Ahora se espera a conocer el rol antes de decidir qué armar.
  */
-export const AppNavigator = () => {
-  const { isAuthenticated, user } = useAuthState();
-  const { setUser } = useAuthActions();
+const ME_RETRY_MS = 3_000;
 
+export const AppNavigator = () => {
+  const { isAuthenticated, user, accessToken } = useAuthState();
+  const { setUser } = useAuthActions();
+  const [retry, setRetry] = useState(0);
+
+  // Si falla (ej. al abrir la app con el access token vencido, antes de que se
+  // renueve, o sin red) se reintenta: al cambiar el token y cada pocos
+  // segundos. Antes quedaba en el Loading para siempre.
   useEffect(() => {
     if (!isAuthenticated || user) return;
 
     let cancelled = false;
+    let retryTimer: ReturnType<typeof setTimeout> | undefined;
     (async () => {
-      const response = await userService.getMe();
-      if (cancelled) return;
+      try {
+        const response = await userService.getMe();
+        if (cancelled) return;
 
-      if (!response.ok || !response.data) {
+        if (response.ok && response.data) {
+          setUser(response.data);
+          return;
+        }
         console.error('[AppNavigator] failed to load current user:', response.message);
-        return;
+      } catch (error) {
+        if (cancelled) return;
+        console.error('[AppNavigator] failed to load current user:', error);
       }
-
-      setUser(response.data);
+      retryTimer = setTimeout(() => setRetry((n) => n + 1), ME_RETRY_MS);
     })();
 
     return () => {
       cancelled = true;
+      if (retryTimer) clearTimeout(retryTimer);
     };
-  }, [isAuthenticated, user, setUser]);
+  }, [isAuthenticated, user, setUser, accessToken, retry]);
 
   if (!isAuthenticated) {
     return <AuthStack />;

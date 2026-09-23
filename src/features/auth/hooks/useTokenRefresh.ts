@@ -3,6 +3,8 @@ import { useAuthState, useAuthActions } from '@/store';
 import { AuthService } from '../services/auth.service';
 import { decodeToken } from '@/shared/adapters/decode.adapter';
 
+const NETWORK_RETRY_MS = 30_000;
+
 /**
  * Hook para manejar refresh automático de access token
  *
@@ -17,20 +19,21 @@ export const useTokenRefresh = () => {
   const { updateTokens, signOut } = useAuthActions();
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isRefreshingRef = useRef(false);
+  // El reintento por error de red corre desde un setTimeout: usa siempre la
+  // versión actual de performRefresh (con el refresh token vigente).
+  const performRefreshRef = useRef<() => Promise<void>>(async () => undefined);
 
   /**
-   * Obtiene el tiempo hasta expiración en milisegundos
+   * Ms hasta la expiración (negativo si ya venció); null solo si el token no
+   * se puede decodificar. Un token vencido NO es motivo para cerrar sesión: el
+   * refresh token (días de validez) permite renovarlo.
    */
   const getTimeUntilExpiration = useCallback((token: string): number | null => {
     const payload = decodeToken(token);
     if (!payload?.exp) return null;
 
     // exp está en segundos, convertir a milisegundos
-    const expirationTime = payload.exp * 1000;
-    const now = Date.now();
-    const timeUntilExpiration = expirationTime - now;
-
-    return timeUntilExpiration > 0 ? timeUntilExpiration : null;
+    return payload.exp * 1000 - Date.now();
   }, []);
 
   /**
@@ -70,13 +73,19 @@ export const useTokenRefresh = () => {
       // Programar siguiente refresh
       scheduleTokenRefresh(response.data.accessToken);
     } catch (error) {
-      console.error('❌ Error al refrescar token:', error);
-      // En caso de error, hacer logout automático
-      await signOut();
+      // Error de red (sin conexión, servidor caído): el refresh token sigue
+      // siendo válido, así que se reintenta en vez de cerrar la sesión.
+      console.warn('⚠️ No se pudo refrescar el token, reintentando en 30s:', error);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => performRefreshRef.current(), NETWORK_RETRY_MS);
     } finally {
       isRefreshingRef.current = false;
     }
   }, [refreshToken, updateTokens, signOut]);
+
+  useEffect(() => {
+    performRefreshRef.current = performRefresh;
+  }, [performRefresh]);
 
   /**
    * Programa el siguiente refresh de token
@@ -92,8 +101,9 @@ export const useTokenRefresh = () => {
       const timeUntilExpiration = getTimeUntilExpiration(token);
 
       if (timeUntilExpiration === null) {
-        console.error('❌ No se pudo obtener tiempo de expiración del token');
-        await signOut();
+        // Token ilegible: se intenta renovar (performRefresh cierra sesión si no hay refresh token).
+        console.warn('⚠️ No se pudo leer la expiración del token, refrescando...');
+        performRefresh();
         return;
       }
 

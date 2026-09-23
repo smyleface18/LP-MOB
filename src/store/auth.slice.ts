@@ -2,11 +2,9 @@ import { StateCreator } from 'zustand';
 import { storageAdapter } from '@/shared/adapters/storage.adapter';
 import { Authenticated, AuthState, User } from '@/features/auth/types';
 
-
-
 export type AuthSlice = AuthState;
 
-export const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
+export const createAuthSlice: StateCreator<AuthSlice> = (set, get) => ({
   accessToken: null,
   idToken: null,
   refreshToken: null,
@@ -18,7 +16,6 @@ export const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
     await storageAdapter.set('idToken', authenticated.idToken);
     await storageAdapter.set('refreshToken', authenticated.refreshToken);
 
-    
     set({
       accessToken: authenticated.accessToken,
       idToken: authenticated.idToken,
@@ -40,13 +37,24 @@ export const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
     });
   },
 
+  // Carga los tokens guardados al abrir la app. Aunque el access token haya
+  // vencido, con el refresh token la sesión sigue: useTokenRefresh lo renueva.
   restoreSession: async () => {
-    const accessToken = await storageAdapter.get('accessToken');
-    if (!accessToken) return;
-    set({ isAuthenticated: true });
+    const [accessToken, idToken, refreshToken] = await Promise.all([
+      storageAdapter.get('accessToken'),
+      storageAdapter.get('idToken'),
+      storageAdapter.get('refreshToken'),
+    ]);
+    if (!accessToken && !refreshToken) return;
+
+    set({ accessToken, idToken, refreshToken, isAuthenticated: true });
   },
 
   updateTokens: async (authenticated: Authenticated) => {
+    // Cognito no devuelve un refresh token nuevo al refrescar: se conserva el
+    // actual. (Antes quedaba en null y el siguiente refresh cerraba la sesión.)
+    const refreshToken = authenticated.refreshToken || get().refreshToken;
+
     await storageAdapter.set('accessToken', authenticated.accessToken);
     await storageAdapter.set('idToken', authenticated.idToken);
     if (authenticated.refreshToken) {
@@ -56,11 +64,11 @@ export const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
     set({
       accessToken: authenticated.accessToken,
       idToken: authenticated.idToken,
-      refreshToken: authenticated.refreshToken || null,
+      refreshToken,
     });
   },
 
   setUser: (user: User) => {
     set({ user });
-  }
+  },
 });
