@@ -10,7 +10,6 @@ class ApiService {
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
-    console.log('ejecutando request: ', endpoint, options);
     const url = `${this.baseURL}${endpoint}`;
     const token = await storageAdapter.get('accessToken');
 
@@ -36,10 +35,6 @@ class ApiService {
 
       const rawText = await response.text();
       const responseBody = rawText ? this.safeJsonParse(rawText) : null;
-
-      if (responseBody) {
-        console.log('API raw response:', responseBody);
-      }
 
       if (!response.ok) {
         if (responseBody) {

@@ -11,12 +11,10 @@ export const AuthService = {
   },
 
   async signIn(email: string, password: string): Promise<ApiResponse<Authenticated>> {
-    const authenticated = await apiService.post<Authenticated>(API_ENDPOINTS.AUTH.SIGN_IN, {
+    return apiService.post<Authenticated>(API_ENDPOINTS.AUTH.SIGN_IN, {
       email,
       password,
     });
-    console.log(authenticated);
-    return authenticated;
   },
 
   async refreshAccessToken(refreshToken: string): Promise<ApiResponse<Authenticated>> {

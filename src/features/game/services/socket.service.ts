@@ -112,11 +112,8 @@ export class SocketService implements GameService {
     if (!this.isConnected()) throw new Error('Socket not connected');
 
     this.socket?.emit('createGame', { level, modeMatch }, (response: any) => {
-      console.log(`[SocketService] 🎮 Creating game with level: ${level}, mode: ${modeMatch}`);
-      console.log('[SocketService] 🎮 createGame response:', response);
       if (response.ok && response.data) {
         const { roomId, level, modeMatch } = response.data;
-        console.log('[SocketService] ✅ Emitting gameCreated with:', { roomId, level, modeMatch });
         // Emitir evento interno para que el hook actualice el estado
         this.emit('gameCreated', {
           roomId: roomId,
@@ -133,14 +130,8 @@ export class SocketService implements GameService {
   joinGame(roomId: string) {
     if (!this.isConnected()) throw new Error('Socket not connected');
     this.socket?.emit('joinGame', { roomId }, (response: any) => {
-      console.log('[SocketService] 👥 joinGame response:', response);
       if (response.ok && response.data) {
         const { roomId: returnedRoomId, level, modeMatch } = response.data;
-        console.log('[SocketService] ✅ Emitting gameJoined with:', {
-          returnedRoomId,
-          level,
-          modeMatch,
-        });
         // Emitir evento interno para que el hook actualice el estado
         this.emit('gameJoined', {
           roomId: returnedRoomId,

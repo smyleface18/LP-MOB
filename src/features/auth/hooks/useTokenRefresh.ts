@@ -22,7 +22,6 @@ export const useTokenRefresh = () => {
    * Obtiene el tiempo hasta expiración en milisegundos
    */
   const getTimeUntilExpiration = useCallback((token: string): number | null => {
-    console.log('🔍 Decodificando token para obtener tiempo de expiración...');
     const payload = decodeToken(token);
     if (!payload?.exp) return null;
 
@@ -53,7 +52,7 @@ export const useTokenRefresh = () => {
     isRefreshingRef.current = true;
 
     try {
-      console.log('🔄 Iniciando refresh de token...');
+      if (__DEV__) console.log('🔄 Iniciando refresh de token...');
       const response = await AuthService.refreshAccessToken(refreshToken);
 
       if (!response.ok || !response.data) {
@@ -66,7 +65,7 @@ export const useTokenRefresh = () => {
 
       // Actualizar tokens en el store y en storage
       await updateTokens(response.data);
-      console.log('✅ Token refrescado exitosamente');
+      if (__DEV__) console.log('✅ Token refrescado exitosamente');
 
       // Programar siguiente refresh
       scheduleTokenRefresh(response.data.accessToken);
@@ -110,7 +109,7 @@ export const useTokenRefresh = () => {
         // Programar refresh
         const minutes = Math.floor(timeUntilRefresh / 1000 / 60);
         const seconds = Math.floor((timeUntilRefresh / 1000) % 60);
-        console.log(`⏱️ Próximo refresh programado en ${minutes}m ${seconds}s`);
+        if (__DEV__) console.log(`⏱️ Próximo refresh programado en ${minutes}m ${seconds}s`);
 
         timeoutRef.current = setTimeout(() => {
           performRefresh();
