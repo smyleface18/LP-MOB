@@ -21,11 +21,23 @@ export class SocketService implements GameService {
   private clockSyncTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
-    this.connect();
+    // No se conecta al importar el módulo (antes del login no hay token y el
+    // servidor rechaza la conexión): lo hace useGame. Al cerrar sesión se
+    // corta, para que otro usuario en el mismo dispositivo no juegue con la
+    // identidad del anterior (el socket se autentica solo al conectarse).
+    useAppStore.subscribe((state, prev) => {
+      if (prev.accessToken && !state.accessToken) this.disconnect();
+    });
   }
 
   connect() {
-    if (this.socket && this.socket.connected) return;
+    this.reconnectAttempts = 0;
+    if (this.socket) {
+      // Reusar el socket existente: crear otro dejaría el anterior vivo con
+      // listeners duplicados. La reconexión pide el token vigente (auth callback).
+      if (!this.socket.connected) this.socket.connect();
+      return;
+    }
 
     this.socket = io(`${this.baseURL}/game`, {
       transports: ['websocket'],

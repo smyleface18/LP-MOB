@@ -152,7 +152,9 @@ export const useGame = () => {
     try {
       setIsHost(false);
       socketService.joinGame(roomId);
-      setGameState((prev) => ({ ...prev, roomId, error: null }));
+      // roomId se fija al confirmar el servidor (gameJoined): si la sala no
+      // existe o ya empezó, no hay que mostrar un lobby falso.
+      setGameState((prev) => ({ ...prev, error: null }));
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to join game';
       setGameState((prev) => ({ ...prev, error: errorMsg }));
