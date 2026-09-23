@@ -27,8 +27,8 @@ export interface OptionDto {
  */
 export interface CreateQuestionOptionDto {
   contentType: ContentType;
-  text?: string;
-  mediaId?: string;
+  text?: string | null;
+  mediaId?: string | null;
   isCorrect: boolean;
   questionId: string;
 }

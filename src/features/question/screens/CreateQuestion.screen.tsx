@@ -14,6 +14,11 @@ import QuestionForm, {
 import { useCategories } from '@/features/category/hooks/useCategories';
 import { questionService } from '../services/question.service';
 import { questionOptionsService } from '../services/question-options.service';
+import {
+  isOptionFilled,
+  toOptionContentPayload,
+  toQuestionMediaId,
+} from '../utils/content-payload';
 import { getErrorMessage } from '@/shared/api/getErrorMessage';
 import { ContentType } from '@/shared/types/common';
 
@@ -81,14 +86,13 @@ const CreateQuestionScreen = () => {
       appAlert('Error', 'You must upload a file for this content type');
       return false;
     }
-    const filledOptions = formValues.options.filter(
-      (opt) => opt.text.trim() !== '' || !!opt.mediaId,
-    );
+    const filledOptions = formValues.options.filter(isOptionFilled);
     if (filledOptions.length < 2) {
       appAlert('Error', 'You must provide at least 2 options');
       return false;
     }
-    if (!formValues.options.some((opt) => opt.isCorrect)) {
+    // Sobre las opciones completas: las vacías se descartan al guardar.
+    if (!filledOptions.some((opt) => opt.isCorrect)) {
       appAlert('Error', 'You must mark one option as the correct answer');
       return false;
     }
@@ -107,7 +111,7 @@ const CreateQuestionScreen = () => {
     const questionResponse = await questionService.create({
       contentType: formValues.contentType,
       text: formValues.text,
-      mediaId: formValues.mediaId,
+      mediaId: toQuestionMediaId(formValues),
       moreInfo: formValues.moreInfo || undefined,
       categoryId: formValues.categoryId,
       timeLimit: formValues.timeLimit,
@@ -121,15 +125,11 @@ const CreateQuestionScreen = () => {
 
     const questionId = questionResponse.data.id;
     const optionsResponse = await questionOptionsService.createMany(
-      formValues.options
-        .filter((opt) => opt.text.trim() !== '' || !!opt.mediaId)
-        .map((opt) => ({
-          contentType: opt.contentType,
-          text: opt.text || undefined,
-          mediaId: opt.mediaId,
-          isCorrect: opt.isCorrect,
-          questionId,
-        })),
+      formValues.options.filter(isOptionFilled).map((opt) => ({
+        ...toOptionContentPayload(opt),
+        isCorrect: opt.isCorrect,
+        questionId,
+      })),
     );
     setSubmitting(false);
 

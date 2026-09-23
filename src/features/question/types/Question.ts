@@ -47,7 +47,7 @@ export interface QuestionDto {
 export interface CreateQuestionDto {
   contentType: ContentType;
   text: string;
-  mediaId?: string;
+  mediaId?: string | null;
   moreInfo?: string;
   categoryId: string;
   timeLimit?: number;

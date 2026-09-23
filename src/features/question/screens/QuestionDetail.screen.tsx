@@ -14,6 +14,11 @@ import QuestionForm, {
 import { useCategories } from '@/features/category/hooks/useCategories';
 import { questionService } from '../services/question.service';
 import { questionOptionsService } from '../services/question-options.service';
+import {
+  isOptionFilled,
+  toOptionContentPayload,
+  toQuestionMediaId,
+} from '../utils/content-payload';
 import { getErrorMessage } from '@/shared/api/getErrorMessage';
 import { Question } from '../types';
 import { ContentType } from '@/shared/types/common';
@@ -140,14 +145,13 @@ const QuestionDetailScreen = () => {
       appAlert('Error', 'Debe subir un archivo para este tipo de contenido');
       return false;
     }
-    const filledOptions = formValues.options.filter(
-      (opt) => opt.text.trim() !== '' || !!opt.mediaId,
-    );
+    const filledOptions = formValues.options.filter(isOptionFilled);
     if (filledOptions.length < 2) {
       appAlert('Error', 'Debe proporcionar al menos 2 opciones');
       return false;
     }
-    if (!formValues.options.some((opt) => opt.isCorrect)) {
+    // Sobre las opciones completas: las vacías se descartan al guardar.
+    if (!filledOptions.some((opt) => opt.isCorrect)) {
       appAlert('Error', 'Debe marcar una opción como la respuesta correcta');
       return false;
     }
@@ -166,7 +170,7 @@ const QuestionDetailScreen = () => {
     const questionResponse = await questionService.update(questionId, {
       contentType: formValues.contentType,
       text: formValues.text,
-      mediaId: formValues.mediaId,
+      mediaId: toQuestionMediaId(formValues),
       moreInfo: formValues.moreInfo || undefined,
       categoryId: formValues.categoryId,
       timeLimit: formValues.timeLimit,
@@ -174,7 +178,10 @@ const QuestionDetailScreen = () => {
 
     if (!questionResponse.ok) {
       setSaving(false);
-      appAlert('Error', getErrorMessage(questionResponse.message, 'No se pudo actualizar la pregunta'));
+      appAlert(
+        'Error',
+        getErrorMessage(questionResponse.message, 'No se pudo actualizar la pregunta'),
+      );
       return;
     }
 
@@ -184,24 +191,18 @@ const QuestionDetailScreen = () => {
     const removedOptionIds = originalOptionIds.filter((id) => !currentOptionIds.includes(id));
 
     const optionWrites = await Promise.all([
-      ...formValues.options
-        .filter((opt) => opt.text.trim() !== '' || !!opt.mediaId)
-        .map((opt) =>
-          opt.id
-            ? questionOptionsService.update(opt.id, {
-                contentType: opt.contentType,
-                text: opt.text || undefined,
-                mediaId: opt.mediaId,
-                isCorrect: opt.isCorrect,
-              })
-            : questionOptionsService.create({
-                contentType: opt.contentType,
-                text: opt.text || undefined,
-                mediaId: opt.mediaId,
-                isCorrect: opt.isCorrect,
-                questionId,
-              }),
-        ),
+      ...formValues.options.filter(isOptionFilled).map((opt) =>
+        opt.id
+          ? questionOptionsService.update(opt.id, {
+              ...toOptionContentPayload(opt),
+              isCorrect: opt.isCorrect,
+            })
+          : questionOptionsService.create({
+              ...toOptionContentPayload(opt),
+              isCorrect: opt.isCorrect,
+              questionId,
+            }),
+      ),
       ...removedOptionIds.map((id) => questionOptionsService.delete(id)),
     ]);
 
