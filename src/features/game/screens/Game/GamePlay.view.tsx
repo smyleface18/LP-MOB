@@ -110,7 +110,6 @@ const GamePlay: React.FC<GamePlayProps> = ({
         isCorrect={isCorrect}
         correctAnswer={correctAnswer}
         points={pointsEarned}
-        timeRemaining={1000}
         onClose={onModalClose}
       />
     </View>

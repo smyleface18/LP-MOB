@@ -76,6 +76,10 @@ export const useGame = () => {
   // Línea de tiempo recibida del servidor (hora del servidor, epoch ms).
   const scheduledQuestionRef = useRef<NewQuestionEvent | null>(null);
   const nextQuestionAtRef = useRef<number | null>(null);
+  // Última pregunta mostrada. Sigue en pantalla (con el diálogo de resultado)
+  // después de cerrarse y mientras llega la siguiente: se reemplaza recién
+  // cuando la nueva se revela en su startsAt, sin pantalla de carga en medio.
+  const displayedQuestionRef = useRef<NewQuestionEvent | null>(null);
 
   // Los handlers del socket se registran una sola vez: leen el userId de acá.
   const userIdRef = useRef(userId);
@@ -94,12 +98,17 @@ export const useGame = () => {
   const tick = useCallback(() => {
     const now = socketService.serverNow();
     const scheduled = scheduledQuestionRef.current;
-    const revealed = scheduled !== null && now >= scheduled.startsAt;
+    if (scheduled && now >= scheduled.startsAt) displayedQuestionRef.current = scheduled;
 
-    const currentQuestion = revealed ? scheduled.question : null;
-    const timeRemaining = revealed ? secondsUntil(scheduled.endsAt, now) : 0;
-    const nextAt = scheduled && !revealed ? scheduled.startsAt : nextQuestionAtRef.current;
-    const nextQuestionIn = !revealed && nextAt !== null ? secondsUntil(nextAt, now) : 0;
+    const shown = displayedQuestionRef.current;
+    const currentQuestion = shown?.question ?? null;
+    // Una pregunta ya cerrada queda en 0: las opciones siguen bloqueadas.
+    const timeRemaining = shown ? secondsUntil(shown.endsAt, now) : 0;
+    // La cuenta regresiva solo se ve cuando no hay ninguna pregunta en pantalla
+    // (antes de la primera).
+    const nextAt =
+      scheduled && scheduled !== shown ? scheduled.startsAt : nextQuestionAtRef.current;
+    const nextQuestionIn = !shown && nextAt !== null ? secondsUntil(nextAt, now) : 0;
 
     setGameState((prev) => {
       if (
@@ -109,13 +118,17 @@ export const useGame = () => {
       ) {
         return prev;
       }
+      const questionChanged = prev.currentQuestion?.id !== currentQuestion?.id;
       return {
         ...prev,
         currentQuestion,
         timeRemaining,
         nextQuestionIn,
-        questionNumber: revealed ? scheduled.questionNumber : prev.questionNumber,
-        totalQuestions: scheduled?.totalQuestions ?? prev.totalQuestions,
+        questionNumber: shown ? shown.questionNumber : prev.questionNumber,
+        totalQuestions: shown?.totalQuestions ?? scheduled?.totalQuestions ?? prev.totalQuestions,
+        // La respuesta registrada es de la pregunta anterior: se limpia recién
+        // cuando cambia la pregunta en pantalla (no al recibir la nueva).
+        answeredOptionId: questionChanged ? null : prev.answeredOptionId,
       };
     });
   }, []);
@@ -134,6 +147,7 @@ export const useGame = () => {
     stopTimer();
     scheduledQuestionRef.current = null;
     nextQuestionAtRef.current = null;
+    displayedQuestionRef.current = null;
   }, [stopTimer]);
 
   // 🎮 Game actions - memoized
@@ -297,13 +311,7 @@ export const useGame = () => {
       scheduledQuestionRef.current = data;
       nextQuestionAtRef.current = null;
       prefetchMedia(data.question);
-      setGameState((prev) => ({
-        ...prev,
-        gameStarted: true,
-        finished: false,
-        answeredOptionId: null,
-        error: null,
-      }));
+      setGameState((prev) => ({ ...prev, gameStarted: true, finished: false, error: null }));
       startTimer();
     };
 
@@ -325,6 +333,11 @@ export const useGame = () => {
           : null;
       nextQuestionAtRef.current = snapshot.nextQuestionAt;
       if (snapshot.question) prefetchMedia(snapshot.question);
+      // Si la pregunta ya está en curso se muestra de una, con su respuesta
+      // registrada (el tick no la limpia porque la pregunta no cambia).
+      const active = scheduledQuestionRef.current;
+      displayedQuestionRef.current =
+        active && socketService.serverNow() >= active.startsAt ? active : null;
 
       setIsHost(snapshot.players.some((p) => p.userId === userIdRef.current && p.isOwner));
       setGameState((prev) => ({
@@ -335,6 +348,7 @@ export const useGame = () => {
         players: snapshot.players,
         questionNumber: snapshot.questionNumber,
         totalQuestions: snapshot.totalQuestions,
+        currentQuestion: displayedQuestionRef.current?.question ?? null,
         gameStarted: inProgress,
         finished: snapshot.status === MatchStatus.FINISHED,
         answeredOptionId: snapshot.answeredOptionId,
@@ -356,6 +370,8 @@ export const useGame = () => {
       }, 100);
     };
 
+    // La pregunta cerrada sigue en pantalla (displayedQuestionRef) con el
+    // diálogo de resultado hasta que se revela la siguiente.
     const handleQuestionEnded = (data: { nextQuestionAt: number | null }) => {
       scheduledQuestionRef.current = null;
       nextQuestionAtRef.current = data?.nextQuestionAt ?? null;

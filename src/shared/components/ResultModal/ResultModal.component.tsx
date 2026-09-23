@@ -7,6 +7,7 @@ export interface ResultModalProps {
   isCorrect: boolean;
   correctAnswer: string[];
   onClose: () => void;
+  /** Si se indica, se cierra solo tras estos ms; si no, lo cierra el padre (visible=false). */
   timeRemaining?: number;
   /** Puntos ganados con esta respuesta. */
   points?: number;
@@ -17,14 +18,14 @@ const ResultModal: React.FC<ResultModalProps> = ({
   isCorrect,
   correctAnswer,
   onClose,
-  timeRemaining = 2000,
+  timeRemaining,
   points,
 }) => {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   useEffect(() => {
-    if (!visible) return;
+    if (!visible || timeRemaining === undefined) return;
 
     const timer = setTimeout(() => {
       onClose();
