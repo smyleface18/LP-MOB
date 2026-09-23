@@ -1,8 +1,11 @@
-import { ContentObject, CoreEntity, S3Object } from '../common/cores.type';
+import { ContentType } from '../common';
+import { CoreEntity, MediaAsset } from '../common/cores.type';
 import { Question } from '@/features/question/types';
 
 export interface QuestionOption extends CoreEntity {
-  content: ContentObject;
+  contentType: ContentType;
+  text?: string;
+  media?: MediaAsset;
 
   isCorrect: boolean;
 
@@ -13,15 +16,19 @@ export interface QuestionOption extends CoreEntity {
 
 export interface OptionDto {
   id: string;
-  content: ContentObject;
+  contentType: ContentType;
+  text?: string;
+  media?: MediaAsset;
 }
 
 /**
  * Coincide con CreateQuestionOptionDto del backend: OmitType(QuestionOption,
- * ['id','createdAt','updatedAt','active','question']).
+ * ['id','createdAt','updatedAt','active','question','media']).
  */
 export interface CreateQuestionOptionDto {
-  content: ContentObject;
+  contentType: ContentType;
+  text?: string;
+  mediaId?: string;
   isCorrect: boolean;
   questionId: string;
 }

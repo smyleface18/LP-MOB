@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Switch, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/app/providers/theme.provider';
 import { Question } from '../../types';
-import { ContentObject } from '@/shared/types/common/cores.type';
 import { ContentType, Level } from '@/shared/types/common';
 import { TypeQuestionCategory } from '@/shared/types/category-question';
 
@@ -13,9 +12,9 @@ const CONTENT_TYPE_LABELS: Record<ContentType, string> = {
   [ContentType.VIDEO]: '[Video]',
 };
 
-/** Texto corto para previsualizar un ContentObject en listas — nunca vuelca URLs crudas. */
-const describeContent = (content: ContentObject): string =>
-  content.type === ContentType.TEXT ? content.value || '(empty)' : CONTENT_TYPE_LABELS[content.type];
+/** Texto corto para previsualizar contenido en listas — nunca vuelca URLs crudas. */
+const describeContent = (contentType: ContentType, text?: string): string =>
+  contentType === ContentType.TEXT ? text || '(empty)' : CONTENT_TYPE_LABELS[contentType];
 
 export interface QuestionCardProps {
   question: Question;
@@ -62,7 +61,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   const InfoBlock = () => (
     <View>
       <Text style={styles.questionText} numberOfLines={2}>
-        {describeContent(question.content)}
+        {describeContent(question.contentType, question.text)}
       </Text>
       <View style={styles.tagsContainer}>
         {category?.level && (
@@ -122,7 +121,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         <Text style={styles.optionsText}>
           {(question.options ?? []).length === 0
             ? 'No options yet'
-            : `Options: ${(question.options ?? []).map((op) => describeContent(op.content)).join(', ')}`}
+            : `Options: ${(question.options ?? [])
+                .map((op) => describeContent(op.contentType, op.text))
+                .join(', ')}`}
         </Text>
       </View>
     </View>

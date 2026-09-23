@@ -59,7 +59,7 @@ const ManageQuestionsScreen = () => {
     const search = searchText.trim().toLowerCase();
     const matchesSearch =
       !search ||
-      question.content.value.toLowerCase().includes(search) ||
+      (question.text ?? '').toLowerCase().includes(search) ||
       (question.moreInfo ?? '').toLowerCase().includes(search);
 
     return matchesCategory && matchesLevel && matchesType && matchesSearch;

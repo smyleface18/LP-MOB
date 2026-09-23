@@ -19,13 +19,32 @@ const question: Question = {
   active: true,
   createdAt: new Date(),
   updatedAt: new Date(),
-  content: { type: ContentType.TEXT, value: 'Which sentence uses the present perfect correctly?' },
+  contentType: ContentType.TEXT,
+  text: 'Which sentence uses the present perfect correctly?',
   category,
   categoryId: category.id,
   timeLimit: 30,
   options: [
-    { id: 'opt-1', active: true, createdAt: new Date(), isCorrect: true, questionId: 'question-1', question: {} as any, content: { type: ContentType.TEXT, value: 'She has visited Paris twice.' } },
-    { id: 'opt-2', active: true, createdAt: new Date(), isCorrect: false, questionId: 'question-1', question: {} as any, content: { type: ContentType.TEXT, value: 'She have visited Paris twice.' } },
+    {
+      id: 'opt-1',
+      active: true,
+      createdAt: new Date(),
+      isCorrect: true,
+      questionId: 'question-1',
+      question: {} as any,
+      contentType: ContentType.TEXT,
+      text: 'She has visited Paris twice.',
+    },
+    {
+      id: 'opt-2',
+      active: true,
+      createdAt: new Date(),
+      isCorrect: false,
+      questionId: 'question-1',
+      question: {} as any,
+      contentType: ContentType.TEXT,
+      text: 'She have visited Paris twice.',
+    },
   ],
 };
 
@@ -73,7 +92,8 @@ export const ImagePrompt: Story = {
   args: {
     question: {
       ...question,
-      content: { type: ContentType.IMAGE, value: 'https://picsum.photos/seed/linguaplay/600/400' },
+      contentType: ContentType.IMAGE,
+      text: undefined,
     },
   },
 };

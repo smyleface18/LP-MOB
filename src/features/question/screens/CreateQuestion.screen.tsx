@@ -17,13 +17,14 @@ import { getErrorMessage } from '@/shared/api/getErrorMessage';
 import { ContentType } from '@/shared/types/common';
 
 const EMPTY_FORM: QuestionFormValues = {
-  content: { type: ContentType.TEXT, value: '' },
+  contentType: ContentType.TEXT,
+  text: '',
   moreInfo: '',
   timeLimit: 15,
   categoryId: '',
   options: [
-    { content: { type: ContentType.TEXT, value: '' }, isCorrect: false },
-    { content: { type: ContentType.TEXT, value: '' }, isCorrect: false },
+    { contentType: ContentType.TEXT, text: '', isCorrect: false },
+    { contentType: ContentType.TEXT, text: '', isCorrect: false },
   ],
 };
 
@@ -46,7 +47,10 @@ const CreateQuestionScreen = () => {
       prev.options.length < 6
         ? {
             ...prev,
-            options: [...prev.options, { content: { type: ContentType.TEXT, value: '' }, isCorrect: false }],
+            options: [
+              ...prev.options,
+              { contentType: ContentType.TEXT, text: '', isCorrect: false },
+            ],
           }
         : prev,
     );
@@ -67,11 +71,11 @@ const CreateQuestionScreen = () => {
   };
 
   const validateForm = (): boolean => {
-    if (!formValues.content.value.trim()) {
+    if (!formValues.text.trim()) {
       Alert.alert('Error', 'You must provide the question content');
       return false;
     }
-    const filledOptions = formValues.options.filter((opt) => opt.content.value.trim() !== '');
+    const filledOptions = formValues.options.filter((opt) => opt.text.trim() !== '');
     if (filledOptions.length < 2) {
       Alert.alert('Error', 'You must provide at least 2 options');
       return false;
@@ -93,7 +97,8 @@ const CreateQuestionScreen = () => {
     setSubmitting(true);
 
     const questionResponse = await questionService.create({
-      content: formValues.content,
+      contentType: formValues.contentType,
+      text: formValues.text || undefined,
       moreInfo: formValues.moreInfo || undefined,
       categoryId: formValues.categoryId,
       timeLimit: formValues.timeLimit,
@@ -108,8 +113,13 @@ const CreateQuestionScreen = () => {
     const questionId = questionResponse.data.id;
     const optionsResponse = await questionOptionsService.createMany(
       formValues.options
-        .filter((opt) => opt.content.value.trim() !== '')
-        .map((opt) => ({ content: opt.content, isCorrect: opt.isCorrect, questionId })),
+        .filter((opt) => opt.text.trim() !== '')
+        .map((opt) => ({
+          contentType: opt.contentType,
+          text: opt.text,
+          isCorrect: opt.isCorrect,
+          questionId,
+        })),
     );
     setSubmitting(false);
 
@@ -152,14 +162,18 @@ const CreateQuestionScreen = () => {
             selectedType={selectedType}
             onLevelFilterChange={setSelectedLevel}
             onTypeFilterChange={setSelectedType}
-            onContentChange={(content) => setFormValues((prev) => ({ ...prev, content }))}
+            onContentChange={(value) =>
+              setFormValues((prev) => ({ ...prev, contentType: value.contentType, text: value.text }))
+            }
             onMoreInfoChange={(moreInfo) => setFormValues((prev) => ({ ...prev, moreInfo }))}
             onTimeLimitChange={(timeLimit) => setFormValues((prev) => ({ ...prev, timeLimit }))}
             onCategoryChange={(categoryId) => setFormValues((prev) => ({ ...prev, categoryId }))}
-            onOptionContentChange={(index, content) =>
+            onOptionContentChange={(index, value) =>
               setFormValues((prev) => ({
                 ...prev,
-                options: prev.options.map((opt, i) => (i === index ? { ...opt, content } : opt)),
+                options: prev.options.map((opt, i) =>
+                  i === index ? { ...opt, contentType: value.contentType, text: value.text } : opt,
+                ),
               }))
             }
             onAddOption={handleAddOption}

@@ -5,20 +5,21 @@ import { useBreakpoint } from '@/shared/ui/theme/useBreakpoint';
 import Input from '@/shared/components/Input/Input.component';
 import Button from '@/shared/components/Button/Button.component';
 import { FilterSection } from '@/shared/components/FilterSection/FilterSection.component';
-import ContentEditor from '../ContentEditor';
+import ContentEditor, { ContentEditorValue } from '../ContentEditor';
 import { CategoryQuestion, TypeQuestionCategory } from '@/shared/types/category-question';
-import { ContentObject } from '@/shared/types/common/cores.type';
 import { ContentType, Level } from '@/shared/types/common';
 
 export interface QuestionOptionFormValue {
   /** Presente solo cuando la opción ya existe en el backend (modo edición). */
   id?: string;
-  content: ContentObject;
+  contentType: ContentType;
+  text: string;
   isCorrect: boolean;
 }
 
 export interface QuestionFormValues {
-  content: ContentObject;
+  contentType: ContentType;
+  text: string;
   moreInfo: string;
   timeLimit: number;
   categoryId: string;
@@ -35,11 +36,11 @@ export interface QuestionFormProps {
   selectedType: TypeFilter;
   onLevelFilterChange: (level: LevelFilter) => void;
   onTypeFilterChange: (type: TypeFilter) => void;
-  onContentChange: (content: ContentObject) => void;
+  onContentChange: (value: ContentEditorValue) => void;
   onMoreInfoChange: (moreInfo: string) => void;
   onTimeLimitChange: (timeLimit: number) => void;
   onCategoryChange: (categoryId: string) => void;
-  onOptionContentChange: (index: number, content: ContentObject) => void;
+  onOptionContentChange: (index: number, value: ContentEditorValue) => void;
   onAddOption: () => void;
   onRemoveOption: (index: number) => void;
   onSetCorrectOption: (index: number) => void;
@@ -48,7 +49,7 @@ export interface QuestionFormProps {
 const MAX_OPTIONS = 6;
 const MIN_OPTIONS = 2;
 
-const emptyContent = (): ContentObject => ({ type: ContentType.TEXT, value: '' });
+const emptyContent = (): ContentEditorValue => ({ contentType: ContentType.TEXT, text: '' });
 
 const QuestionForm: React.FC<QuestionFormProps> = ({
   values,
@@ -92,7 +93,11 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
   const FieldsColumn = (
     <View style={styles.column}>
       <View style={styles.section}>
-        <ContentEditor label="Question Content" value={values.content} onChange={onContentChange} />
+        <ContentEditor
+          label="Question Content"
+          value={{ contentType: values.contentType, text: values.text }}
+          onChange={onContentChange}
+        />
       </View>
 
       <View style={styles.section}>
@@ -158,8 +163,8 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
               )}
             </View>
             <ContentEditor
-              value={option.content}
-              onChange={(content) => onOptionContentChange(index, content)}
+              value={{ contentType: option.contentType, text: option.text }}
+              onChange={(value) => onOptionContentChange(index, value)}
             />
           </View>
         ))}

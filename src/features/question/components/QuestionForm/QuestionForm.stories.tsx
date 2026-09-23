@@ -29,13 +29,14 @@ const meta: Meta<typeof QuestionForm> = {
   component: QuestionForm,
   args: {
     values: {
-      content: { type: ContentType.TEXT, value: 'What is the English word for "manzana"?' },
+      contentType: ContentType.TEXT,
+      text: 'What is the English word for "manzana"?',
       moreInfo: '',
       timeLimit: 15,
       categoryId: 'cat-1',
       options: [
-        { id: 'opt-1', content: { type: ContentType.TEXT, value: 'Apple' }, isCorrect: true },
-        { id: 'opt-2', content: { type: ContentType.TEXT, value: 'Orange' }, isCorrect: false },
+        { id: 'opt-1', contentType: ContentType.TEXT, text: 'Apple', isCorrect: true },
+        { id: 'opt-2', contentType: ContentType.TEXT, text: 'Orange', isCorrect: false },
       ],
     },
     categories,
@@ -63,13 +64,14 @@ export const Default: Story = {};
 export const NoCorrectAnswerYet: Story = {
   args: {
     values: {
-      content: { type: ContentType.TEXT, value: '' },
+      contentType: ContentType.TEXT,
+      text: '',
       moreInfo: '',
       timeLimit: 5,
       categoryId: '',
       options: [
-        { content: { type: ContentType.TEXT, value: '' }, isCorrect: false },
-        { content: { type: ContentType.TEXT, value: '' }, isCorrect: false },
+        { contentType: ContentType.TEXT, text: '', isCorrect: false },
+        { contentType: ContentType.TEXT, text: '', isCorrect: false },
       ],
     },
   },
@@ -78,13 +80,14 @@ export const NoCorrectAnswerYet: Story = {
 export const ImageQuestion: Story = {
   args: {
     values: {
-      content: { type: ContentType.IMAGE, value: 'https://picsum.photos/seed/linguaplay/600/400' },
+      contentType: ContentType.IMAGE,
+      text: '',
       moreInfo: 'Look closely at the picture.',
       timeLimit: 20,
       categoryId: 'cat-1',
       options: [
-        { id: 'opt-1', content: { type: ContentType.TEXT, value: 'Apple' }, isCorrect: true },
-        { id: 'opt-2', content: { type: ContentType.TEXT, value: 'Orange' }, isCorrect: false },
+        { id: 'opt-1', contentType: ContentType.TEXT, text: 'Apple', isCorrect: true },
+        { id: 'opt-2', contentType: ContentType.TEXT, text: 'Orange', isCorrect: false },
       ],
     },
   },

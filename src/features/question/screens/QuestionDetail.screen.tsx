@@ -25,13 +25,15 @@ interface RouteParams {
 const PAGE_MAX_WIDTH = 1100;
 
 const toFormValues = (question: Question): QuestionFormValues => ({
-  content: question.content,
+  contentType: question.contentType,
+  text: question.text ?? '',
   moreInfo: question.moreInfo ?? '',
   timeLimit: question.timeLimit,
   categoryId: question.categoryId,
   options: (question.options ?? []).map((option) => ({
     id: option.id,
-    content: option.content,
+    contentType: option.contentType,
+    text: option.text ?? '',
     isCorrect: option.isCorrect,
   })),
 });
@@ -58,7 +60,8 @@ const QuestionDetailScreen = () => {
     initialQuestion
       ? toFormValues(initialQuestion)
       : {
-          content: { type: ContentType.TEXT, value: '' },
+          contentType: ContentType.TEXT,
+          text: '',
           moreInfo: '',
           timeLimit: 15,
           categoryId: '',
@@ -105,7 +108,10 @@ const QuestionDetailScreen = () => {
       prev.options.length < 6
         ? {
             ...prev,
-            options: [...prev.options, { content: { type: ContentType.TEXT, value: '' }, isCorrect: false }],
+            options: [
+              ...prev.options,
+              { contentType: ContentType.TEXT, text: '', isCorrect: false },
+            ],
           }
         : prev,
     );
@@ -120,11 +126,11 @@ const QuestionDetailScreen = () => {
   };
 
   const validateForm = (): boolean => {
-    if (!formValues.content.value.trim()) {
+    if (!formValues.text.trim()) {
       Alert.alert('Error', 'Debe proporcionar el contenido de la pregunta');
       return false;
     }
-    const filledOptions = formValues.options.filter((opt) => opt.content.value.trim() !== '');
+    const filledOptions = formValues.options.filter((opt) => opt.text.trim() !== '');
     if (filledOptions.length < 2) {
       Alert.alert('Error', 'Debe proporcionar al menos 2 opciones');
       return false;
@@ -146,7 +152,8 @@ const QuestionDetailScreen = () => {
     setSaving(true);
 
     const questionResponse = await questionService.update(questionId, {
-      content: formValues.content,
+      contentType: formValues.contentType,
+      text: formValues.text || undefined,
       moreInfo: formValues.moreInfo || undefined,
       categoryId: formValues.categoryId,
       timeLimit: formValues.timeLimit,
@@ -165,12 +172,17 @@ const QuestionDetailScreen = () => {
 
     const optionWrites = await Promise.all([
       ...formValues.options
-        .filter((opt) => opt.content.value.trim() !== '')
+        .filter((opt) => opt.text.trim() !== '')
         .map((opt) =>
           opt.id
-            ? questionOptionsService.update(opt.id, { content: opt.content, isCorrect: opt.isCorrect })
+            ? questionOptionsService.update(opt.id, {
+                contentType: opt.contentType,
+                text: opt.text,
+                isCorrect: opt.isCorrect,
+              })
             : questionOptionsService.create({
-                content: opt.content,
+                contentType: opt.contentType,
+                text: opt.text,
                 isCorrect: opt.isCorrect,
                 questionId,
               }),
@@ -275,14 +287,18 @@ const QuestionDetailScreen = () => {
             selectedType={selectedType}
             onLevelFilterChange={setSelectedLevel}
             onTypeFilterChange={setSelectedType}
-            onContentChange={(content) => setFormValues((prev) => ({ ...prev, content }))}
+            onContentChange={(value) =>
+              setFormValues((prev) => ({ ...prev, contentType: value.contentType, text: value.text }))
+            }
             onMoreInfoChange={(moreInfo) => setFormValues((prev) => ({ ...prev, moreInfo }))}
             onTimeLimitChange={(timeLimit) => setFormValues((prev) => ({ ...prev, timeLimit }))}
             onCategoryChange={(categoryId) => setFormValues((prev) => ({ ...prev, categoryId }))}
-            onOptionContentChange={(index, content) =>
+            onOptionContentChange={(index, value) =>
               setFormValues((prev) => ({
                 ...prev,
-                options: prev.options.map((opt, i) => (i === index ? { ...opt, content } : opt)),
+                options: prev.options.map((opt, i) =>
+                  i === index ? { ...opt, contentType: value.contentType, text: value.text } : opt,
+                ),
               }))
             }
             onAddOption={handleAddOption}

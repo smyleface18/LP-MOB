@@ -87,7 +87,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
             {currentQuestion.options.map((option, i) => (
               <OptionButton
                 key={option.id ?? i}
-                option={option.content.value?.trim() || `Option ${i + 1}`}
+                option={option.text?.trim() || `Option ${i + 1}`}
                 variant={getOptionVariant(option.id)}
                 disabled={!!selectedOption || timeRemaining <= 0}
                 onPress={() => onOptionPress(option.id)}

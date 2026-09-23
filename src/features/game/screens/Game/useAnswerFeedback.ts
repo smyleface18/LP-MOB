@@ -44,7 +44,7 @@ export const useAnswerFeedback = ({
 
     lastProcessedAnswerRef.current = signature;
     setIsCorrect(lastAnswerResult.correct);
-    setCorrectAnswerText(lastAnswerResult.correctAnswer.map((option) => option.content.value));
+    setCorrectAnswerText(lastAnswerResult.correctAnswer.map((option) => option.text ?? ''));
     setShowResult(true);
   }, [lastAnswerResult]);
 

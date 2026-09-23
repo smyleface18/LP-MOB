@@ -39,7 +39,7 @@ const QuestionView: React.FC<QuestionViewProps> = ({
         </View>
       )}
 
-      <ContentView content={question.content} />
+      <ContentView contentType={question.contentType} text={question.text} media={question.media} />
     </View>
   );
 };

@@ -8,7 +8,7 @@ const meta: Meta<typeof ContentEditor> = {
   component: ContentEditor,
   args: {
     label: 'Question Content',
-    value: { type: ContentType.TEXT, value: 'What is the English word for "manzana"?' },
+    value: { contentType: ContentType.TEXT, text: 'What is the English word for "manzana"?' },
     onChange: () => {},
   },
 };
@@ -29,13 +29,13 @@ export const Text: Story = {
 export const Image: Story = {
   render: Interactive,
   args: {
-    value: { type: ContentType.IMAGE, value: 'https://picsum.photos/seed/linguaplay/600/400' },
+    value: { contentType: ContentType.IMAGE, text: 'https://picsum.photos/seed/linguaplay/600/400' },
   },
 };
 
 export const Empty: Story = {
   render: Interactive,
   args: {
-    value: { type: ContentType.TEXT, value: '' },
+    value: { contentType: ContentType.TEXT, text: '' },
   },
 };

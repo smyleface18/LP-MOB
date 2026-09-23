@@ -13,3 +13,8 @@ export enum ContentType {
   AUDIO = 'AUDIO',
   VIDEO = 'VIDEO',
 }
+
+export enum MediaStatus {
+  PENDING = 'PENDING',
+  CONFIRMED = 'CONFIRMED',
+}

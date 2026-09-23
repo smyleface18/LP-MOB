@@ -1,5 +1,5 @@
 import { Level } from '@/shared/types/common';
-import { CoreEntity, S3Object } from '@/shared/types/common/cores.type';
+import { CoreEntity, MediaAsset } from '@/shared/types/common/cores.type';
 
 export interface AuthState {
   accessToken: string | null;
@@ -16,7 +16,7 @@ export interface AuthState {
 }
 
 export interface User extends CoreEntity {
-  avatar?: S3Object;
+  avatar?: MediaAsset;
   username: string;
   email: string;
   score: number;

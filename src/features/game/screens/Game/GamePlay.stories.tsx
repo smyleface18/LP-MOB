@@ -19,12 +19,13 @@ const question: QuestionDto = {
   categoryId: baseCategory.id,
   category: baseCategory,
   timeLimit: 30,
-  content: { type: ContentType.TEXT, value: 'What is the English word for "manzana"?' },
+  contentType: ContentType.TEXT,
+  text: 'What is the English word for "manzana"?',
   options: [
-    { id: 'opt-1', content: { type: ContentType.TEXT, value: 'Apple' } },
-    { id: 'opt-2', content: { type: ContentType.TEXT, value: 'Orange' } },
-    { id: 'opt-3', content: { type: ContentType.TEXT, value: 'Banana' } },
-    { id: 'opt-4', content: { type: ContentType.TEXT, value: 'Grape' } },
+    { id: 'opt-1', contentType: ContentType.TEXT, text: 'Apple' },
+    { id: 'opt-2', contentType: ContentType.TEXT, text: 'Orange' },
+    { id: 'opt-3', contentType: ContentType.TEXT, text: 'Banana' },
+    { id: 'opt-4', contentType: ContentType.TEXT, text: 'Grape' },
   ],
 };
 

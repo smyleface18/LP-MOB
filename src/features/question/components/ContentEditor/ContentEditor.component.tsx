@@ -3,16 +3,27 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/app/providers/theme.provider';
 import { FilterChip } from '@/shared/components/FilterChip';
 import Input from '@/shared/components/Input/Input.component';
-import { ContentObject } from '@/shared/types/common/cores.type';
 import { ContentType } from '@/shared/types/common';
 import { ImageView } from '../content-types/ImageView';
 import { AudioView } from '../content-types/AudioView';
 import { VideoViewComponent } from '../content-types/VideoView';
 
+/**
+ * NOTA: hasta que exista el StorageModule (subida/presign a S3 en el backend),
+ * este editor sigue dejando pegar una URL libre para IMAGE/AUDIO/VIDEO, pero esa
+ * URL ya no se puede persistir (el backend exige un media_id real vía un
+ * CHECK constraint). Guardar una pregunta no-TEXT va a fallar hasta que se
+ * conecte la subida real. Decisión explícita: dejarlo así por ahora.
+ */
+export interface ContentEditorValue {
+  contentType: ContentType;
+  text: string;
+}
+
 export interface ContentEditorProps {
   label?: string;
-  value: ContentObject;
-  onChange: (content: ContentObject) => void;
+  value: ContentEditorValue;
+  onChange: (value: ContentEditorValue) => void;
 }
 
 const CONTENT_TYPES: { type: ContentType; label: string }[] = [
@@ -33,13 +44,13 @@ const ContentEditor: React.FC<ContentEditorProps> = ({ label, value, onChange })
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const handleTypeChange = (type: ContentType) => {
-    if (type === value.type) return;
+    if (type === value.contentType) return;
     // El valor anterior (texto u otra URL) no es válido para el nuevo tipo.
-    onChange({ type, value: '' });
+    onChange({ contentType: type, text: '' });
   };
 
   const handleValueChange = (text: string) => {
-    onChange({ ...value, value: text });
+    onChange({ ...value, text });
   };
 
   return (
@@ -51,16 +62,16 @@ const ContentEditor: React.FC<ContentEditorProps> = ({ label, value, onChange })
           <FilterChip
             key={type}
             label={typeLabel}
-            isActive={value.type === type}
+            isActive={value.contentType === type}
             onPress={() => handleTypeChange(type)}
           />
         ))}
       </View>
 
-      {value.type === ContentType.TEXT ? (
+      {value.contentType === ContentType.TEXT ? (
         <Input
           placeholder="Enter text..."
-          value={value.value}
+          value={value.text}
           onChangeText={handleValueChange}
           variant="outlined"
           multiline
@@ -69,16 +80,18 @@ const ContentEditor: React.FC<ContentEditorProps> = ({ label, value, onChange })
       ) : (
         <>
           <Input
-            placeholder={URL_PLACEHOLDER[value.type] ?? 'https://...'}
-            value={value.value}
+            placeholder={URL_PLACEHOLDER[value.contentType] ?? 'https://...'}
+            value={value.text}
             onChangeText={handleValueChange}
             variant="outlined"
           />
-          {value.value.trim() !== '' && (
+          {value.text.trim() !== '' && (
             <View style={styles.preview}>
-              {value.type === ContentType.IMAGE && <ImageView url={value.value} />}
-              {value.type === ContentType.AUDIO && <AudioView url={value.value} />}
-              {value.type === ContentType.VIDEO && <VideoViewComponent url={value.value} />}
+              {value.contentType === ContentType.IMAGE && <ImageView url={value.text} />}
+              {value.contentType === ContentType.AUDIO && <AudioView url={value.text} />}
+              {value.contentType === ContentType.VIDEO && (
+                <VideoViewComponent url={value.text} />
+              )}
             </View>
           )}
         </>
