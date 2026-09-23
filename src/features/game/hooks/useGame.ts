@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { Image } from 'react-native';
 import { useAuthState } from '@/store';
 import { socketService } from '../services/socket.service';
-import { Question, QuestionDto } from '@/features/question/types';
-import { MatchStatus, ModeMatch, PlayerInfo, AnswerResult } from '../types';
-import { Level } from '@/shared/types/common';
+import { QuestionDto } from '@/features/question/types';
+import { MatchStatus, ModeMatch, PlayerInfo, AnswerResult, NewQuestionEvent } from '../types';
+import { ContentType, Level } from '@/shared/types/common';
 
 interface Game {
   connected: boolean;
@@ -16,6 +17,8 @@ interface Game {
   questionNumber: number;
   totalQuestions: number;
   timeRemaining: number;
+  /** Segundos hasta que se muestre la próxima pregunta (0 si no hay una en camino). */
+  nextQuestionIn: number;
   players: PlayerInfo[];
   error: string | null;
   lastAnswerResult: AnswerResult | null;
@@ -32,48 +35,89 @@ const INITIAL_STATE: Game = {
   questionNumber: 0,
   totalQuestions: 0,
   timeRemaining: 0,
+  nextQuestionIn: 0,
   players: [],
   error: null,
   lastAnswerResult: null,
 };
 
-const toSeconds = (timeLimit: number): number =>
-  timeLimit > 1000 ? Math.ceil(timeLimit / 1000) : Math.max(0, Math.ceil(timeLimit));
+// Cada cuánto se recalcula el contador. No acumula error: cada tick parte de
+// los instantes absolutos (startsAt/endsAt), no de restar 1 al valor anterior.
+const TICK_MS = 200;
+
+const secondsUntil = (target: number, now: number) => Math.max(0, Math.ceil((target - now) / 1000));
+
+// Precarga la imagen durante la antelación, para que aparezca junto con la
+// pregunta en startsAt. Audio/video los carga su propio reproductor al montarse.
+const prefetchMedia = (question: QuestionDto) => {
+  const url = question.media?.url;
+  if (url && question.contentType === ContentType.IMAGE) {
+    Image.prefetch(url).catch(() => undefined);
+  }
+};
 
 export const useGame = () => {
   const [gameState, setGameState] = useState<Game>(INITIAL_STATE);
   const { user } = useAuthState();
   const [userId, setUserId] = useState(user?.id ?? '');
   const [isHost, setIsHost] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isInitializedRef = useRef(false);
+  // Línea de tiempo recibida del servidor (hora del servidor, epoch ms).
+  const scheduledQuestionRef = useRef<NewQuestionEvent | null>(null);
+  const nextQuestionAtRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (user?.id) setUserId(user.id);
   }, [user?.id]);
 
-  // ⏱️ Timer utilities - memoized to prevent recreation
+  // ⏱️ Timeline: la pregunta se muestra en startsAt y el contador llega a 0 en
+  // endsAt, medidos con el reloj sincronizado con el servidor. Así todos los
+  // jugadores la ven y la cierran a la vez, sin importar cuándo les llegó.
+  const tick = useCallback(() => {
+    const now = socketService.serverNow();
+    const scheduled = scheduledQuestionRef.current;
+    const revealed = scheduled !== null && now >= scheduled.startsAt;
+
+    const currentQuestion = revealed ? scheduled.question : null;
+    const timeRemaining = revealed ? secondsUntil(scheduled.endsAt, now) : 0;
+    const nextAt = scheduled && !revealed ? scheduled.startsAt : nextQuestionAtRef.current;
+    const nextQuestionIn = !revealed && nextAt !== null ? secondsUntil(nextAt, now) : 0;
+
+    setGameState((prev) => {
+      if (
+        prev.currentQuestion === currentQuestion &&
+        prev.timeRemaining === timeRemaining &&
+        prev.nextQuestionIn === nextQuestionIn
+      ) {
+        return prev;
+      }
+      return {
+        ...prev,
+        currentQuestion,
+        timeRemaining,
+        nextQuestionIn,
+        questionNumber: revealed ? scheduled.questionNumber : prev.questionNumber,
+        totalQuestions: scheduled?.totalQuestions ?? prev.totalQuestions,
+      };
+    });
+  }, []);
+
   const stopTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = null;
   }, []);
 
-  const startTimer = useCallback(
-    (seconds: number) => {
-      stopTimer();
-      setGameState((prev) => ({ ...prev, timeRemaining: seconds }));
-      timerRef.current = setInterval(() => {
-        setGameState((prev) => {
-          if (prev.timeRemaining <= 1) {
-            stopTimer();
-            return { ...prev, timeRemaining: 0 };
-          }
-          return { ...prev, timeRemaining: prev.timeRemaining - 1 };
-        });
-      }, 1000);
-    },
-    [stopTimer],
-  );
+  const startTimer = useCallback(() => {
+    if (!timerRef.current) timerRef.current = setInterval(tick, TICK_MS);
+    tick();
+  }, [tick]);
+
+  const clearTimeline = useCallback(() => {
+    stopTimer();
+    scheduledQuestionRef.current = null;
+    nextQuestionAtRef.current = null;
+  }, [stopTimer]);
 
   // 🎮 Game actions - memoized
   const createGame = useCallback((level: Level, mode: ModeMatch) => {
@@ -120,34 +164,34 @@ export const useGame = () => {
         finished: false,
         currentQuestion: null,
         timeRemaining: 0,
+        nextQuestionIn: 0,
         error: null,
       }));
-      stopTimer();
+      clearTimeline();
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to leave room';
       setGameState((prev) => ({ ...prev, error: errorMsg }));
     }
-  }, [stopTimer]);
+  }, [clearTimeline]);
 
   const submitAnswer = useCallback(
     (answer: string) => {
       if (!gameState.currentQuestion) return;
       try {
         socketService.submitAnswer(gameState.currentQuestion.id, answer);
-        stopTimer();
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : 'Failed to submit answer';
         setGameState((prev) => ({ ...prev, error: errorMsg }));
       }
     },
-    [gameState.currentQuestion, stopTimer],
+    [gameState.currentQuestion],
   );
 
   const resetGame = useCallback(() => {
     setIsHost(false);
     setGameState(INITIAL_STATE);
-    stopTimer();
-  }, [stopTimer]);
+    clearTimeline();
+  }, [clearTimeline]);
 
   const playAgain = useCallback(() => {
     if (!gameState.level || !gameState.mode) return;
@@ -189,8 +233,9 @@ export const useGame = () => {
         finished: false,
         currentQuestion: null,
         timeRemaining: 0,
+        nextQuestionIn: 0,
       }));
-      stopTimer();
+      clearTimeline();
     };
 
     const handleError = (data: { message: string }) => {
@@ -227,24 +272,14 @@ export const useGame = () => {
       }));
     };
 
-    const handleNewQuestion = (data: {
-      question: QuestionDto;
-      questionNumber: number;
-      totalQuestions: number;
-      timeLimit: number;
-    }) => {
-      const timeRemaining = toSeconds(data.timeLimit);
-      setGameState((prev) => ({
-        ...prev,
-        currentQuestion: data.question,
-        questionNumber: data.questionNumber,
-        totalQuestions: data.totalQuestions,
-        timeRemaining,
-        gameStarted: true,
-        finished: false,
-        error: null,
-      }));
-      startTimer(timeRemaining);
+    const handleNewQuestion = (data: NewQuestionEvent) => {
+      // Llega antes de startsAt (antelación del servidor): se guarda y el tick
+      // la muestra en el instante acordado. Mientras, se precarga la imagen.
+      scheduledQuestionRef.current = data;
+      nextQuestionAtRef.current = null;
+      prefetchMedia(data.question);
+      setGameState((prev) => ({ ...prev, gameStarted: true, finished: false, error: null }));
+      startTimer();
     };
 
     const handleAnswerResult = (data: AnswerResult) => {
@@ -258,28 +293,28 @@ export const useGame = () => {
       }, 100);
     };
 
-    const handleQuestionEnded = () => {
-      setGameState((prev) => ({
-        ...prev,
-        currentQuestion: null,
-        timeRemaining: 0,
-      }));
-      stopTimer();
+    const handleQuestionEnded = (data: { nextQuestionAt: number | null }) => {
+      scheduledQuestionRef.current = null;
+      nextQuestionAtRef.current = data?.nextQuestionAt ?? null;
+      startTimer();
     };
 
     const handleGameEnded = (data: { results: any[] }) => {
+      clearTimeline();
       setGameState((prev) => ({
         ...prev,
         gameStarted: false,
         finished: true,
         currentQuestion: null,
         timeRemaining: 0,
+        nextQuestionIn: 0,
       }));
-      stopTimer();
     };
 
-    const handleGameStarted = () => {
+    const handleGameStarted = (data: { firstQuestionAt: number }) => {
+      nextQuestionAtRef.current = data?.firstQuestionAt ?? null;
       setGameState((prev) => ({ ...prev, gameStarted: true, error: null }));
+      startTimer();
     };
 
     const handleRematchStatus = (data: { accepted: number; total: number }) => {
@@ -307,6 +342,7 @@ export const useGame = () => {
         questionNumber: 0,
         totalQuestions: 0,
         timeRemaining: 0,
+        nextQuestionIn: 0,
         lastAnswerResult: null,
         error: null,
       }));
@@ -327,7 +363,7 @@ export const useGame = () => {
       handleRematchStatus,
       handleRematchReady,
     };
-  }, [stopTimer, startTimer]);
+  }, [clearTimeline, startTimer]);
 
   // Initialize socket connection and event listeners ONCE
   useEffect(() => {
@@ -374,9 +410,9 @@ export const useGame = () => {
       socketService.off('gameStarted', handlers.handleGameStarted);
       socketService.off('rematchStatus', handlers.handleRematchStatus);
       socketService.off('rematchReady', handlers.handleRematchReady);
-      stopTimer();
+      clearTimeline();
     };
-  }, [createSocketHandlers, stopTimer]);
+  }, [createSocketHandlers, clearTimeline]);
 
   // Memoized return value to prevent unnecessary re-renders
   return useMemo(() => {

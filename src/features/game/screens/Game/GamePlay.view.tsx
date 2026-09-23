@@ -14,6 +14,8 @@ interface GamePlayProps {
   questionNumber: number;
   totalQuestions: number;
   timeRemaining: number;
+  /** Segundos hasta la próxima pregunta, para la pantalla de espera. */
+  nextQuestionIn?: number;
   score: number;
   onOptionPress: (optionId: string) => void;
   onModalClose: () => void;
@@ -28,6 +30,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
   questionNumber,
   totalQuestions,
   timeRemaining,
+  nextQuestionIn = 0,
   score,
   onOptionPress,
   onModalClose,
@@ -52,7 +55,9 @@ const GamePlay: React.FC<GamePlayProps> = ({
   if (!currentQuestion) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={styles.loadingTitle}>⏳ Loading next question...</Text>
+        <Text style={styles.loadingTitle}>
+          {nextQuestionIn > 0 ? `⏳ Next question in ${nextQuestionIn}...` : '⏳ Get ready...'}
+        </Text>
         <Text style={styles.score}>Score: {score}</Text>
       </View>
     );

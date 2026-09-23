@@ -4,12 +4,21 @@ import { useAppStore } from '@/store';
 import { GameService, ModeMatch, SocketEvents } from '../types';
 import { Level } from '@/shared/types/common';
 
+const CLOCK_SYNC_SAMPLES = 5;
+const CLOCK_SYNC_TIMEOUT_MS = 2_000;
+const CLOCK_RESYNC_INTERVAL_MS = 30_000;
+
 export class SocketService implements GameService {
   private socket: Socket | null = null;
   private eventListeners: Map<string, Function[]> = new Map();
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private baseURL = API_BASE_URL;
+  // serverTime - Date.now() local. Los startsAt/endsAt de las preguntas vienen
+  // en hora del servidor; con este offset todos los clientes los ubican en el
+  // mismo instante real aunque sus relojes estén desfasados.
+  private clockOffsetMs = 0;
+  private clockSyncTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
     this.connect();
@@ -54,10 +63,12 @@ export class SocketService implements GameService {
 
     this.socket.on('connect', () => {
       this.reconnectAttempts = 0;
+      this.startClockSync();
       this.emit('connect');
     });
 
     this.socket.on('disconnect', (reason) => {
+      this.stopClockSync();
       this.emit('disconnect', { reason });
       if (reason !== 'io client disconnect') {
         this.handleReconnection();
@@ -102,6 +113,50 @@ export class SocketService implements GameService {
         this.socket?.connect();
       }
     }, delay);
+  }
+
+  /** Hora actual estimada del servidor (epoch ms). */
+  serverNow(): number {
+    return Date.now() + this.clockOffsetMs;
+  }
+
+  /**
+   * Estima el offset con el servidor (algoritmo de Cristian, como un NTP
+   * simplificado): por cada muestra, offset = serverTime - punto medio del
+   * viaje. Se queda con la de menor RTT, que es la de menor error posible.
+   */
+  async syncClock(): Promise<void> {
+    let best: { rtt: number; offset: number } | null = null;
+
+    for (let i = 0; i < CLOCK_SYNC_SAMPLES; i++) {
+      if (!this.socket?.connected) return;
+      try {
+        const sentAt = Date.now();
+        const { serverTime } = (await this.socket
+          .timeout(CLOCK_SYNC_TIMEOUT_MS)
+          .emitWithAck('timeSync')) as { serverTime: number };
+        const receivedAt = Date.now();
+        const rtt = receivedAt - sentAt;
+        const offset = serverTime - (sentAt + receivedAt) / 2;
+        if (!best || rtt < best.rtt) best = { rtt, offset };
+      } catch {
+        // Muestra perdida (timeout): se usan las demás.
+      }
+    }
+
+    if (best) this.clockOffsetMs = best.offset;
+  }
+
+  private startClockSync() {
+    this.stopClockSync();
+    void this.syncClock();
+    // Re-sincroniza periódicamente: los relojes derivan y la red cambia.
+    this.clockSyncTimer = setInterval(() => void this.syncClock(), CLOCK_RESYNC_INTERVAL_MS);
+  }
+
+  private stopClockSync() {
+    if (this.clockSyncTimer) clearInterval(this.clockSyncTimer);
+    this.clockSyncTimer = null;
   }
 
   isConnected(): boolean {
@@ -190,6 +245,7 @@ export class SocketService implements GameService {
   }
 
   destroy() {
+    this.stopClockSync();
     this.eventListeners.clear();
     this.disconnect();
   }

@@ -30,16 +30,13 @@ export interface SocketEvents {
   connect: () => void;
   disconnect: (data: { reason: string }) => void;
   error: (data: { message: string }) => void;
-  newQuestion: (data: {
-    question: Question;
-    questionNumber: number;
-    totalQuestions: number;
-    timeLimit: number;
-  }) => void;
-  questionEnded: () => void;
+  // startsAt/endsAt en hora del servidor (epoch ms): la pregunta se muestra en
+  // startsAt y se puede responder hasta endsAt. Ver socketService.serverNow().
+  newQuestion: (data: NewQuestionEvent) => void;
+  questionEnded: (data: { questionId: string; nextQuestionAt: number | null }) => void;
   gameEnded: (data: { results: any[] }) => void;
   playersUpdated: (data: { players: PlayerInfo[] }) => void;
-  gameStarted: () => void;
+  gameStarted: (data: { firstQuestionAt: number }) => void;
   rematchStatus: (data: { accepted: number; total: number }) => void;
   rematchReady: (data: {
     roomId: string;
@@ -95,6 +92,15 @@ export interface PlayerInfo {
   isConnected: boolean;
   isOwner: boolean;
   avatar?: string;
+}
+
+export interface NewQuestionEvent {
+  question: QuestionDto;
+  questionNumber: number;
+  totalQuestions: number;
+  timeLimit: number;
+  startsAt: number;
+  endsAt: number;
 }
 
 // Payload real del evento de socket 'answerResult' (game.gateway.ts handleAnswer).

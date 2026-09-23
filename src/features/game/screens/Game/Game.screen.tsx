@@ -76,6 +76,7 @@ const GameScreen: React.FC = () => {
           questionNumber={state.questionNumber}
           totalQuestions={state.totalQuestions}
           timeRemaining={state.timeRemaining}
+          nextQuestionIn={state.nextQuestionIn}
           score={state.user.matchScore}
           onOptionPress={handleOptionPress}
           onModalClose={handleCloseResult}
