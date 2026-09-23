@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { useGame } from '@/features/game/hooks/useGame';
 import { useUser } from '../../hooks/useUser';
@@ -20,13 +20,9 @@ const LEVEL_PROGRESS: LevelProgress[] = [
 const UserDashboardScreen = () => {
   const navigation = useNavigation();
   const { state } = useGame();
-  const { user, getMe } = useUser();
+  const { user } = useUser();
   const { handleSignOut, loading: signOutLoading } = useAuth();
   const [confirmSignOutVisible, setConfirmSignOutVisible] = useState(false);
-
-  useEffect(() => {
-    getMe();
-  }, []);
 
   const handleConfirmSignOut = () => {
     setConfirmSignOutVisible(false);

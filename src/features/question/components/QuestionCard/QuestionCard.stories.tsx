@@ -93,7 +93,7 @@ export const ImagePrompt: Story = {
     question: {
       ...question,
       contentType: ContentType.IMAGE,
-      text: undefined,
+      text: 'Look at the picture and choose the correct word.',
     },
   },
 };

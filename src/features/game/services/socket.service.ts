@@ -22,9 +22,11 @@ export class SocketService implements GameService {
       transports: ['websocket'],
       timeout: 10000,
       forceNew: true,
-      auth: {
-        token: this.getAuthToken(), // Necesitas implementar esto
-      },
+      // Función, no objeto: si no, el token queda "congelado" con el valor que
+      // había al construir el socket (normalmente null, si esto corre antes del
+      // login) y cada reconexión posterior lo reenvía sin actualizar — el socket
+      // nunca vuelve a autenticarse aunque el usuario ya haya iniciado sesión.
+      auth: (cb) => cb({ token: this.getAuthToken() }),
     });
 
     this.setupEventListeners();

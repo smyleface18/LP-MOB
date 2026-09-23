@@ -54,6 +54,8 @@ import { UserIcon } from 'phosphor-react-native/src/icons/User';
 import { GameControllerIcon } from 'phosphor-react-native/src/icons/GameController';
 import { GridFourIcon } from 'phosphor-react-native/src/icons/GridFour';
 import { QuestionIcon } from 'phosphor-react-native/src/icons/Question';
+import { PlayIcon } from 'phosphor-react-native/src/icons/Play';
+import { PauseIcon } from 'phosphor-react-native/src/icons/Pause';
 
 export const iconRegistry = {
   FireIcon,
@@ -83,6 +85,8 @@ export const iconRegistry = {
   GameControllerIcon,
   GridFourIcon,
   QuestionIcon,
+  PlayIcon,
+  PauseIcon,
 } as const;
 
 export type IconName = keyof typeof iconRegistry;

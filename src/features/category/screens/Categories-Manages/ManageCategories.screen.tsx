@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
-import { Alert } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useAppAlert } from '@/app/providers/alert.provider';
 import { useCategories } from '../../hooks/useCategories';
 import { CategoryQuestion, TypeQuestionCategory } from '@/shared/types/category-question';
 import { Level } from '@/shared/types/common';
@@ -8,6 +8,7 @@ import { ManageCategoriesView } from './ManageCategories.view';
 
 const ManageCategoriesScreen = () => {
   const navigation = useNavigation();
+  const appAlert = useAppAlert();
   const { categories, loading, error, deleteCategory, toggleCategoryActive, loadCategories } =
     useCategories();
 
@@ -48,7 +49,7 @@ const ManageCategoriesScreen = () => {
   };
 
   const handleDeleteCategory = (categoryId: string) => {
-    Alert.alert('Eliminar categoría', '¿Estás seguro de que quieres eliminar esta categoría?', [
+    appAlert('Eliminar categoría', '¿Estás seguro de que quieres eliminar esta categoría?', [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Eliminar',
@@ -56,7 +57,7 @@ const ManageCategoriesScreen = () => {
         onPress: async () => {
           const response = await deleteCategory(categoryId);
           if (!response?.ok) {
-            Alert.alert('Error', 'No se pudo eliminar la categoría');
+            appAlert('Error', 'No se pudo eliminar la categoría');
           }
         },
       },
@@ -66,7 +67,7 @@ const ManageCategoriesScreen = () => {
   const handleToggleActive = async (categoryId: string) => {
     const response = await toggleCategoryActive(categoryId);
     if (response && !response.ok) {
-      Alert.alert('Error', 'No se pudo actualizar la categoría');
+      appAlert('Error', 'No se pudo actualizar la categoría');
     }
   };
 

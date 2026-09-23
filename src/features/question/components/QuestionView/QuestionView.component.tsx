@@ -39,7 +39,14 @@ const QuestionView: React.FC<QuestionViewProps> = ({
         </View>
       )}
 
-      <ContentView contentType={question.contentType} text={question.text} media={question.media} />
+      {/* key por pregunta: al cambiar de pregunta se desmonta la media anterior
+          (y se detiene su reproducción) aunque la URL se repita. */}
+      <ContentView
+        key={question.id}
+        contentType={question.contentType}
+        text={question.text}
+        media={question.media}
+      />
     </View>
   );
 };

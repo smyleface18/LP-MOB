@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTheme } from '@/app/providers/theme.provider';
+import { useAppAlert } from '@/app/providers/alert.provider';
 import { useBreakpoint } from '@/shared/ui/theme/useBreakpoint';
 import Button from '@/shared/components/Button/Button.component';
 import { Loading } from '@/shared/components/Loading';
@@ -27,6 +28,8 @@ const PAGE_MAX_WIDTH = 1100;
 const toFormValues = (question: Question): QuestionFormValues => ({
   contentType: question.contentType,
   text: question.text ?? '',
+  mediaId: question.media?.id,
+  media: question.media,
   moreInfo: question.moreInfo ?? '',
   timeLimit: question.timeLimit,
   categoryId: question.categoryId,
@@ -34,6 +37,8 @@ const toFormValues = (question: Question): QuestionFormValues => ({
     id: option.id,
     contentType: option.contentType,
     text: option.text ?? '',
+    mediaId: option.media?.id,
+    media: option.media,
     isCorrect: option.isCorrect,
   })),
 });
@@ -41,6 +46,7 @@ const toFormValues = (question: Question): QuestionFormValues => ({
 const QuestionDetailScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
+  const appAlert = useAppAlert();
   const { questionId, question: initialQuestion } = route.params as RouteParams;
 
   const theme = useTheme();
@@ -85,7 +91,7 @@ const QuestionDetailScreen = () => {
       if (cancelled) return;
 
       if (!response.ok || !response.data) {
-        Alert.alert('Error', getErrorMessage(response.message, 'No se pudo cargar la pregunta'));
+        appAlert('Error', getErrorMessage(response.message, 'No se pudo cargar la pregunta'));
         setLoading(false);
         return;
       }
@@ -127,20 +133,26 @@ const QuestionDetailScreen = () => {
 
   const validateForm = (): boolean => {
     if (!formValues.text.trim()) {
-      Alert.alert('Error', 'Debe proporcionar el contenido de la pregunta');
+      appAlert('Error', 'Debe proporcionar el enunciado de la pregunta');
       return false;
     }
-    const filledOptions = formValues.options.filter((opt) => opt.text.trim() !== '');
+    if (formValues.contentType !== ContentType.TEXT && !formValues.mediaId) {
+      appAlert('Error', 'Debe subir un archivo para este tipo de contenido');
+      return false;
+    }
+    const filledOptions = formValues.options.filter(
+      (opt) => opt.text.trim() !== '' || !!opt.mediaId,
+    );
     if (filledOptions.length < 2) {
-      Alert.alert('Error', 'Debe proporcionar al menos 2 opciones');
+      appAlert('Error', 'Debe proporcionar al menos 2 opciones');
       return false;
     }
     if (!formValues.options.some((opt) => opt.isCorrect)) {
-      Alert.alert('Error', 'Debe marcar una opción como la respuesta correcta');
+      appAlert('Error', 'Debe marcar una opción como la respuesta correcta');
       return false;
     }
     if (!formValues.categoryId) {
-      Alert.alert('Error', 'Debe seleccionar una categoría');
+      appAlert('Error', 'Debe seleccionar una categoría');
       return false;
     }
     return true;
@@ -153,7 +165,8 @@ const QuestionDetailScreen = () => {
 
     const questionResponse = await questionService.update(questionId, {
       contentType: formValues.contentType,
-      text: formValues.text || undefined,
+      text: formValues.text,
+      mediaId: formValues.mediaId,
       moreInfo: formValues.moreInfo || undefined,
       categoryId: formValues.categoryId,
       timeLimit: formValues.timeLimit,
@@ -161,7 +174,7 @@ const QuestionDetailScreen = () => {
 
     if (!questionResponse.ok) {
       setSaving(false);
-      Alert.alert('Error', getErrorMessage(questionResponse.message, 'No se pudo actualizar la pregunta'));
+      appAlert('Error', getErrorMessage(questionResponse.message, 'No se pudo actualizar la pregunta'));
       return;
     }
 
@@ -172,17 +185,19 @@ const QuestionDetailScreen = () => {
 
     const optionWrites = await Promise.all([
       ...formValues.options
-        .filter((opt) => opt.text.trim() !== '')
+        .filter((opt) => opt.text.trim() !== '' || !!opt.mediaId)
         .map((opt) =>
           opt.id
             ? questionOptionsService.update(opt.id, {
                 contentType: opt.contentType,
-                text: opt.text,
+                text: opt.text || undefined,
+                mediaId: opt.mediaId,
                 isCorrect: opt.isCorrect,
               })
             : questionOptionsService.create({
                 contentType: opt.contentType,
-                text: opt.text,
+                text: opt.text || undefined,
+                mediaId: opt.mediaId,
                 isCorrect: opt.isCorrect,
                 questionId,
               }),
@@ -194,17 +209,17 @@ const QuestionDetailScreen = () => {
 
     const failed = optionWrites.some((response) => !response.ok);
     if (failed) {
-      Alert.alert('Error', 'La pregunta se guardó, pero algunas opciones no se pudieron actualizar');
+      appAlert('Error', 'La pregunta se guardó, pero algunas opciones no se pudieron actualizar');
       return;
     }
 
-    Alert.alert('Éxito', 'Pregunta actualizada correctamente', [
+    appAlert('Éxito', 'Pregunta actualizada correctamente', [
       { text: 'OK', onPress: () => navigation.goBack() },
     ]);
   };
 
   const handleDelete = () => {
-    Alert.alert('Eliminar Pregunta', '¿Estás seguro de que quieres eliminar esta pregunta?', [
+    appAlert('Eliminar Pregunta', '¿Estás seguro de que quieres eliminar esta pregunta?', [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Eliminar',
@@ -212,10 +227,10 @@ const QuestionDetailScreen = () => {
         onPress: async () => {
           const response = await questionService.delete(questionId);
           if (!response.ok) {
-            Alert.alert('Error', getErrorMessage(response.message, 'No se pudo eliminar la pregunta'));
+            appAlert('Error', getErrorMessage(response.message, 'No se pudo eliminar la pregunta'));
             return;
           }
-          Alert.alert('Éxito', 'Pregunta eliminada correctamente', [
+          appAlert('Éxito', 'Pregunta eliminada correctamente', [
             { text: 'OK', onPress: () => navigation.goBack() },
           ]);
         },
@@ -231,7 +246,7 @@ const QuestionDetailScreen = () => {
     setSaving(false);
 
     if (!response.ok) {
-      Alert.alert(
+      appAlert(
         'Error',
         getErrorMessage(response.message, 'No se pudo actualizar el estado de la pregunta'),
       );
@@ -288,8 +303,14 @@ const QuestionDetailScreen = () => {
             onLevelFilterChange={setSelectedLevel}
             onTypeFilterChange={setSelectedType}
             onContentChange={(value) =>
-              setFormValues((prev) => ({ ...prev, contentType: value.contentType, text: value.text }))
+              setFormValues((prev) => ({
+                ...prev,
+                contentType: value.contentType,
+                mediaId: value.mediaId,
+                media: value.media,
+              }))
             }
+            onTextChange={(text) => setFormValues((prev) => ({ ...prev, text }))}
             onMoreInfoChange={(moreInfo) => setFormValues((prev) => ({ ...prev, moreInfo }))}
             onTimeLimitChange={(timeLimit) => setFormValues((prev) => ({ ...prev, timeLimit }))}
             onCategoryChange={(categoryId) => setFormValues((prev) => ({ ...prev, categoryId }))}
@@ -297,8 +318,21 @@ const QuestionDetailScreen = () => {
               setFormValues((prev) => ({
                 ...prev,
                 options: prev.options.map((opt, i) =>
-                  i === index ? { ...opt, contentType: value.contentType, text: value.text } : opt,
+                  i === index
+                    ? {
+                        ...opt,
+                        contentType: value.contentType,
+                        mediaId: value.mediaId,
+                        media: value.media,
+                      }
+                    : opt,
                 ),
+              }))
+            }
+            onOptionTextChange={(index, text) =>
+              setFormValues((prev) => ({
+                ...prev,
+                options: prev.options.map((opt, i) => (i === index ? { ...opt, text } : opt)),
               }))
             }
             onAddOption={handleAddOption}

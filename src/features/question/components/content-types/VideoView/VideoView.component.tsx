@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { VideoView, useVideoPlayer } from 'expo-video';
 import { useTheme } from '@/app/providers/theme.provider';
@@ -13,9 +13,35 @@ export const VideoViewComponent: React.FC<VideoViewComponentProps> = ({ url }) =
   const { isDesktop } = useBreakpoint();
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
 
-  const player = useVideoPlayer(url, (player) => {
-    player.play();
-  });
+  const player = useVideoPlayer(url);
+
+  // Autoplay: arranca una sola vez en cuanto el video está listo
+  // (play() antes de cargar se pierde en algunas plataformas, sobre todo web).
+  const hasAutoPlayed = useRef(false);
+  useEffect(() => {
+    const tryAutoPlay = (status: string) => {
+      if (status === 'readyToPlay' && !hasAutoPlayed.current) {
+        hasAutoPlayed.current = true;
+        player.play();
+      }
+    };
+    tryAutoPlay(player.status);
+    const subscription = player.addListener('statusChange', ({ status }) => tryAutoPlay(status));
+    return () => subscription.remove();
+  }, [player]);
+
+  // Detener al desmontar (cambio de pregunta). useLayoutEffect para que la
+  // limpieza corra antes de que useVideoPlayer libere el player.
+  useLayoutEffect(
+    () => () => {
+      try {
+        player.pause();
+      } catch {
+        // El player ya fue liberado.
+      }
+    },
+    [player],
+  );
 
   return (
     <View style={styles.container}>

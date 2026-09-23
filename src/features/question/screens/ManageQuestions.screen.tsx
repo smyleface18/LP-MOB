@@ -1,7 +1,8 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/app/providers/theme.provider';
+import { useAppAlert } from '@/app/providers/alert.provider';
 import { useBreakpoint } from '@/shared/ui/theme/useBreakpoint';
 import Button from '@/shared/components/Button/Button.component';
 import { Loading } from '@/shared/components/Loading';
@@ -22,6 +23,7 @@ const ManageQuestionsScreen = () => {
   const { width, isDesktop } = useBreakpoint();
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
   const navigation = useNavigation();
+  const appAlert = useAppAlert();
 
   const { questions, loading, error, deleteQuestion, updateQuestion, loadQuestions } =
     useQuestions();
@@ -83,7 +85,7 @@ const ManageQuestionsScreen = () => {
   };
 
   const handleDeleteQuestion = (questionId: string) => {
-    Alert.alert('Delete Question', 'Are you sure you want to delete this question?', [
+    appAlert('Delete Question', 'Are you sure you want to delete this question?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Delete',
@@ -91,7 +93,7 @@ const ManageQuestionsScreen = () => {
         onPress: async () => {
           const response = await deleteQuestion(questionId);
           if (!response?.ok) {
-            Alert.alert('Error', 'Failed to delete question');
+            appAlert('Error', 'Failed to delete question');
           }
         },
       },
@@ -103,7 +105,7 @@ const ManageQuestionsScreen = () => {
     if (!question) return;
     const response = await updateQuestion(questionId, { active: !question.active });
     if (!response?.ok) {
-      Alert.alert('Error', 'Failed to update question');
+      appAlert('Error', 'Failed to update question');
     }
   };
 

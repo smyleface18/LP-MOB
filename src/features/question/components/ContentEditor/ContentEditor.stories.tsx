@@ -1,14 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
 import ContentEditor, { ContentEditorProps } from './ContentEditor.component';
-import { ContentType } from '@/shared/types/common';
+import { ContentType, MediaStatus } from '@/shared/types/common';
 
 const meta: Meta<typeof ContentEditor> = {
   title: 'Question/ContentEditor',
   component: ContentEditor,
   args: {
-    label: 'Question Content',
-    value: { contentType: ContentType.TEXT, text: 'What is the English word for "manzana"?' },
+    label: 'Content Type',
+    value: { contentType: ContentType.TEXT },
     onChange: () => {},
   },
 };
@@ -29,13 +29,26 @@ export const Text: Story = {
 export const Image: Story = {
   render: Interactive,
   args: {
-    value: { contentType: ContentType.IMAGE, text: 'https://picsum.photos/seed/linguaplay/600/400' },
+    value: {
+      contentType: ContentType.IMAGE,
+      mediaId: 'story-media-1',
+      media: {
+        id: 'story-media-1',
+        active: true,
+        createdAt: new Date(),
+        key: 'story/preview.jpg',
+        bucketName: 'story',
+        contentType: ContentType.IMAGE,
+        status: MediaStatus.CONFIRMED,
+        url: 'https://picsum.photos/seed/linguaplay/600/400',
+      },
+    },
   },
 };
 
 export const Empty: Story = {
   render: Interactive,
   args: {
-    value: { contentType: ContentType.TEXT, text: '' },
+    value: { contentType: ContentType.IMAGE },
   },
 };

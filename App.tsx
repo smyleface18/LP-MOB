@@ -16,6 +16,7 @@ import {
 } from '@expo-google-fonts/nunito';
 import { AppNavigator } from '@/app/navigation/AppNavigator';
 import { ThemeProvider, useTheme } from '@/app/providers/theme.provider';
+import { AppAlertProvider } from '@/app/providers/alert.provider';
 import TokenRefreshProvider from '@/features/auth/providers/TokenRefreshProvider';
 
 SplashScreen.preventAutoHideAsync();
@@ -67,11 +68,13 @@ function AppShell() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <NavigationContainer linking={linking}>
-        <TokenRefreshProvider>
-          <AppNavigator />
-        </TokenRefreshProvider>
-      </NavigationContainer>
+      <AppAlertProvider>
+        <NavigationContainer linking={linking}>
+          <TokenRefreshProvider>
+            <AppNavigator />
+          </TokenRefreshProvider>
+        </NavigationContainer>
+      </AppAlertProvider>
       <StatusBar style={theme.isDark ? 'light' : 'dark'} />
     </SafeAreaView>
   );

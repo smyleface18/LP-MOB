@@ -7,8 +7,9 @@ import { OptionDto, QuestionOption } from '@/shared/types/question-option';
  * Refleja la entidad `Question` del backend (apps/LP-API/src/db/entities/question.entity.ts).
  * `options` solo viene poblado cuando el endpoint carga esa relación
  * (question.service findAll/findOne y getRandomQuestions la incluyen).
- * `text` solo aplica cuando contentType es TEXT; `media` solo cuando no lo es
- * (lo garantiza un CHECK constraint en la base de datos).
+ * `text` es el enunciado de la pregunta y SIEMPRE es obligatorio, sea cual sea
+ * el contentType (ej. "¿Qué palabra es la que dicen en el audio?" para AUDIO).
+ * `media` solo aplica cuando contentType no es TEXT (CHECK constraint en BD).
  */
 export interface Question {
   id: string;
@@ -16,7 +17,7 @@ export interface Question {
   createdAt: Date;
   updatedAt: Date;
   contentType: ContentType;
-  text?: string;
+  text: string;
   media?: MediaAsset;
   moreInfo?: string;
   category: CategoryQuestion;
@@ -28,7 +29,7 @@ export interface Question {
 export interface QuestionDto {
   id: string;
   contentType: ContentType;
-  text?: string;
+  text: string;
   media?: MediaAsset;
   category: CategoryQuestion;
   options: OptionDto[];
@@ -45,7 +46,7 @@ export interface QuestionDto {
  */
 export interface CreateQuestionDto {
   contentType: ContentType;
-  text?: string;
+  text: string;
   mediaId?: string;
   moreInfo?: string;
   categoryId: string;

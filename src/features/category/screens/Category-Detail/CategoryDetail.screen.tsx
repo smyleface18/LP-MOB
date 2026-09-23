@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Alert } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { useAppAlert } from '@/app/providers/alert.provider';
 import {
   CategoryFormErrors,
   CategoryFormValues,
@@ -25,6 +25,7 @@ const toFormValues = (category: CategoryQuestion): CategoryFormValues => ({
 const CategoryDetailScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
+  const appAlert = useAppAlert();
   const { categoryId, category: initialCategory } = route.params as RouteParams;
 
   const [loading, setLoading] = useState(!initialCategory);
@@ -47,7 +48,7 @@ const CategoryDetailScreen = () => {
       if (cancelled) return;
 
       if (!response.ok || !response.data) {
-        Alert.alert('Error', getErrorMessage(response.message, 'No se pudo cargar la categoría'));
+        appAlert('Error', getErrorMessage(response.message, 'No se pudo cargar la categoría'));
         setLoading(false);
         return;
       }
@@ -90,17 +91,17 @@ const CategoryDetailScreen = () => {
     setSaving(false);
 
     if (!response.ok) {
-      Alert.alert('Error', getErrorMessage(response.message, 'No se pudo actualizar la categoría'));
+      appAlert('Error', getErrorMessage(response.message, 'No se pudo actualizar la categoría'));
       return;
     }
 
-    Alert.alert('Éxito', 'Categoría actualizada correctamente', [
+    appAlert('Éxito', 'Categoría actualizada correctamente', [
       { text: 'OK', onPress: () => navigation.goBack() },
     ]);
   };
 
   const handleDelete = () => {
-    Alert.alert('Eliminar Categoría', '¿Estás seguro de que quieres eliminar esta categoría?', [
+    appAlert('Eliminar Categoría', '¿Estás seguro de que quieres eliminar esta categoría?', [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Eliminar',
@@ -108,13 +109,13 @@ const CategoryDetailScreen = () => {
         onPress: async () => {
           const response = await categoryService.delete(categoryId);
           if (!response.ok) {
-            Alert.alert(
+            appAlert(
               'Error',
               getErrorMessage(response.message, 'No se pudo eliminar la categoría'),
             );
             return;
           }
-          Alert.alert('Éxito', 'Categoría eliminada correctamente', [
+          appAlert('Éxito', 'Categoría eliminada correctamente', [
             { text: 'OK', onPress: () => navigation.goBack() },
           ]);
         },
@@ -130,7 +131,7 @@ const CategoryDetailScreen = () => {
     setSaving(false);
 
     if (!response.ok) {
-      Alert.alert('Error', getErrorMessage(response.message, 'No se pudo actualizar el estado'));
+      appAlert('Error', getErrorMessage(response.message, 'No se pudo actualizar el estado'));
       return;
     }
 

@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/app/providers/theme.provider';
+import { useAppAlert } from '@/app/providers/alert.provider';
 import { useBreakpoint } from '@/shared/ui/theme/useBreakpoint';
 import Button from '@/shared/components/Button/Button.component';
 import { Loading } from '@/shared/components/Loading';
@@ -32,6 +33,7 @@ const PAGE_MAX_WIDTH = 1100;
 
 const CreateQuestionScreen = () => {
   const navigation = useNavigation();
+  const appAlert = useAppAlert();
   const theme = useTheme();
   const { isDesktop } = useBreakpoint();
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
@@ -72,20 +74,26 @@ const CreateQuestionScreen = () => {
 
   const validateForm = (): boolean => {
     if (!formValues.text.trim()) {
-      Alert.alert('Error', 'You must provide the question content');
+      appAlert('Error', 'You must provide the question text (the prompt)');
       return false;
     }
-    const filledOptions = formValues.options.filter((opt) => opt.text.trim() !== '');
+    if (formValues.contentType !== ContentType.TEXT && !formValues.mediaId) {
+      appAlert('Error', 'You must upload a file for this content type');
+      return false;
+    }
+    const filledOptions = formValues.options.filter(
+      (opt) => opt.text.trim() !== '' || !!opt.mediaId,
+    );
     if (filledOptions.length < 2) {
-      Alert.alert('Error', 'You must provide at least 2 options');
+      appAlert('Error', 'You must provide at least 2 options');
       return false;
     }
     if (!formValues.options.some((opt) => opt.isCorrect)) {
-      Alert.alert('Error', 'You must mark one option as the correct answer');
+      appAlert('Error', 'You must mark one option as the correct answer');
       return false;
     }
     if (!formValues.categoryId) {
-      Alert.alert('Error', 'You must select a category');
+      appAlert('Error', 'You must select a category');
       return false;
     }
     return true;
@@ -98,7 +106,8 @@ const CreateQuestionScreen = () => {
 
     const questionResponse = await questionService.create({
       contentType: formValues.contentType,
-      text: formValues.text || undefined,
+      text: formValues.text,
+      mediaId: formValues.mediaId,
       moreInfo: formValues.moreInfo || undefined,
       categoryId: formValues.categoryId,
       timeLimit: formValues.timeLimit,
@@ -106,17 +115,18 @@ const CreateQuestionScreen = () => {
 
     if (!questionResponse.ok || !questionResponse.data) {
       setSubmitting(false);
-      Alert.alert('Error', getErrorMessage(questionResponse.message, 'Failed to create question'));
+      appAlert('Error', getErrorMessage(questionResponse.message, 'Failed to create question'));
       return;
     }
 
     const questionId = questionResponse.data.id;
     const optionsResponse = await questionOptionsService.createMany(
       formValues.options
-        .filter((opt) => opt.text.trim() !== '')
+        .filter((opt) => opt.text.trim() !== '' || !!opt.mediaId)
         .map((opt) => ({
           contentType: opt.contentType,
-          text: opt.text,
+          text: opt.text || undefined,
+          mediaId: opt.mediaId,
           isCorrect: opt.isCorrect,
           questionId,
         })),
@@ -124,7 +134,7 @@ const CreateQuestionScreen = () => {
     setSubmitting(false);
 
     if (!optionsResponse.ok) {
-      Alert.alert(
+      appAlert(
         'Question created, but options failed',
         `${getErrorMessage(optionsResponse.message, 'Failed to create options')}\n\nYou can add them from the question detail screen.`,
         [{ text: 'OK', onPress: () => navigation.goBack() }],
@@ -132,7 +142,7 @@ const CreateQuestionScreen = () => {
       return;
     }
 
-    Alert.alert('Success', 'Question created successfully', [
+    appAlert('Success', 'Question created successfully', [
       { text: 'OK', onPress: () => navigation.goBack() },
     ]);
   };
@@ -163,8 +173,14 @@ const CreateQuestionScreen = () => {
             onLevelFilterChange={setSelectedLevel}
             onTypeFilterChange={setSelectedType}
             onContentChange={(value) =>
-              setFormValues((prev) => ({ ...prev, contentType: value.contentType, text: value.text }))
+              setFormValues((prev) => ({
+                ...prev,
+                contentType: value.contentType,
+                mediaId: value.mediaId,
+                media: value.media,
+              }))
             }
+            onTextChange={(text) => setFormValues((prev) => ({ ...prev, text }))}
             onMoreInfoChange={(moreInfo) => setFormValues((prev) => ({ ...prev, moreInfo }))}
             onTimeLimitChange={(timeLimit) => setFormValues((prev) => ({ ...prev, timeLimit }))}
             onCategoryChange={(categoryId) => setFormValues((prev) => ({ ...prev, categoryId }))}
@@ -172,8 +188,21 @@ const CreateQuestionScreen = () => {
               setFormValues((prev) => ({
                 ...prev,
                 options: prev.options.map((opt, i) =>
-                  i === index ? { ...opt, contentType: value.contentType, text: value.text } : opt,
+                  i === index
+                    ? {
+                        ...opt,
+                        contentType: value.contentType,
+                        mediaId: value.mediaId,
+                        media: value.media,
+                      }
+                    : opt,
                 ),
+              }))
+            }
+            onOptionTextChange={(index, text) =>
+              setFormValues((prev) => ({
+                ...prev,
+                options: prev.options.map((opt, i) => (i === index ? { ...opt, text } : opt)),
               }))
             }
             onAddOption={handleAddOption}

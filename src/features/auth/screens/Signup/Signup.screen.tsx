@@ -1,11 +1,12 @@
 import React from 'react';
-import { Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useAppAlert } from '@/app/providers/alert.provider';
 import { useSignup } from './useSignup';
 import { SignupView } from './Signup.view';
 
 const SignupScreen = () => {
   const navigation = useNavigation();
+  const appAlert = useAppAlert();
   const {
     signUpForm,
     onEmailChange,
@@ -24,7 +25,7 @@ const SignupScreen = () => {
   const handleSubmit = async () => {
     const result = await handleSignUp();
     if (result.ok) {
-      Alert.alert('Éxito', result.message ?? 'Registro completado', [
+      appAlert('Éxito', result.message ?? 'Registro completado', [
         { text: 'OK', onPress: handleLoginRedirect },
       ]);
     }

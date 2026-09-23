@@ -8,18 +8,25 @@ import { FilterSection } from '@/shared/components/FilterSection/FilterSection.c
 import ContentEditor, { ContentEditorValue } from '../ContentEditor';
 import { CategoryQuestion, TypeQuestionCategory } from '@/shared/types/category-question';
 import { ContentType, Level } from '@/shared/types/common';
+import { MediaAsset } from '@/shared/types/common/cores.type';
 
 export interface QuestionOptionFormValue {
   /** Presente solo cuando la opción ya existe en el backend (modo edición). */
   id?: string;
   contentType: ContentType;
+  /** Solo aplica cuando contentType es TEXT — exclusivo con mediaId. */
   text: string;
+  mediaId?: string;
+  media?: MediaAsset;
   isCorrect: boolean;
 }
 
 export interface QuestionFormValues {
   contentType: ContentType;
+  /** El enunciado de la pregunta — siempre obligatorio, sea cual sea el contentType. */
   text: string;
+  mediaId?: string;
+  media?: MediaAsset;
   moreInfo: string;
   timeLimit: number;
   categoryId: string;
@@ -37,10 +44,12 @@ export interface QuestionFormProps {
   onLevelFilterChange: (level: LevelFilter) => void;
   onTypeFilterChange: (type: TypeFilter) => void;
   onContentChange: (value: ContentEditorValue) => void;
+  onTextChange: (text: string) => void;
   onMoreInfoChange: (moreInfo: string) => void;
   onTimeLimitChange: (timeLimit: number) => void;
   onCategoryChange: (categoryId: string) => void;
   onOptionContentChange: (index: number, value: ContentEditorValue) => void;
+  onOptionTextChange: (index: number, text: string) => void;
   onAddOption: () => void;
   onRemoveOption: (index: number) => void;
   onSetCorrectOption: (index: number) => void;
@@ -48,8 +57,6 @@ export interface QuestionFormProps {
 
 const MAX_OPTIONS = 6;
 const MIN_OPTIONS = 2;
-
-const emptyContent = (): ContentEditorValue => ({ contentType: ContentType.TEXT, text: '' });
 
 const QuestionForm: React.FC<QuestionFormProps> = ({
   values,
@@ -59,10 +66,12 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
   onLevelFilterChange,
   onTypeFilterChange,
   onContentChange,
+  onTextChange,
   onMoreInfoChange,
   onTimeLimitChange,
   onCategoryChange,
   onOptionContentChange,
+  onOptionTextChange,
   onAddOption,
   onRemoveOption,
   onSetCorrectOption,
@@ -93,9 +102,21 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
   const FieldsColumn = (
     <View style={styles.column}>
       <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Question Text</Text>
+        <Input
+          placeholder="e.g. How do you say drink in English? (or, for AUDIO, Which word do you hear?)"
+          value={values.text}
+          onChangeText={onTextChange}
+          variant="outlined"
+          multiline
+          numberOfLines={2}
+        />
+      </View>
+
+      <View style={styles.section}>
         <ContentEditor
-          label="Question Content"
-          value={{ contentType: values.contentType, text: values.text }}
+          label="Content Type"
+          value={{ contentType: values.contentType, mediaId: values.mediaId, media: values.media }}
           onChange={onContentChange}
         />
       </View>
@@ -163,9 +184,22 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
               )}
             </View>
             <ContentEditor
-              value={{ contentType: option.contentType, text: option.text }}
+              value={{
+                contentType: option.contentType,
+                mediaId: option.mediaId,
+                media: option.media,
+              }}
               onChange={(value) => onOptionContentChange(index, value)}
             />
+            {option.contentType === ContentType.TEXT && (
+              <Input
+                placeholder="Option text..."
+                value={option.text}
+                onChangeText={(text) => onOptionTextChange(index, text)}
+                variant="outlined"
+                style={styles.optionTextInput}
+              />
+            )}
           </View>
         ))}
 
@@ -347,6 +381,9 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
     addOptionButton: {
       marginTop: theme.spacing.sm,
       alignSelf: 'flex-start',
+    },
+    optionTextInput: {
+      marginTop: theme.spacing.sm,
     },
     summaryContainer: {
       backgroundColor: theme.color.surface,

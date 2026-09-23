@@ -4,11 +4,11 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  Alert,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
 import { useTheme } from '@/app/providers/theme.provider';
+import { useAppAlert } from '@/app/providers/alert.provider';
 import { useBreakpoint } from '@/shared/ui/theme/useBreakpoint';
 import Button from '@/shared/components/Button/Button.component';
 import Input from '@/shared/components/Input/Input.component';
@@ -34,15 +34,16 @@ const GameMainMenu: React.FC<GameMainMenuProps> = ({
   const theme = useTheme();
   const { isDesktop } = useBreakpoint();
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
+  const appAlert = useAppAlert();
   const [joinRoomId, setJoinRoomId] = useState('');
 
   const handleJoinGame = useCallback(() => {
     if (!joinRoomId.trim()) {
-      Alert.alert('Error', 'Please enter a room ID');
+      appAlert('Error', 'Please enter a room ID');
       return;
     }
     onJoinGame(joinRoomId.trim());
-  }, [joinRoomId, onJoinGame]);
+  }, [joinRoomId, onJoinGame, appAlert]);
 
   return (
     <KeyboardAvoidingView

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useAppAlert } from '@/app/providers/alert.provider';
 import { MIN_DESCRIPTION_LENGTH } from '../../components/CategoryForm';
 import { categoryService } from '../../services/category.service';
 import { getErrorMessage } from '@/shared/api/getErrorMessage';
@@ -10,6 +10,7 @@ import { CreateCategoryView, CreateCategoryFormErrors } from './CreateCategory.v
 
 const CreateCategoryScreen = () => {
   const navigation = useNavigation();
+  const appAlert = useAppAlert();
 
   const [description, setDescription] = useState('');
   const [level, setLevel] = useState<Level | ''>('');
@@ -48,11 +49,11 @@ const CreateCategoryScreen = () => {
     setSubmitting(false);
 
     if (!response.ok) {
-      Alert.alert('Error', getErrorMessage(response.message, 'No se pudo crear la categoría'));
+      appAlert('Error', getErrorMessage(response.message, 'No se pudo crear la categoría'));
       return;
     }
 
-    Alert.alert('Categoría creada', 'Se guardó con éxito en el catálogo', [
+    appAlert('Categoría creada', 'Se guardó con éxito en el catálogo', [
       { text: 'OK', onPress: () => navigation.goBack() },
     ]);
   };

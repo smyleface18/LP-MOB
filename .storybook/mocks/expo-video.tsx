@@ -7,14 +7,22 @@ import React from 'react';
 import { View } from 'react-native';
 
 interface MockVideoPlayer {
+  status: 'idle' | 'loading' | 'readyToPlay' | 'error';
   play: () => void;
+  pause: () => void;
+  addListener: (event: string, listener: (payload: unknown) => void) => { remove: () => void };
 }
 
 export function useVideoPlayer(
   _source: unknown,
   setup?: (player: MockVideoPlayer) => void,
 ): MockVideoPlayer {
-  const player: MockVideoPlayer = { play: () => {} };
+  const player: MockVideoPlayer = {
+    status: 'idle',
+    play: () => {},
+    pause: () => {},
+    addListener: () => ({ remove: () => {} }),
+  };
   setup?.(player);
   return player;
 }

@@ -10,6 +10,10 @@ export const API_ENDPOINTS = {
   CATEGORIES: '/category-question',
   QUESTIONS: '/question',
   QUESTION_OPTIONS: '/question-options',
+  MEDIA: {
+    PRESIGN: '/media/presign',
+    CONFIRM: (id: string) => `/media/${id}/confirm`,
+  },
   AUTH: {
     SIGN_UP: '/auth/signUp',
     SIGN_IN: '/auth/signIn',

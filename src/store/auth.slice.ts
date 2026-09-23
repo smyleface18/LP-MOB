@@ -36,6 +36,7 @@ export const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
       idToken: null,
       refreshToken: null,
       isAuthenticated: false,
+      user: null,
     });
   },
 
