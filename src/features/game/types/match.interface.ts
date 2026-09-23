@@ -38,6 +38,9 @@ export interface SocketEvents {
   playersUpdated: (data: { players: PlayerInfo[] }) => void;
   gameStarted: (data: { firstQuestionAt: number }) => void;
   rematchStatus: (data: { accepted: number; total: number }) => void;
+  // Al (re)conectarse con una partida en curso: estado completo para
+  // reconstruir la pantalla (ver GameStateSnapshot).
+  gameState: (data: GameStateSnapshot) => void;
   rematchReady: (data: {
     roomId: string;
     level: Level;
@@ -94,6 +97,22 @@ export interface PlayerInfo {
   avatar?: string;
 }
 
+/** Espejo de GameStateSnapshot del backend (match.interface.ts). Instantes en hora del servidor. */
+export interface GameStateSnapshot {
+  roomId: string;
+  level: Level;
+  modeMatch: ModeMatch;
+  status: MatchStatus;
+  players: PlayerInfo[];
+  questionNumber: number;
+  totalQuestions: number;
+  question: QuestionDto | null;
+  startsAt: number | null;
+  endsAt: number | null;
+  answeredOptionId: string | null;
+  nextQuestionAt: number | null;
+}
+
 export interface NewQuestionEvent {
   question: QuestionDto;
   questionNumber: number;
@@ -107,4 +126,6 @@ export interface NewQuestionEvent {
 export interface AnswerResult {
   correct: boolean;
   correctAnswer: OptionDto[];
+  /** Puntos ganados: 1000 a 500 según la rapidez si es correcta, 0 si no. */
+  points: number;
 }

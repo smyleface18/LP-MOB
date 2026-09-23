@@ -3,7 +3,14 @@ import { Image } from 'react-native';
 import { useAuthState } from '@/store';
 import { socketService } from '../services/socket.service';
 import { QuestionDto } from '@/features/question/types';
-import { MatchStatus, ModeMatch, PlayerInfo, AnswerResult, NewQuestionEvent } from '../types';
+import {
+  MatchStatus,
+  ModeMatch,
+  PlayerInfo,
+  AnswerResult,
+  NewQuestionEvent,
+  GameStateSnapshot,
+} from '../types';
 import { ContentType, Level } from '@/shared/types/common';
 
 interface Game {
@@ -22,6 +29,8 @@ interface Game {
   players: PlayerInfo[];
   error: string | null;
   lastAnswerResult: AnswerResult | null;
+  /** Opción ya elegida en la pregunta actual (al reconectarse tras responder). */
+  answeredOptionId: string | null;
 }
 
 const INITIAL_STATE: Game = {
@@ -39,6 +48,7 @@ const INITIAL_STATE: Game = {
   players: [],
   error: null,
   lastAnswerResult: null,
+  answeredOptionId: null,
 };
 
 // Cada cuánto se recalcula el contador. No acumula error: cada tick parte de
@@ -67,9 +77,16 @@ export const useGame = () => {
   const scheduledQuestionRef = useRef<NewQuestionEvent | null>(null);
   const nextQuestionAtRef = useRef<number | null>(null);
 
+  // Los handlers del socket se registran una sola vez: leen el userId de acá.
+  const userIdRef = useRef(userId);
+
   useEffect(() => {
     if (user?.id) setUserId(user.id);
   }, [user?.id]);
+
+  useEffect(() => {
+    userIdRef.current = userId;
+  }, [userId]);
 
   // ⏱️ Timeline: la pregunta se muestra en startsAt y el contador llega a 0 en
   // endsAt, medidos con el reloj sincronizado con el servidor. Así todos los
@@ -278,8 +295,52 @@ export const useGame = () => {
       scheduledQuestionRef.current = data;
       nextQuestionAtRef.current = null;
       prefetchMedia(data.question);
-      setGameState((prev) => ({ ...prev, gameStarted: true, finished: false, error: null }));
+      setGameState((prev) => ({
+        ...prev,
+        gameStarted: true,
+        finished: false,
+        answeredOptionId: null,
+        error: null,
+      }));
       startTimer();
+    };
+
+    // Reconexión: el servidor manda el estado completo de la partida en curso.
+    const handleGameState = (snapshot: GameStateSnapshot) => {
+      const inProgress =
+        snapshot.status !== MatchStatus.WAITING && snapshot.status !== MatchStatus.FINISHED;
+
+      scheduledQuestionRef.current =
+        snapshot.question && snapshot.startsAt !== null && snapshot.endsAt !== null
+          ? {
+              question: snapshot.question,
+              questionNumber: snapshot.questionNumber,
+              totalQuestions: snapshot.totalQuestions,
+              timeLimit: snapshot.question.timeLimit,
+              startsAt: snapshot.startsAt,
+              endsAt: snapshot.endsAt,
+            }
+          : null;
+      nextQuestionAtRef.current = snapshot.nextQuestionAt;
+      if (snapshot.question) prefetchMedia(snapshot.question);
+
+      setIsHost(snapshot.players.some((p) => p.userId === userIdRef.current && p.isOwner));
+      setGameState((prev) => ({
+        ...prev,
+        roomId: snapshot.roomId,
+        level: snapshot.level,
+        mode: snapshot.modeMatch,
+        players: snapshot.players,
+        questionNumber: snapshot.questionNumber,
+        totalQuestions: snapshot.totalQuestions,
+        gameStarted: inProgress,
+        finished: snapshot.status === MatchStatus.FINISHED,
+        answeredOptionId: snapshot.answeredOptionId,
+        error: null,
+      }));
+
+      if (inProgress) startTimer();
+      else clearTimeline();
     };
 
     const handleAnswerResult = (data: AnswerResult) => {
@@ -362,6 +423,7 @@ export const useGame = () => {
       handleGameStarted,
       handleRematchStatus,
       handleRematchReady,
+      handleGameState,
     };
   }, [clearTimeline, startTimer]);
 
@@ -386,6 +448,7 @@ export const useGame = () => {
     socketService.on('gameStarted', handlers.handleGameStarted);
     socketService.on('rematchStatus', handlers.handleRematchStatus);
     socketService.on('rematchReady', handlers.handleRematchReady);
+    socketService.on('gameState', handlers.handleGameState);
 
     // Connect to socket
     socketService.connect();
@@ -410,6 +473,7 @@ export const useGame = () => {
       socketService.off('gameStarted', handlers.handleGameStarted);
       socketService.off('rematchStatus', handlers.handleRematchStatus);
       socketService.off('rematchReady', handlers.handleRematchReady);
+      socketService.off('gameState', handlers.handleGameState);
       clearTimeline();
     };
   }, [createSocketHandlers, clearTimeline]);

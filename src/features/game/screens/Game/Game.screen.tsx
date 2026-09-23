@@ -20,13 +20,21 @@ const GameScreen: React.FC = () => {
 
   const [selectedLevel, setSelectedLevel] = React.useState<Level>(Level.A1);
 
-  const { selectedOption, showResult, isCorrect, correctAnswerText, handleOptionPress, handleCloseResult } =
-    useAnswerFeedback({
-      timeRemaining: state.timeRemaining,
-      currentQuestionId: state.currentQuestion?.id,
-      lastAnswerResult: state.lastAnswerResult,
-      onSubmit: actions.submitAnswer,
-    });
+  const {
+    selectedOption,
+    showResult,
+    isCorrect,
+    correctAnswerText,
+    pointsEarned,
+    handleOptionPress,
+    handleCloseResult,
+  } = useAnswerFeedback({
+    timeRemaining: state.timeRemaining,
+    currentQuestionId: state.currentQuestion?.id,
+    lastAnswerResult: state.lastAnswerResult,
+    answeredOptionId: state.answeredOptionId,
+    onSubmit: actions.submitAnswer,
+  });
 
   if (!state.user.isConnected) {
     return (
@@ -83,6 +91,7 @@ const GameScreen: React.FC = () => {
           showResult={showResult}
           isCorrect={isCorrect}
           correctAnswer={correctAnswerText}
+          pointsEarned={pointsEarned}
           selectedOption={selectedOption}
         />
       )}

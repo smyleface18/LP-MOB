@@ -8,6 +8,8 @@ export interface ResultModalProps {
   correctAnswer: string[];
   onClose: () => void;
   timeRemaining?: number;
+  /** Puntos ganados con esta respuesta. */
+  points?: number;
 }
 
 const ResultModal: React.FC<ResultModalProps> = ({
@@ -16,6 +18,7 @@ const ResultModal: React.FC<ResultModalProps> = ({
   correctAnswer,
   onClose,
   timeRemaining = 2000,
+  points,
 }) => {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
@@ -47,6 +50,10 @@ const ResultModal: React.FC<ResultModalProps> = ({
               ? 'Excellent answer!'
               : `The correct answer was: ${correctAnswer.join(', ')}`}
           </Text>
+
+          {isCorrect && points !== undefined && points > 0 && (
+            <Text style={[styles.title, styles.correctTitle]}>+{points} pts</Text>
+          )}
 
           <Text style={styles.timer}>Next question coming...</Text>
         </View>

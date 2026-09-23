@@ -90,6 +90,7 @@ export class SocketService implements GameService {
       'gameStarted',
       'rematchStatus',
       'rematchReady',
+      'gameState',
     ];
 
     gameEvents.forEach((event) => {

@@ -5,6 +5,8 @@ interface UseAnswerFeedbackParams {
   timeRemaining: number;
   currentQuestionId: string | undefined;
   lastAnswerResult: AnswerResult | null;
+  /** Opción que el servidor ya registró para esta pregunta (reconexión). */
+  answeredOptionId?: string | null;
   onSubmit: (optionId: string) => void;
 }
 
@@ -14,12 +16,14 @@ export const useAnswerFeedback = ({
   timeRemaining,
   currentQuestionId,
   lastAnswerResult,
+  answeredOptionId = null,
   onSubmit,
 }: UseAnswerFeedbackParams) => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [correctAnswerText, setCorrectAnswerText] = useState<string[]>([]);
+  const [pointsEarned, setPointsEarned] = useState(0);
   const lastProcessedAnswerRef = useRef<string | null>(null);
 
   const handleOptionPress = useCallback(
@@ -44,24 +48,28 @@ export const useAnswerFeedback = ({
 
     lastProcessedAnswerRef.current = signature;
     setIsCorrect(lastAnswerResult.correct);
+    setPointsEarned(lastAnswerResult.points ?? 0);
     setCorrectAnswerText(lastAnswerResult.correctAnswer.map((option) => option.text ?? ''));
     setShowResult(true);
   }, [lastAnswerResult]);
 
-  // Reiniciar selección al llegar una pregunta nueva.
+  // Reiniciar selección al llegar una pregunta nueva. Si al reconectarse el
+  // servidor informa que ya respondió, se deja esa opción bloqueada.
   useEffect(() => {
-    setSelectedOption(null);
+    setSelectedOption(answeredOptionId);
     setShowResult(false);
     setIsCorrect(false);
     setCorrectAnswerText([]);
+    setPointsEarned(0);
     lastProcessedAnswerRef.current = null;
-  }, [currentQuestionId]);
+  }, [currentQuestionId, answeredOptionId]);
 
   return {
     selectedOption,
     showResult,
     isCorrect,
     correctAnswerText,
+    pointsEarned,
     handleOptionPress,
     handleCloseResult,
   };

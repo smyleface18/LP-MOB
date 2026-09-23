@@ -22,6 +22,7 @@ interface GamePlayProps {
   showResult: boolean;
   isCorrect: boolean;
   correctAnswer: string[];
+  pointsEarned?: number;
   selectedOption: string | null;
 }
 
@@ -37,6 +38,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
   showResult,
   isCorrect,
   correctAnswer,
+  pointsEarned,
   selectedOption,
 }) => {
   const theme = useTheme();
@@ -107,6 +109,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
         visible={showResult}
         isCorrect={isCorrect}
         correctAnswer={correctAnswer}
+        points={pointsEarned}
         timeRemaining={1000}
         onClose={onModalClose}
       />
