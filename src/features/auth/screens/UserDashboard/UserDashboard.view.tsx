@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { RefreshButton } from '@/shared/components/RefreshButton';
 import {
   View,
   Text,
@@ -51,6 +52,9 @@ export interface UserDashboardViewProps {
   onHowToPlay: () => void;
   onSignOut: () => void;
   signOutLoading?: boolean;
+  /** Vuelve a pedir los datos del usuario (métricas actualizadas). */
+  onRefresh?: () => void;
+  refreshing?: boolean;
 }
 
 const UserDashboardView: React.FC<UserDashboardViewProps> = ({
@@ -62,6 +66,8 @@ const UserDashboardView: React.FC<UserDashboardViewProps> = ({
   onHowToPlay,
   onSignOut,
   signOutLoading = false,
+  onRefresh,
+  refreshing = false,
 }) => {
   const theme = useTheme();
   const { isDesktop } = useBreakpoint();
@@ -82,6 +88,14 @@ const UserDashboardView: React.FC<UserDashboardViewProps> = ({
           {/* Header */}
           <View style={styles.header}>
             <DashboardBackground />
+            {onRefresh && (
+              <RefreshButton
+                onPress={onRefresh}
+                refreshing={refreshing}
+                accessibilityLabel="Actualizar estadísticas"
+                style={styles.refreshButton}
+              />
+            )}
 
             <View style={styles.avatar}>
               <Image source={{ uri: avatarUrl }} style={styles.avatarImage} resizeMode="cover" />
@@ -192,6 +206,12 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
       alignItems: 'center',
       overflow: 'hidden',
       backgroundColor: theme.color.background,
+    },
+    refreshButton: {
+      position: 'absolute',
+      top: theme.spacing.md,
+      right: theme.spacing.md,
+      zIndex: 1,
     },
     avatar: {
       width: 80,

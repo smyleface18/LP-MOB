@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { RefreshButton } from '@/shared/components/RefreshButton';
 import { View, Text, ScrollView, StyleSheet, Image } from 'react-native';
 import { useTheme } from '@/app/providers/theme.provider';
 import { useBreakpoint } from '@/shared/ui/theme/useBreakpoint';
@@ -35,6 +36,8 @@ const UserDashboardView: React.FC<UserDashboardViewProps> = ({
   onHowToPlay,
   onSignOut,
   signOutLoading = false,
+  onRefresh,
+  refreshing = false,
 }) => {
   const theme = useTheme();
   const { isDesktop } = useBreakpoint();
@@ -50,6 +53,14 @@ const UserDashboardView: React.FC<UserDashboardViewProps> = ({
         {/* Header */}
         <View style={styles.header}>
           <DashboardBackground />
+          {onRefresh && (
+            <RefreshButton
+              onPress={onRefresh}
+              refreshing={refreshing}
+              accessibilityLabel="Actualizar estadísticas"
+              style={styles.refreshButton}
+            />
+          )}
           <View style={styles.avatar}>
             <Image source={{ uri: avatarUrl }} style={styles.avatarImage} resizeMode="cover" />
           </View>
@@ -159,6 +170,12 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
       alignItems: 'center',
       overflow: 'hidden',
       backgroundColor: theme.color.background,
+    },
+    refreshButton: {
+      position: 'absolute',
+      top: theme.spacing.md,
+      right: theme.spacing.md,
+      zIndex: 1,
     },
     avatar: {
       width: isDesktop ? 100 : 80,

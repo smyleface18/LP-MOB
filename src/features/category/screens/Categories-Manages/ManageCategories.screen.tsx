@@ -96,6 +96,7 @@ const ManageCategoriesScreen = () => {
       onDeleteCategory={handleDeleteCategory}
       onToggleActive={handleToggleActive}
       onRetry={loadCategories}
+      onRefresh={loadCategories}
     />
   );
 };

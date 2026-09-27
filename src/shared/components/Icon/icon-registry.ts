@@ -36,6 +36,7 @@ import { MagnifyingGlassIcon } from 'phosphor-react-native/src/icons/MagnifyingG
 import { SlidersIcon } from 'phosphor-react-native/src/icons/Sliders';
 import { CaretDownIcon } from 'phosphor-react-native/src/icons/CaretDown';
 import { ArrowCounterClockwiseIcon } from 'phosphor-react-native/src/icons/ArrowCounterClockwise';
+import { ArrowClockwiseIcon } from 'phosphor-react-native/src/icons/ArrowClockwise';
 import { CloudCheckIcon } from 'phosphor-react-native/src/icons/CloudCheck';
 import { PencilSimpleIcon } from 'phosphor-react-native/src/icons/PencilSimple';
 import { TrashIcon } from 'phosphor-react-native/src/icons/Trash';
@@ -67,6 +68,7 @@ export const iconRegistry = {
   SlidersIcon,
   CaretDownIcon,
   ArrowCounterClockwiseIcon,
+  ArrowClockwiseIcon,
   CloudCheckIcon,
   PencilSimpleIcon,
   TrashIcon,

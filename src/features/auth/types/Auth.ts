@@ -12,7 +12,6 @@ export interface AuthState {
   restoreSession: () => Promise<void>;
   updateTokens: (authenticated: Authenticated) => Promise<void>;
   setUser: (user: User) => void;
-
 }
 
 export interface User extends CoreEntity {
@@ -20,6 +19,11 @@ export interface User extends CoreEntity {
   username: string;
   email: string;
   score: number;
+  /** Partidas terminadas. */
+  gamesPlayed: number;
+  gamesWon: number;
+  /** Partidas ganadas seguidas; vuelve a 0 al perder una. */
+  currentStreak: number;
   userRole: UserRoles;
   level: Level;
 }

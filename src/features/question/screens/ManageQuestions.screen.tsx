@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
+import { RefreshButton } from '@/shared/components/RefreshButton';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/app/providers/theme.provider';
@@ -6,8 +7,11 @@ import { useAppAlert } from '@/app/providers/alert.provider';
 import { useBreakpoint } from '@/shared/ui/theme/useBreakpoint';
 import Button from '@/shared/components/Button/Button.component';
 import { Loading } from '@/shared/components/Loading';
-import Input from '@/shared/components/Input/Input.component';
-import { FilterSection } from '@/shared/components/FilterSection/FilterSection.component';
+import { FilterToolbar, FilterGroup } from '@/shared/components/FilterToolbar';
+import {
+  CATEGORY_TYPE_META,
+  getCategoryPaletteColor,
+} from '@/features/category/constants/categoryMeta';
 import QuestionCard from '../components/QuestionCard';
 import { useQuestions } from '../hooks/useQuestion';
 import { useCategories } from '@/features/category/hooks/useCategories';
@@ -27,13 +31,19 @@ const ManageQuestionsScreen = () => {
 
   const { questions, loading, error, deleteQuestion, updateQuestion, loadQuestions } =
     useQuestions();
-  const { categories, loading: categoriesLoading } = useCategories();
+  const { categories, loading: categoriesLoading, loadCategories } = useCategories();
+
+  // Refresca preguntas y categorías (los filtros dependen de ambas).
+  const refreshAll = useCallback(() => {
+    void loadQuestions();
+    void loadCategories();
+  }, [loadQuestions, loadCategories]);
 
   const [filtersVisible, setFiltersVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedLevel, setSelectedLevel] = useState<string>('all');
-  const [selectedType, setSelectedType] = useState<string>('all');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedLevels, setSelectedLevels] = useState<Level[]>([]);
+  const [selectedTypes, setSelectedTypes] = useState<TypeQuestionCategory[]>([]);
 
   // El resultado de crear/editar se guarda desde otra screen — refrescamos
   // la lista cada vez que esta pantalla vuelve a estar en foco.
@@ -48,16 +58,19 @@ const ManageQuestionsScreen = () => {
     return Math.max(1, Math.floor(usableWidth / CARD_MIN_WIDTH));
   }, [width, theme.spacing.lg]);
 
-  const activeFiltersCount = [
-    selectedCategory !== 'all',
-    selectedLevel !== 'all',
-    selectedType !== 'all',
-  ].filter(Boolean).length;
+  const activeFiltersCount =
+    selectedCategories.length + selectedLevels.length + selectedTypes.length;
 
+  // Dentro de cada grupo la selección es "cualquiera de" (OR); entre grupos, AND.
   const filteredQuestions = questions.filter((question) => {
-    const matchesCategory = selectedCategory === 'all' || question.categoryId === selectedCategory;
-    const matchesLevel = selectedLevel === 'all' || question.category?.level === selectedLevel;
-    const matchesType = selectedType === 'all' || question.category?.type === selectedType;
+    const matchesCategory =
+      selectedCategories.length === 0 || selectedCategories.includes(question.categoryId);
+    const matchesLevel =
+      selectedLevels.length === 0 ||
+      (!!question.category && selectedLevels.includes(question.category.level));
+    const matchesType =
+      selectedTypes.length === 0 ||
+      (!!question.category && selectedTypes.includes(question.category.type));
     const search = searchText.trim().toLowerCase();
     const matchesSearch =
       !search ||
@@ -67,15 +80,45 @@ const ManageQuestionsScreen = () => {
     return matchesCategory && matchesLevel && matchesType && matchesSearch;
   });
 
-  const categoryOptions = categories.map((cat) => ({
-    value: cat.id,
-    label: cat.descriptionCategory,
-  }));
-  const levelOptions = Object.values(Level).map((level) => ({ value: level, label: level }));
-  const typeOptions = Object.values(TypeQuestionCategory).map((type) => ({
-    value: type,
-    label: type,
-  }));
+  const toggle =
+    <T,>(value: T) =>
+    (prev: T[]) =>
+      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value];
+
+  const filterGroups: FilterGroup[] = [
+    {
+      key: 'category',
+      title: 'Categoría',
+      hint: 'Selecciona una o más',
+      options: categories.map((category) => ({
+        value: category.id,
+        label: category.descriptionCategory,
+      })),
+      selected: selectedCategories,
+      onToggle: (value) => setSelectedCategories(toggle(value)),
+    },
+    {
+      key: 'level',
+      title: 'Nivel MCER (CEFR)',
+      hint: 'Selecciona uno o más',
+      options: Object.values(Level).map((level) => ({ value: level, label: level })),
+      selected: selectedLevels,
+      onToggle: (value) => setSelectedLevels(toggle(value as Level)),
+    },
+    {
+      key: 'type',
+      title: 'Tipo de Habilidad',
+      hint: 'Macrodestrezas lingüísticas',
+      options: Object.values(TypeQuestionCategory).map((type) => ({
+        value: type,
+        label: CATEGORY_TYPE_META[type].label,
+        icon: CATEGORY_TYPE_META[type].icon,
+        iconColor: getCategoryPaletteColor(theme, Object.values(TypeQuestionCategory), type),
+      })),
+      selected: selectedTypes,
+      onToggle: (value) => setSelectedTypes(toggle(value as TypeQuestionCategory)),
+    },
+  ];
 
   const handleQuestionPress = (question: Question) => {
     navigation.navigate({
@@ -109,10 +152,12 @@ const ManageQuestionsScreen = () => {
     }
   };
 
+  // Igual que en categorías: "Limpiar" también borra la búsqueda.
   const handleClearFilters = () => {
-    setSelectedCategory('all');
-    setSelectedLevel('all');
-    setSelectedType('all');
+    setSelectedCategories([]);
+    setSelectedLevels([]);
+    setSelectedTypes([]);
+    setSearchText('');
   };
 
   const renderQuestionItem = ({ item }: { item: Question }) => (
@@ -148,58 +193,35 @@ const ManageQuestionsScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.page}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Question Management</Text>
-          <Text style={styles.subtitle}>Total: {filteredQuestions.length} questions</Text>
+        <View style={[styles.header, styles.headerRow]}>
+          <View style={styles.headerText}>
+            <Text style={styles.title}>Question Management</Text>
+            <Text style={styles.subtitle}>Total: {filteredQuestions.length} questions</Text>
+          </View>
+          <RefreshButton
+            onPress={refreshAll}
+            refreshing={loading}
+            accessibilityLabel="Actualizar preguntas"
+          />
+          <Button
+            title="+ Create New Question"
+            variant="primary"
+            size="medium"
+            onPress={() => navigation.navigate('CreateQuestion' as never)}
+          />
         </View>
 
-        <View style={styles.toolbar}>
-          <View style={styles.searchInput}>
-            <Input placeholder="Search questions..." value={searchText} onChangeText={setSearchText} variant="outlined" />
-          </View>
-          <View style={styles.toolbarButton}>
-            <Button
-              title={`Filters${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}
-              variant={filtersVisible ? 'primary' : 'outlined'}
-              size="medium"
-              onPress={() => setFiltersVisible((prev) => !prev)}
-            />
-          </View>
-          <View style={styles.toolbarButton}>
-            <Button
-              title="+ Create New Question"
-              variant="primary"
-              size="medium"
-              onPress={() => navigation.navigate('CreateQuestion' as never)}
-            />
-          </View>
+        <View style={styles.toolbarWrap}>
+          <FilterToolbar
+            searchText={searchText}
+            onSearchChange={setSearchText}
+            searchPlaceholder="Buscar preguntas por enunciado o info..."
+            filtersVisible={filtersVisible}
+            onToggleFilters={() => setFiltersVisible((prev) => !prev)}
+            onClearFilters={handleClearFilters}
+            groups={filterGroups}
+          />
         </View>
-
-        {filtersVisible && (
-          <View style={styles.filtersPanel}>
-            <FilterSection
-              title="Categories"
-              options={categoryOptions}
-              selectedValue={selectedCategory}
-              onValueChange={setSelectedCategory}
-            />
-            <FilterSection
-              title="Levels"
-              options={levelOptions}
-              selectedValue={selectedLevel}
-              onValueChange={setSelectedLevel}
-            />
-            <FilterSection
-              title="Types"
-              options={typeOptions}
-              selectedValue={selectedType}
-              onValueChange={setSelectedType}
-            />
-            {activeFiltersCount > 0 && (
-              <Button title="Clear Filters" variant="outlined" size="small" onPress={handleClearFilters} />
-            )}
-          </View>
-        )}
 
         {filteredQuestions.length === 0 ? (
           <View style={styles.emptyContainer}>
@@ -221,7 +243,7 @@ const ManageQuestionsScreen = () => {
             contentContainerStyle={styles.questionsContent}
             showsVerticalScrollIndicator={false}
             refreshing={loading}
-            onRefresh={loadQuestions}
+            onRefresh={refreshAll}
           />
         )}
       </View>
@@ -241,6 +263,16 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
       width: '100%',
       maxWidth: PAGE_MAX_WIDTH,
     },
+    headerRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      alignItems: 'center',
+      gap: theme.spacing.md,
+    },
+    headerText: {
+      flex: 1,
+      minWidth: 200,
+    },
     header: {
       padding: isDesktop ? theme.spacing.xl : theme.spacing.lg,
       backgroundColor: theme.color.surfaceElevated,
@@ -259,29 +291,9 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
       fontSize: theme.fontSize.md,
       color: theme.color.textSecondary,
     },
-    toolbar: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      alignItems: 'center',
-      padding: theme.spacing.lg,
-      gap: theme.spacing.sm,
-    },
-    searchInput: {
-      flex: 1,
-      minWidth: 200,
-    },
-    toolbarButton: {
-      minWidth: 160,
-    },
-    filtersPanel: {
-      marginHorizontal: theme.spacing.lg,
-      marginBottom: theme.spacing.md,
-      padding: theme.spacing.md,
-      backgroundColor: theme.color.surface,
-      borderRadius: theme.radius.md,
-      borderWidth: theme.borderWidth.xs,
-      borderColor: theme.color.border,
-      gap: theme.spacing.sm,
+    toolbarWrap: {
+      paddingHorizontal: theme.spacing.lg,
+      paddingTop: theme.spacing.lg,
     },
     questionsContent: {
       padding: theme.spacing.lg,
