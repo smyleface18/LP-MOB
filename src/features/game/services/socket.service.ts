@@ -1,11 +1,10 @@
 import { io, Socket } from 'socket.io-client';
 import { API_BASE_URL } from '@/shared/api/apiConfig';
+import { estimateClockOffset } from '@/shared/api/clockSync';
 import { useAppStore } from '@/store';
 import { GameService, ModeMatch, SocketEvents } from '../types';
 import { Level } from '@/shared/types/common';
 
-const CLOCK_SYNC_SAMPLES = 5;
-const CLOCK_SYNC_TIMEOUT_MS = 2_000;
 const CLOCK_RESYNC_INTERVAL_MS = 30_000;
 
 export class SocketService implements GameService {
@@ -133,31 +132,11 @@ export class SocketService implements GameService {
     return Date.now() + this.clockOffsetMs;
   }
 
-  /**
-   * Estima el offset con el servidor (algoritmo de Cristian, como un NTP
-   * simplificado): por cada muestra, offset = serverTime - punto medio del
-   * viaje. Se queda con la de menor RTT, que es la de menor error posible.
-   */
+  /** Estima el offset con el servidor (ver estimateClockOffset). */
   async syncClock(): Promise<void> {
-    let best: { rtt: number; offset: number } | null = null;
-
-    for (let i = 0; i < CLOCK_SYNC_SAMPLES; i++) {
-      if (!this.socket?.connected) return;
-      try {
-        const sentAt = Date.now();
-        const { serverTime } = (await this.socket
-          .timeout(CLOCK_SYNC_TIMEOUT_MS)
-          .emitWithAck('timeSync')) as { serverTime: number };
-        const receivedAt = Date.now();
-        const rtt = receivedAt - sentAt;
-        const offset = serverTime - (sentAt + receivedAt) / 2;
-        if (!best || rtt < best.rtt) best = { rtt, offset };
-      } catch {
-        // Muestra perdida (timeout): se usan las demás.
-      }
-    }
-
-    if (best) this.clockOffsetMs = best.offset;
+    if (!this.socket?.connected) return;
+    const offset = await estimateClockOffset(this.socket);
+    if (offset !== null) this.clockOffsetMs = offset;
   }
 
   private startClockSync() {
