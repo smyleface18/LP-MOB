@@ -22,6 +22,8 @@ interface GameMainMenuProps {
   onCreateSinglePlayer: () => void;
   onCreateMultiplayer: () => void;
   onJoinGame: (roomId: string) => void;
+  /** Abre el modo Historieta (otra pantalla del stack de la Arena). */
+  onOpenStoryMode?: () => void;
 }
 
 const GameMainMenu: React.FC<GameMainMenuProps> = ({
@@ -30,6 +32,7 @@ const GameMainMenu: React.FC<GameMainMenuProps> = ({
   onCreateSinglePlayer,
   onCreateMultiplayer,
   onJoinGame,
+  onOpenStoryMode,
 }) => {
   const theme = useTheme();
   const { isDesktop } = useBreakpoint();
@@ -121,6 +124,22 @@ const GameMainMenu: React.FC<GameMainMenuProps> = ({
               style={styles.joinButton}
             />
           </View>
+
+          {onOpenStoryMode && (
+            <View style={styles.storyCard}>
+              <Text style={styles.storyTitle}>📖 Story Mode</Text>
+              <Text style={styles.storyText}>
+                Write a comic in English with your friends, one panel each.
+              </Text>
+              <Button
+                title="Play Story Mode"
+                variant="secondary"
+                icon="BookOpenIcon"
+                onPress={onOpenStoryMode}
+                style={styles.joinButton}
+              />
+            </View>
+          )}
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -197,6 +216,24 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
     },
     joinButton: {
       width: '100%',
+    },
+    storyCard: {
+      marginTop: theme.spacing.lg,
+      padding: theme.spacing.md,
+      gap: theme.spacing.sm,
+      borderRadius: theme.radius.lg,
+      backgroundColor: theme.color.surface,
+      borderWidth: theme.borderWidth.xs,
+      borderColor: theme.color.border,
+    },
+    storyTitle: {
+      fontSize: theme.fontSize.lg,
+      fontFamily: theme.fontFamily.bodyBold,
+      color: theme.color.textPrimary,
+    },
+    storyText: {
+      fontSize: theme.fontSize.sm,
+      color: theme.color.textSecondary,
     },
   });
 

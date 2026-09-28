@@ -3,9 +3,9 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import UserDashboardScreen from '@/features/auth/screens/UserDashboard';
 import AdminDashboardScreen from '@/features/auth/screens/AdminDashboard';
 import ProfileScreen from '@/features/auth/screens/Profile';
-import GameScreen from '@/features/game/screens/Game';
 import RankingScreen from '@/features/ranking/screens/Ranking';
 import { UserRoles } from '@/features/auth/types';
+import { ArenaStack } from './ArenaStack';
 import { TabBarWeb } from './Tab-Bar-Web/TabBarWeb';
 import { CategoriesStack } from './CategoriesStack';
 import { QuestionsStack } from './QuestionsStack';
@@ -35,7 +35,7 @@ export const MainTabs: React.FC<MainTabsProps> = ({ role }) => {
         name="Dashboard"
         component={isAdmin ? AdminDashboardScreen : UserDashboardScreen}
       />
-      <Tab.Screen name="Arena" component={GameScreen} />
+      <Tab.Screen name="Arena" component={ArenaStack} />
       <Tab.Screen name="Ranking" component={RankingScreen} />
       <Tab.Screen name="Perfil" component={ProfileScreen} />
       {isAdmin && <Tab.Screen name="Categorias" component={CategoriesStack} />}

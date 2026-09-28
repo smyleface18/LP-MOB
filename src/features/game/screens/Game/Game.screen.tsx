@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/app/providers/theme.provider';
 import { withAlpha } from '@/shared/ui/theme/primitives';
 import { useGame } from '../../hooks/useGame';
@@ -14,6 +15,7 @@ import { MatchStatus, ModeMatch } from '../../types';
 import { Level } from '@/shared/types/common';
 
 const GameScreen: React.FC = () => {
+  const navigation = useNavigation();
   const { state, actions } = useGame();
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
@@ -63,6 +65,7 @@ const GameScreen: React.FC = () => {
           onCreateSinglePlayer={() => actions.createGame(selectedLevel, ModeMatch.SINGLEPLAYER)}
           onCreateMultiplayer={() => actions.createGame(selectedLevel, ModeMatch.MULTIPLAYER)}
           onJoinGame={actions.joinGame}
+          onOpenStoryMode={() => navigation.navigate('Story' as never)}
         />
       )}
 
