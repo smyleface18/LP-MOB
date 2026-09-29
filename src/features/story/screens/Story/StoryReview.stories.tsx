@@ -12,12 +12,12 @@ const meta: Meta<typeof StoryReviewView> = {
     creating: false,
     onReact: () => {},
     onNewStory: () => {},
-    onBackToMenu: () => {},
+    onBack: () => {},
   },
   argTypes: {
     onReact: { action: 'react' },
     onNewStory: { action: 'new-story' },
-    onBackToMenu: { action: 'back-to-menu' },
+    onBack: { action: 'back' },
   },
 };
 
@@ -40,5 +40,30 @@ export const WithoutCharacters: Story = {
       characters: [],
       panels: MOCK_MANIFEST.panels.map((panel) => ({ ...panel, characterIds: [] })),
     },
+  },
+};
+
+export const MediaFailed: Story = {
+  args: {
+    manifest: {
+      ...MOCK_MANIFEST,
+      panels: MOCK_MANIFEST.panels.map((panel) => ({
+        ...panel,
+        mediaStatus: 'failed' as const,
+        audioUrl: null,
+        imageUrl: null,
+        speechMarks: null,
+      })),
+    },
+  },
+};
+
+/** Como se ve desde "My stories": sin reacciones nuevas ni historieta nueva. */
+export const FromHistory: Story = {
+  args: {
+    title: 'Read it again!',
+    onReact: undefined,
+    onNewStory: undefined,
+    backLabel: 'Back to my stories',
   },
 };

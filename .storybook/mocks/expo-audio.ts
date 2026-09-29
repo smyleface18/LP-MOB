@@ -14,13 +14,27 @@
 interface MockAudioPlayer {
   play: () => void;
   pause: () => void;
-  seekTo: (seconds: number) => void;
+  seekTo: (seconds: number) => Promise<void>;
+  replace: (source: unknown) => void;
 }
 
-export function useAudioPlayer(_source: unknown): MockAudioPlayer {
+export function useAudioPlayer(_source?: unknown, _options?: unknown): MockAudioPlayer {
   return {
     play: () => {},
     pause: () => {},
-    seekTo: () => {},
+    seekTo: () => Promise.resolve(),
+    replace: () => {},
+  };
+}
+
+/** Status fijo: el audio nunca carga en Storybook (no hay reproductor real). */
+export function useAudioPlayerStatus(_player: MockAudioPlayer) {
+  return {
+    isLoaded: false,
+    playing: false,
+    isBuffering: false,
+    currentTime: 0,
+    duration: 0,
+    didJustFinish: false,
   };
 }

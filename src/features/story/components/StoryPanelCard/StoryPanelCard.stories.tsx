@@ -54,6 +54,13 @@ export const SharedDraft: Story = {
   },
 };
 
+export const WithImage: Story = {
+  args: {
+    imageUrl: 'https://picsum.photos/seed/linguaplay-robot/1024/768',
+    score: 150,
+  },
+};
+
 export const WithoutCharacters: Story = {
   args: {
     characterNames: [],

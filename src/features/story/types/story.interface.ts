@@ -229,20 +229,96 @@ export interface ReviewPanel {
   corrections: Correction[];
   score: PanelScore;
   reactions: PanelReactions;
-  // Media (Fase 4b del backend): hoy siempre null / 'none'.
+  /** mp3 narrado (URL firmada); null mientras se genera o si falló. */
   audioUrl: string | null;
+  /** Una marca por palabra de `finalText`: ms desde el inicio y offsets en caracteres. */
   speechMarks: SpeechMark[] | null;
   imageUrl: string | null;
+  /** none = venció sin texto; pending = generándose (llega por `panelMediaReady`). */
   mediaStatus: PanelMediaStatus;
 }
 
-/** Payload de `storyReviewReady` y ack de `getReviewManifest`. */
+/** Payload de `storyReviewReady`, ack de `getReviewManifest` y `GET /story/history/:storyId`. */
 export interface ReviewManifest {
+  /** Id en el historial (Postgres). */
   storyId: string;
   gameId: string;
+  /** Título que puso la IA; null si no hubo. */
+  title: string | null;
   characters: StoryCharacter[];
   ranking: ScoreboardEntry[];
   panels: ReviewPanel[];
+}
+
+/** "Me gusta" de una historieta completa. */
+export interface StoryLikes {
+  count: number;
+  /** El usuario ya le dio like. */
+  likedByMe: boolean;
+}
+
+/**
+ * Historieta guardada (`GET /story/history/:storyId` y `GET /story/catalog/:storyId`):
+ * el manifiesto del review, sus likes y las reacciones que se pueden usar.
+ */
+export interface StoredStoryManifest extends ReviewManifest {
+  likes: StoryLikes;
+  reactionOptions: string[];
+}
+
+/** `storyProcessing`: avance de la generación de audio e imágenes en PROCESSING. */
+export interface StoryProcessingEvent {
+  gameId: string;
+  /** Viñetas con media a generar (sin las que vencieron sin texto). */
+  panelsTotal: number;
+  panelsDone: number;
+}
+
+/** `panelMediaReady`: una viñeta terminó su media (URLs firmadas). */
+export interface PanelMediaReadyEvent {
+  gameId: string;
+  order: number;
+  mediaStatus: PanelMediaStatus;
+  audioUrl: string | null;
+  imageUrl: string | null;
+  speechMarks: SpeechMark[] | null;
+}
+
+/** De dónde sale una lista de historietas: las propias o el catálogo de todos. */
+export type StoryListSource = 'history' | 'catalog';
+
+/** Filtros del catálogo (el historial propio no los usa). */
+export interface StoryCatalogFilters {
+  /** Busca en el título, los nombres de los jugadores y el texto de las viñetas. */
+  search?: string;
+  /** Uno o más niveles; vacío = todos. */
+  levels?: Level[];
+}
+
+/** Una historieta del historial (`GET /story/history`) o del catálogo (`GET /story/catalog`). */
+export interface StoryHistoryItem {
+  storyId: string;
+  /** Título que puso la IA; null en historietas sin título. */
+  title: string | null;
+  /** ISO 8601. */
+  finishedAt: string;
+  level: Level;
+  panelsCount: number;
+  /** Texto de la primera viñeta. */
+  excerpt: string;
+  coverImageUrl: string | null;
+  /** Por puesto en el ranking. */
+  players: { userId: string; name: string; avatarUrl: string | null }[];
+  myPosition: number | null;
+  myScore: number;
+  likes: StoryLikes;
+}
+
+export interface StoryHistoryPage {
+  items: StoryHistoryItem[];
+  page: number;
+  limit: number;
+  total: number;
 }
 
 /** Ack de `getStoryRules`: rangos y límites para armar los formularios. */
@@ -321,7 +397,9 @@ export interface StoryServerEvents {
   panelDraftReviewed: SharedDraftEvent;
   panelConfirmed: PanelConfirmedEvent;
   panelReaction: PanelReactionEvent;
+  storyProcessing: StoryProcessingEvent;
   storyReviewReady: ReviewManifest;
+  panelMediaReady: PanelMediaReadyEvent;
   gameState: StoryGameState;
   storyError: StoryErrorEvent;
 }

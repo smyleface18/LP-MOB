@@ -1,12 +1,15 @@
-import React, { useMemo, useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@/app/providers/theme.provider';
 import { useBreakpoint } from '@/shared/ui/theme/useBreakpoint';
 import Button from '@/shared/components/Button/Button.component';
 import StoryAvatar from '../../components/StoryAvatar';
 import StoryPanelCard from '../../components/StoryPanelCard';
 import CorrectionList from '../../components/CorrectionList';
-import { PanelScore, ReviewManifest, ReviewPanel } from '../../types';
+import NarratedText from '../../components/NarratedText';
+import NarrationControls from '../../components/NarrationControls';
+import { stopNarration, usePanelNarration } from '../../hooks/usePanelNarration';
+import { PanelScore, ReviewManifest, ReviewPanel, StoryLikes } from '../../types';
 
 const PAGE_MAX_WIDTH = 640;
 const MEDALS = ['🥇', '🥈', '🥉'];
@@ -15,11 +18,41 @@ export interface StoryReviewViewProps {
   manifest: ReviewManifest;
   userId: string;
   reactionOptions: string[];
-  onReact: (panelOrder: number, emoji: string) => void;
-  creating: boolean;
-  onNewStory: () => void;
-  onBackToMenu: () => void;
+  /** Sin esto las reacciones son de solo lectura (ej. una historieta del historial). */
+  onReact?: (panelOrder: number, emoji: string) => void;
+  /** Título de arriba. Por defecto, el del final de una partida. */
+  title?: string;
+  /** Sin esto no se muestra el botón de historieta nueva (ej. en el historial). */
+  onNewStory?: () => void;
+  creating?: boolean;
+  /**
+   * Botón de volver abajo. Sin esto no se muestra (ej. en el historial, donde
+   * se vuelve con la flecha de la cabecera).
+   */
+  onBack?: () => void;
+  backLabel?: string;
+  /** Likes de la historieta completa; sin esto no se muestra el botón. */
+  likes?: StoryLikes;
+  onToggleLike?: () => void;
+  /** Al abrir, narra la historia completa, viñeta por viñeta. */
+  autoPlay?: boolean;
 }
+
+/**
+ * Qué se está narrando: la historia completa (al terminar una viñeta sigue la
+ * siguiente) o una sola viñeta que eligió el jugador.
+ */
+interface Playback {
+  mode: 'story' | 'panel';
+  order: number;
+}
+
+/** Se puede narrar si tiene audio, o si todavía se está generando (se espera). */
+const isNarratable = (panel: ReviewPanel) =>
+  panel.mediaStatus === 'pending' || (panel.mediaStatus === 'ready' && !!panel.audioUrl);
+
+/** Margen arriba de la viñeta al desplazarse hasta ella. */
+const SCROLL_MARGIN = 16;
 
 const scoreDetails = (score: PanelScore): string[] => {
   const details = [`Accuracy ${score.accuracy}`];
@@ -65,18 +98,198 @@ const PanelDetails: React.FC<{ panel: ReviewPanel }> = ({ panel }) => {
   );
 };
 
+interface ReviewPanelItemProps {
+  panel: ReviewPanel;
+  characterNames: string[];
+  userId: string;
+  reactionOptions: string[];
+  onReact?: (panelOrder: number, emoji: string) => void;
+  /**
+   * Pedido de narrar esta viñeta desde el principio (cambia con cada pedido).
+   * Si el audio todavía no está, se narra apenas llega.
+   */
+  playRequestId: number | null;
+  /** El jugador tocó play/pausa en esta viñeta. */
+  onToggle: (order: number, willPlay: boolean) => void;
+  onEnded: (order: number) => void;
+}
+
+/** Una viñeta del review: imagen, texto narrado con la palabra resaltada, puntaje y reacciones. */
+const ReviewPanelItem: React.FC<ReviewPanelItemProps> = ({
+  panel,
+  characterNames,
+  userId,
+  reactionOptions,
+  onReact,
+  playRequestId,
+  onToggle,
+  onEnded,
+}) => {
+  const narration = usePanelNarration(panel.audioUrl, panel.speechMarks, () =>
+    onEnded(panel.order),
+  );
+  const { play } = narration;
+
+  // Cada pedido se atiende una sola vez, aunque la URL se vuelva a firmar.
+  const handledRequest = useRef<number | null>(null);
+  useEffect(() => {
+    if (playRequestId === null || handledRequest.current === playRequestId) return;
+    if (!panel.audioUrl) return;
+    handledRequest.current = playRequestId;
+    play();
+  }, [playRequestId, panel.audioUrl, play]);
+
+  const handleToggle = () => {
+    onToggle(panel.order, !narration.playing);
+    narration.toggle();
+  };
+
+  return (
+    <StoryPanelCard
+      order={panel.order}
+      authorName={panel.author.name}
+      scene={panel.scene}
+      text={panel.finalText}
+      imageUrl={panel.imageUrl}
+      textNode={
+        <NarratedText
+          text={panel.finalText}
+          speechMarks={panel.speechMarks}
+          activeIndex={narration.activeIndex}
+        />
+      }
+      characterNames={characterNames}
+      score={panel.score.total}
+      reactions={panel.reactions}
+      reactionOptions={reactionOptions}
+      userId={userId}
+      onReact={onReact ? (emoji) => onReact(panel.order, emoji) : undefined}
+    >
+      <NarrationControls
+        mediaStatus={panel.mediaStatus}
+        hasAudio={!!panel.audioUrl}
+        playing={narration.playing}
+        loading={narration.loading}
+        progress={narration.progress}
+        onToggle={handleToggle}
+      />
+      <PanelDetails panel={panel} />
+    </StoryPanelCard>
+  );
+};
+
 const StoryReviewView: React.FC<StoryReviewViewProps> = ({
   manifest,
   userId,
   reactionOptions,
   onReact,
-  creating,
+  title = 'Your story is ready!',
   onNewStory,
-  onBackToMenu,
+  creating = false,
+  onBack,
+  backLabel = 'Back to menu',
+  likes,
+  onToggleLike,
+  autoPlay = false,
 }) => {
   const theme = useTheme();
   const { isDesktop } = useBreakpoint();
   const styles = useMemo(() => createStyles(theme, isDesktop), [theme, isDesktop]);
+
+  // --- Narración: la historia completa o una viñeta ---
+  const [playback, setPlayback] = useState<Playback | null>(null);
+  const [playRequest, setPlayRequest] = useState<{ order: number; id: number } | null>(null);
+  const [storyPlayed, setStoryPlayed] = useState(false);
+  const nextRequestId = useRef(0);
+  const playbackRef = useRef(playback);
+  playbackRef.current = playback;
+
+  // Posiciones para desplazarse hasta la viñeta que se narra.
+  const scrollRef = useRef<ScrollView>(null);
+  const pageY = useRef(0);
+  const storyY = useRef(0);
+  const panelY = useRef<Record<number, number>>({});
+  const scrollToPanel = useCallback((order: number) => {
+    const y = panelY.current[order];
+    if (y === undefined) return;
+    scrollRef.current?.scrollTo({
+      y: Math.max(pageY.current + storyY.current + y - SCROLL_MARGIN, 0),
+      animated: true,
+    });
+  }, []);
+
+  const panels = manifest.panels;
+  const hasNarration = panels.some(isNarratable);
+
+  const nextAfter = useCallback(
+    (order: number | null) =>
+      panels.find((panel) => (order === null || panel.order > order) && isNarratable(panel)),
+    [panels],
+  );
+
+  /** Narra `panel` como parte de la historia completa; sin viñeta, la historia terminó. */
+  const playInStory = useCallback(
+    (panel: ReviewPanel | undefined, scroll = true) => {
+      if (!panel) {
+        setPlayback(null);
+        return;
+      }
+      setPlayback({ mode: 'story', order: panel.order });
+      setPlayRequest({ order: panel.order, id: ++nextRequestId.current });
+      if (scroll) scrollToPanel(panel.order);
+    },
+    [scrollToPanel],
+  );
+
+  const playStory = () => {
+    setStoryPlayed(true);
+    playInStory(nextAfter(null));
+  };
+
+  const stopStory = () => {
+    stopNarration();
+    setPlayback(null);
+  };
+
+  const handlePanelEnded = useCallback(
+    (order: number) => {
+      const current = playbackRef.current;
+      if (current?.order !== order) return;
+      if (current.mode === 'story') playInStory(nextAfter(order));
+      else setPlayback(null);
+    },
+    [playInStory, nextAfter],
+  );
+
+  // El jugador eligió una viñeta: la historia completa deja de avanzar sola.
+  const handlePanelToggle = useCallback((order: number, willPlay: boolean) => {
+    setPlayback(willPlay ? { mode: 'panel', order } : null);
+  }, []);
+
+  // Si la viñeta que se esperaba se quedó sin audio (falló la generación), se salta.
+  useEffect(() => {
+    if (playback?.mode !== 'story') return;
+    const current = panels.find((panel) => panel.order === playback.order);
+    if (current && !isNarratable(current)) playInStory(nextAfter(current.order));
+  }, [panels, playback, playInStory, nextAfter]);
+
+  // Al abrir el review, la historia se narra sola desde la primera viñeta
+  // (sin desplazarse: primero se ve el ranking).
+  const autoStarted = useRef(false);
+  useEffect(() => {
+    if (!autoPlay || autoStarted.current) return;
+    autoStarted.current = true;
+    setStoryPlayed(true);
+    playInStory(nextAfter(null), false);
+  }, [autoPlay, playInStory, nextAfter]);
+
+  const currentPanel =
+    playback?.mode === 'story' ? panels.find((panel) => panel.order === playback.order) : undefined;
+  const storyStatus = !currentPanel
+    ? null
+    : currentPanel.mediaStatus === 'pending'
+      ? `⏳ Waiting for panel ${currentPanel.order + 1}...`
+      : `🔊 Panel ${currentPanel.order + 1} of ${panels.length}`;
 
   const characterNames = (ids: string[]) =>
     ids
@@ -86,14 +299,36 @@ const StoryReviewView: React.FC<StoryReviewViewProps> = ({
   return (
     <View style={styles.container}>
       <ScrollView
+        ref={scrollRef}
         style={styles.content}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.page}>
+        <View
+          style={styles.page}
+          onLayout={(event) => {
+            pageY.current = event.nativeEvent.layout.y;
+          }}
+        >
           <View style={styles.hero}>
             <Text style={styles.heroEmoji}>🎉</Text>
-            <Text style={styles.title}>Your story is ready!</Text>
+            <Text style={styles.title}>{title}</Text>
+            {manifest.title && <Text style={styles.storyTitle}>“{manifest.title}”</Text>}
+            {likes && (
+              <TouchableOpacity
+                style={[styles.likeButton, likes.likedByMe && styles.likeButtonActive]}
+                onPress={onToggleLike}
+                disabled={!onToggleLike}
+                accessibilityRole="button"
+                accessibilityState={{ selected: likes.likedByMe }}
+                accessibilityLabel={likes.likedByMe ? 'Unlike this story' : 'Like this story'}
+              >
+                <Text style={styles.likeEmoji}>{likes.likedByMe ? '❤️' : '🤍'}</Text>
+                <Text style={[styles.likeText, likes.likedByMe && styles.likeTextActive]}>
+                  {likes.likedByMe ? 'Liked' : 'Like'} · {likes.count}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           <View style={styles.section}>
@@ -137,54 +372,84 @@ const StoryReviewView: React.FC<StoryReviewViewProps> = ({
             </View>
           )}
 
-          <View style={styles.section}>
+          <View
+            style={styles.section}
+            onLayout={(event) => {
+              storyY.current = event.nativeEvent.layout.y;
+            }}
+          >
             <Text style={styles.sectionTitle}>The story</Text>
-            {manifest.panels.map((panel) => (
-              <StoryPanelCard
+            {panels.map((panel) => (
+              <View
                 key={panel.order}
-                order={panel.order}
-                authorName={panel.author.name}
-                scene={panel.scene}
-                text={panel.finalText}
-                characterNames={characterNames(panel.characterIds)}
-                score={panel.score.total}
-                reactions={panel.reactions}
-                reactionOptions={reactionOptions}
-                userId={userId}
-                onReact={(emoji) => onReact(panel.order, emoji)}
+                onLayout={(event) => {
+                  panelY.current[panel.order] = event.nativeEvent.layout.y;
+                }}
               >
-                {/* Fase 4b del backend: por ahora las viñetas no traen imagen. */}
-                {panel.imageUrl && (
-                  <Image
-                    source={{ uri: panel.imageUrl }}
-                    style={styles.panelImage}
-                    resizeMode="cover"
-                  />
-                )}
-                <PanelDetails panel={panel} />
-              </StoryPanelCard>
+                <ReviewPanelItem
+                  panel={panel}
+                  characterNames={characterNames(panel.characterIds)}
+                  userId={userId}
+                  reactionOptions={reactionOptions}
+                  onReact={onReact}
+                  playRequestId={playRequest?.order === panel.order ? playRequest.id : null}
+                  onToggle={handlePanelToggle}
+                  onEnded={handlePanelEnded}
+                />
+              </View>
             ))}
           </View>
         </View>
       </ScrollView>
 
-      <View style={styles.actions}>
-        <View style={styles.actionsPage}>
-          <Button
-            title={creating ? 'Creating...' : 'New story'}
-            icon="BookOpenIcon"
-            onPress={onNewStory}
-            disabled={creating}
-            style={styles.actionButton}
-          />
-          <Button
-            title="Back to menu"
-            variant="outlined"
-            onPress={onBackToMenu}
-            style={styles.actionButton}
-          />
+      {(hasNarration || onNewStory || onBack) && (
+        <View style={styles.actions}>
+          {hasNarration && (
+            <View style={styles.storyPlayer}>
+              <Text style={styles.storyPlayerText} numberOfLines={1}>
+                {storyStatus ?? '🎧 Listen to the whole story'}
+              </Text>
+              {storyStatus ? (
+                <Button
+                  title="Stop"
+                  icon="PauseIcon"
+                  variant="outlined"
+                  size="small"
+                  onPress={stopStory}
+                />
+              ) : (
+                <Button
+                  title={storyPlayed ? 'Replay story' : 'Play story'}
+                  icon={storyPlayed ? 'ArrowCounterClockwiseIcon' : 'PlayIcon'}
+                  size="small"
+                  onPress={playStory}
+                />
+              )}
+            </View>
+          )}
+          {(onNewStory || onBack) && (
+            <View style={styles.actionsPage}>
+              {onNewStory && (
+                <Button
+                  title={creating ? 'Creating...' : 'New story'}
+                  icon="BookOpenIcon"
+                  onPress={onNewStory}
+                  disabled={creating}
+                  style={styles.actionButton}
+                />
+              )}
+              {onBack && (
+                <Button
+                  title={backLabel}
+                  variant="outlined"
+                  onPress={onBack}
+                  style={styles.actionButton}
+                />
+              )}
+            </View>
+          )}
         </View>
-      </View>
+      )}
     </View>
   );
 };
@@ -220,6 +485,39 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
       fontFamily: theme.fontFamily.headingExtra,
       color: theme.color.textPrimary,
       textAlign: 'center',
+    },
+    storyTitle: {
+      fontSize: theme.fontSize.xl,
+      fontFamily: theme.fontFamily.bodyBold,
+      color: theme.color.primary,
+      textAlign: 'center',
+    },
+    likeButton: {
+      marginTop: theme.spacing.xs,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.xs,
+      paddingVertical: theme.spacing.xs,
+      paddingHorizontal: theme.spacing.md,
+      borderRadius: theme.radius.full,
+      borderWidth: theme.borderWidth.xs,
+      borderColor: theme.color.border,
+      backgroundColor: theme.color.surface,
+    },
+    likeButtonActive: {
+      borderColor: theme.color.error,
+      backgroundColor: theme.color.errorSubtle,
+    },
+    likeEmoji: {
+      fontSize: theme.fontSize.lg,
+    },
+    likeText: {
+      fontSize: theme.fontSize.md,
+      fontFamily: theme.fontFamily.bodyBold,
+      color: theme.color.textSecondary,
+    },
+    likeTextActive: {
+      color: theme.color.error,
     },
     section: {
       gap: theme.spacing.sm,
@@ -280,12 +578,6 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
       fontFamily: theme.fontFamily.bodyBold,
       color: theme.color.textPrimary,
     },
-    panelImage: {
-      width: '100%',
-      aspectRatio: 4 / 3,
-      borderRadius: theme.radius.md,
-      backgroundColor: theme.color.border,
-    },
     details: {
       gap: theme.spacing.xs,
     },
@@ -316,6 +608,20 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
       borderTopColor: theme.color.border,
       backgroundColor: theme.color.background,
       alignItems: 'center',
+    },
+    storyPlayer: {
+      width: '100%',
+      maxWidth: PAGE_MAX_WIDTH,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+      marginBottom: theme.spacing.sm,
+    },
+    storyPlayerText: {
+      flex: 1,
+      fontSize: theme.fontSize.md,
+      fontFamily: theme.fontFamily.bodyBold,
+      color: theme.color.textPrimary,
     },
     actionsPage: {
       width: '100%',

@@ -14,7 +14,7 @@ export interface StoryMenuViewProps {
 }
 
 const HOW_IT_WORKS = [
-  '✍️ Take turns writing one panel of a comic in English.',
+  '✍️ Take turns writing one panel of a comic in English — or write them all yourself.',
   '🧑‍🏫 An AI teacher checks your English before you confirm.',
   '🎭 Create characters that everyone can use in their panels.',
   '🏆 Fewer mistakes, more points. Read the whole story at the end!',
@@ -40,7 +40,7 @@ const StoryMenuView: React.FC<StoryMenuViewProps> = ({ creating, joining, onCrea
           <View style={styles.hero}>
             <Text style={styles.heroEmoji}>📖</Text>
             <Text style={styles.title}>Story Mode</Text>
-            <Text style={styles.subtitle}>Write a comic together with your friends.</Text>
+            <Text style={styles.subtitle}>Write a comic on your own or with your friends.</Text>
           </View>
 
           <View style={styles.card}>

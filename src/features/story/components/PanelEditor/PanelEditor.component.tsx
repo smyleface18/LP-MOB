@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '@/app/providers/theme.provider';
 import Button from '@/shared/components/Button/Button.component';
@@ -7,6 +7,7 @@ import CharacterPicker, {
   CharacterPickerLimits,
 } from '../CharacterPicker/CharacterPicker.component';
 import CorrectionList from '../CorrectionList';
+import { insertName } from '../../utils/insertName';
 import { CharacterSheet, PanelReviewResult, StoryCharacter } from '../../types';
 
 export interface PanelEditorProps {
@@ -48,6 +49,9 @@ export interface PanelEditorProps {
  * Editor de la viñeta del autor: escenario, texto, personajes, revisión con
  * IA (hasta `attemptsLeft` veces) y confirmación. Confirmar usa el último
  * borrador revisado, no lo que está escrito si cambió después.
+ *
+ * Al marcar o crear un personaje, su nombre se inserta en el texto donde está
+ * el cursor (si el texto todavía no lo nombra).
  */
 const PanelEditor: React.FC<PanelEditorProps> = ({
   text,
@@ -81,6 +85,26 @@ const PanelEditor: React.FC<PanelEditorProps> = ({
   const canSubmit = !locked && !validationError && attemptsLeft > 0 && (isDirty || !hasDraft);
   const canConfirm = !locked && hasDraft;
 
+  // Posición del cursor en el texto: ahí se inserta el nombre de un personaje.
+  const cursor = useRef<number | null>(null);
+  const addNameToText = (name: string) => {
+    const next = insertName(text, name, cursor.current, limits.maxChars);
+    if (next === text) return;
+    if (cursor.current !== null) cursor.current += next.length - text.length;
+    onTextChange(next);
+  };
+
+  const handleToggleCharacter = (characterId: string) => {
+    const character = cast.find((c) => c.id === characterId);
+    if (character && !characterIds.includes(characterId)) addNameToText(character.name);
+    onToggleCharacter(characterId);
+  };
+
+  const handleAddCharacter = (character: CharacterSheet) => {
+    addNameToText(character.name);
+    onAddCharacter(character);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.field}>
@@ -107,6 +131,9 @@ const PanelEditor: React.FC<PanelEditorProps> = ({
           placeholder="What happens next in the story?"
           value={text}
           onChangeText={onTextChange}
+          onSelectionChange={(event) => {
+            cursor.current = event.nativeEvent.selection.end;
+          }}
           maxLength={limits.maxChars}
           multiline
           textAlignVertical="top"
@@ -118,9 +145,9 @@ const PanelEditor: React.FC<PanelEditorProps> = ({
       <CharacterPicker
         cast={cast}
         selectedIds={characterIds}
-        onToggle={onToggleCharacter}
+        onToggle={handleToggleCharacter}
         newCharacters={newCharacters}
-        onAddNew={onAddCharacter}
+        onAddNew={handleAddCharacter}
         onRemoveNew={onRemoveCharacter}
         limits={limits.characters}
         disabled={locked}

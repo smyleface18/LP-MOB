@@ -6,6 +6,7 @@ import {
   AuthorStatusEvent,
   DraftInput,
   PanelConfirmedEvent,
+  PanelMediaReadyEvent,
   PanelReactionEvent,
   PanelReviewResult,
   ReviewManifest,
@@ -15,6 +16,7 @@ import {
   StoryErrorEvent,
   StoryGameState,
   StoryLobby,
+  StoryProcessingEvent,
   StoryStatus,
   TurnStartedEvent,
 } from '../types';
@@ -102,6 +104,8 @@ export const useStoryGame = () => {
       dispatch({ type: 'panelConfirmed', event });
     const onReaction = (event: PanelReactionEvent) => dispatch({ type: 'reaction', event });
     const onManifest = (manifest: ReviewManifest) => dispatch({ type: 'manifest', manifest });
+    const onProcessing = (event: StoryProcessingEvent) => dispatch({ type: 'processing', event });
+    const onPanelMedia = (event: PanelMediaReadyEvent) => dispatch({ type: 'panelMedia', event });
     const onGameState = (gameState: StoryGameState) =>
       dispatch({ type: 'gameState', state: gameState });
     const onStoryError = (error: StoryErrorEvent) => {
@@ -123,6 +127,8 @@ export const useStoryGame = () => {
     storySocketService.on('panelConfirmed', onPanelConfirmed);
     storySocketService.on('panelReaction', onReaction);
     storySocketService.on('storyReviewReady', onManifest);
+    storySocketService.on('storyProcessing', onProcessing);
+    storySocketService.on('panelMediaReady', onPanelMedia);
     storySocketService.on('gameState', onGameState);
     storySocketService.on('storyError', onStoryError);
 
@@ -141,6 +147,8 @@ export const useStoryGame = () => {
       storySocketService.off('panelConfirmed', onPanelConfirmed);
       storySocketService.off('panelReaction', onReaction);
       storySocketService.off('storyReviewReady', onManifest);
+      storySocketService.off('storyProcessing', onProcessing);
+      storySocketService.off('panelMediaReady', onPanelMedia);
       storySocketService.off('gameState', onGameState);
       storySocketService.off('storyError', onStoryError);
     };

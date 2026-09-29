@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '@/app/providers/theme.provider';
 import ReactionBar from '../ReactionBar';
 import { PanelReactions } from '../../types';
@@ -23,9 +23,42 @@ export interface StoryPanelCardProps {
   reactionOptions?: string[];
   userId?: string;
   onReact?: (emoji: string) => void;
+  /** Dibujo de la viñeta (URL firmada), arriba del texto. */
+  imageUrl?: string | null;
+  /** Reemplaza el texto plano (ej. el texto narrado con la palabra resaltada). */
+  textNode?: React.ReactNode;
   /** Detalle extra debajo del texto (ej. correcciones en el review). */
   children?: React.ReactNode;
 }
+
+/** Proporción mientras no se conoce la real: la de las imágenes de FLUX.1 schnell (1024×1024). */
+const DEFAULT_IMAGE_RATIO = 1;
+
+/**
+ * Proporción (ancho / alto) real de la imagen, para que el marco la muestre
+ * entera: los dibujos pueden venir cuadrados (FLUX) o 4:3 (Nova Canvas, en
+ * historietas viejas). La URL firmada cambia al volver a firmarse; se lee el
+ * tamaño de nuevo (sale de la caché del navegador o del sistema).
+ */
+const useImageRatio = (imageUrl?: string | null) => {
+  const [ratio, setRatio] = useState(DEFAULT_IMAGE_RATIO);
+  useEffect(() => {
+    if (!imageUrl) return;
+    let active = true;
+    Image.getSize(
+      imageUrl,
+      (width, height) => {
+        if (active && width > 0 && height > 0) setRatio(width / height);
+      },
+      // Si no se puede leer, queda la proporción por defecto (y `contain` evita recortes).
+      () => {},
+    );
+    return () => {
+      active = false;
+    };
+  }, [imageUrl]);
+  return ratio;
+};
 
 const StoryPanelCard: React.FC<StoryPanelCardProps> = ({
   order,
@@ -39,10 +72,13 @@ const StoryPanelCard: React.FC<StoryPanelCardProps> = ({
   reactionOptions = [],
   userId = '',
   onReact,
+  imageUrl,
+  textNode,
   children,
 }) => {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
+  const imageRatio = useImageRatio(imageUrl);
 
   return (
     <View style={[styles.card, variant === 'draft' && styles.draft]}>
@@ -54,8 +90,17 @@ const StoryPanelCard: React.FC<StoryPanelCardProps> = ({
         {score !== undefined && <Text style={styles.score}>{score} pts</Text>}
       </View>
 
+      {!!imageUrl && (
+        <Image
+          source={{ uri: imageUrl }}
+          style={[styles.image, { aspectRatio: imageRatio }]}
+          // `contain`: nunca recorta, aunque la proporción todavía no se conozca.
+          resizeMode="contain"
+          accessibilityLabel={scene}
+        />
+      )}
       {!!scene && <Text style={styles.scene}>🎬 {scene}</Text>}
-      <Text style={styles.text}>{text}</Text>
+      {textNode ?? <Text style={styles.text}>{text}</Text>}
 
       {characterNames.length > 0 && (
         <View style={styles.characters}>
@@ -119,6 +164,12 @@ const createStyles = (theme: ReturnType<typeof useTheme>) =>
       paddingHorizontal: theme.spacing.xs,
       paddingVertical: 2,
       borderRadius: theme.radius.sm,
+    },
+    // La proporción la pone useImageRatio (la real de cada imagen).
+    image: {
+      width: '100%',
+      borderRadius: theme.radius.md,
+      backgroundColor: theme.color.border,
     },
     scene: {
       fontSize: theme.fontSize.sm,

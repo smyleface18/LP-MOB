@@ -24,9 +24,11 @@ export interface StoryLobbyViewProps {
 
 /** Por qué el anfitrión todavía no puede empezar, o null si puede. */
 const startBlocker = (lobby: StoryLobby, rules: StoryRules | null): string | null => {
-  const minPlayers = rules?.players.min ?? 2;
+  const minPlayers = rules?.players.min ?? 1;
   const connected = lobby.players.filter((player) => player.connected).length;
-  if (connected < minPlayers) return `You need at least ${minPlayers} connected players.`;
+  if (connected < minPlayers) {
+    return `You need at least ${minPlayers} connected ${minPlayers === 1 ? 'player' : 'players'}.`;
+  }
   if (lobby.config.panelsCount < lobby.players.length) {
     return 'There must be at least one panel per player.';
   }
@@ -172,6 +174,12 @@ const StoryLobbyView: React.FC<StoryLobbyViewProps> = ({
             </Text>
             {!blocker && !isHost && (
               <Text style={styles.hint}>Waiting for the host to start the story...</Text>
+            )}
+            {!blocker && isHost && lobby.players.length === 1 && (
+              <Text style={styles.hint}>
+                Playing solo: you will write all {lobby.config.panelsCount} panels. Share the code
+                if you want friends to join.
+              </Text>
             )}
           </View>
         </View>

@@ -1,6 +1,7 @@
 import { Level } from '@/shared/types/common';
 import {
   ReviewManifest,
+  SpeechMark,
   StoryCharacter,
   StoryLobby,
   StoryPanelSummary,
@@ -10,8 +11,24 @@ import {
 
 /** Datos de ejemplo para las stories de las vistas del modo Historieta. */
 
+/** Speech marks como las de Polly: una por palabra, cada 350 ms. */
+export const speechMarksFor = (text: string): SpeechMark[] => {
+  const marks: SpeechMark[] = [];
+  const words = /[A-Za-z']+/g;
+  let match: RegExpExecArray | null;
+  while ((match = words.exec(text))) {
+    marks.push({
+      time: marks.length * 350,
+      start: match.index,
+      end: match.index + match[0].length,
+      value: match[0],
+    });
+  }
+  return marks;
+};
+
 export const MOCK_RULES: StoryRules = {
-  players: { min: 2, max: 6 },
+  players: { min: 1, max: 6 },
   config: {
     panelsCount: { min: 4, max: 10 },
     turnDurationsSec: [60, 90, 120, 180],
@@ -99,6 +116,7 @@ export const MOCK_STORY_SO_FAR: StoryPanelSummary[] = [
 
 export const MOCK_MANIFEST: ReviewManifest = {
   storyId: 'car_tree_green',
+  title: 'The Missing Key',
   gameId: 'car_tree_green',
   characters: MOCK_CAST,
   ranking: [
@@ -157,10 +175,12 @@ export const MOCK_MANIFEST: ReviewManifest = {
         total: 82,
       },
       reactions: { 'user-2': '😮', 'user-3': '❤️' },
-      audioUrl: null,
-      speechMarks: null,
-      imageUrl: null,
-      mediaStatus: 'none',
+      audioUrl: 'https://example.com/story/panel-0.mp3',
+      speechMarks: speechMarksFor(
+        'Max the little robot woke up alone in an old workshop full of dusty tools.',
+      ),
+      imageUrl: 'https://picsum.photos/seed/linguaplay-workshop/1024/768',
+      mediaStatus: 'ready',
     },
     {
       order: 1,
@@ -179,10 +199,11 @@ export const MOCK_MANIFEST: ReviewManifest = {
         total: 150,
       },
       reactions: { 'user-1': '😂' },
+      // Sigue en la cola: llega por `panelMediaReady`.
       audioUrl: null,
       speechMarks: null,
       imageUrl: null,
-      mediaStatus: 'none',
+      mediaStatus: 'pending',
     },
   ],
 };

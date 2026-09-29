@@ -2,11 +2,9 @@ import React, { useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/app/providers/theme.provider';
-import { withAlpha } from '@/shared/ui/theme/primitives';
 import { Loading } from '@/shared/components/Loading';
-import { Icon } from '@/shared/components/Icon';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
-import { ExitGameButton } from '@/features/game/components/ExitGameButton';
+import StoryHeader, { StoryHeaderChip } from '../../components/StoryHeader';
 import { useStoryGame } from '../../hooks/useStoryGame';
 import { StoryStatus } from '../../types';
 import { useStoryDraft } from './useStoryDraft';
@@ -14,6 +12,7 @@ import StoryMenuView from './StoryMenu.view';
 import StoryLobbyView from './StoryLobby.view';
 import StoryTurnView from './StoryTurn.view';
 import StoryReviewView from './StoryReview.view';
+import StoryProcessingView from './StoryProcessing.view';
 
 /** Emojis por defecto si todavía no llegaron las reglas del servidor. */
 const DEFAULT_REACTIONS = ['👏', '😂', '😮', '❤️', '🔥'];
@@ -67,7 +66,8 @@ const StoryScreen: React.FC = () => {
           onReact={actions.reactToPanel}
           creating={state.pending === 'create'}
           onNewStory={actions.createGame}
-          onBackToMenu={actions.backToMenu}
+          onBack={actions.backToMenu}
+          autoPlay
         />
       );
     }
@@ -123,60 +123,26 @@ const StoryScreen: React.FC = () => {
     }
 
     // PROCESSING, o REVIEW/FINISHED mientras llega el manifiesto.
-    return (
-      <View style={styles.center}>
-        <Loading size={80} />
-        <Text style={styles.centerText}>Putting your story together...</Text>
-      </View>
-    );
+    return <StoryProcessingView processing={state.processing} />;
   };
 
   const message = state.error ?? state.notice;
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerTopRow}>
-          {!inGame && navigation.canGoBack() ? (
-            <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              style={styles.headerButton}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              accessibilityRole="button"
-              accessibilityLabel="Back to the arena"
-            >
-              <Icon name="ArrowLeftIcon" size="md" color={theme.color.onSecondary} />
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.headerButtonSpacer} />
-          )}
-          <Text style={styles.headerTitle}>📖 Story Mode</Text>
-          {inGame ? (
-            <ExitGameButton
-              onPress={() => setConfirmLeave(true)}
-              color={theme.color.onSecondary}
-              style={styles.headerButton}
-            />
-          ) : (
-            <View style={styles.headerButtonSpacer} />
-          )}
-        </View>
-        <View style={styles.chips}>
-          <View style={styles.chip}>
-            <View
-              style={[
-                styles.statusDot,
-                { backgroundColor: state.connected ? theme.color.success : theme.color.error },
-              ]}
-            />
-            <Text style={styles.chipText}>{state.connected ? 'Connected' : 'Reconnecting...'}</Text>
-          </View>
-          {lobby && inGame && <Text style={[styles.chip, styles.chipText]}>{lobby.gameId}</Text>}
-          {status === StoryStatus.PLAYING && (
-            <Text style={[styles.chip, styles.chipText]}>Score: {myScore}</Text>
-          )}
-        </View>
-      </View>
+      <StoryHeader
+        title="📖 Story Mode"
+        onBack={!inGame && navigation.canGoBack() ? () => navigation.goBack() : undefined}
+        backLabel="Back to the arena"
+        onExit={inGame ? () => setConfirmLeave(true) : undefined}
+      >
+        <StoryHeaderChip
+          label={state.connected ? 'Connected' : 'Reconnecting...'}
+          dotColor={state.connected ? theme.color.success : theme.color.error}
+        />
+        {lobby && inGame && <StoryHeaderChip label={lobby.gameId} />}
+        {status === StoryStatus.PLAYING && <StoryHeaderChip label={`Score: ${myScore}`} />}
+      </StoryHeader>
 
       {renderBody()}
 
@@ -214,62 +180,6 @@ const createStyles = (theme: ReturnType<typeof useTheme>) =>
     container: {
       flex: 1,
       backgroundColor: theme.color.background,
-    },
-    header: {
-      padding: theme.spacing.md,
-      paddingTop: theme.spacing.xl,
-      backgroundColor: theme.color.secondaryButton,
-      borderBottomLeftRadius: theme.radius.lg,
-      borderBottomRightRadius: theme.radius.lg,
-      gap: theme.spacing.sm,
-      ...theme.shadow.sm,
-    },
-    headerTopRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-    },
-    headerTitle: {
-      fontSize: theme.fontSize.xl,
-      fontFamily: theme.fontFamily.headingExtra,
-      color: theme.color.onSecondary,
-    },
-    headerButton: {
-      width: theme.spacing.xl,
-      height: theme.spacing.xl,
-      borderRadius: theme.radius.full,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: withAlpha(theme.color.onSecondary, 0.12),
-    },
-    headerButtonSpacer: {
-      width: theme.spacing.xl,
-    },
-    chips: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      flexWrap: 'wrap',
-      gap: theme.spacing.sm,
-    },
-    chip: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: withAlpha(theme.color.onSecondary, 0.12),
-      borderRadius: theme.radius.full,
-      paddingHorizontal: theme.spacing.sm,
-      paddingVertical: theme.spacing.xs / 2,
-      overflow: 'hidden',
-    },
-    chipText: {
-      fontSize: theme.fontSize.sm,
-      fontFamily: theme.fontFamily.bodyBold,
-      color: theme.color.onSecondary,
-    },
-    statusDot: {
-      width: 8,
-      height: 8,
-      borderRadius: theme.radius.full,
-      marginRight: theme.spacing.xs,
     },
     center: {
       flex: 1,

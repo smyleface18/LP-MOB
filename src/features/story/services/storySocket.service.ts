@@ -29,7 +29,9 @@ const SERVER_EVENTS: (keyof StoryServerEvents)[] = [
   'panelDraftReviewed',
   'panelConfirmed',
   'panelReaction',
+  'storyProcessing',
   'storyReviewReady',
+  'panelMediaReady',
   'gameState',
   'storyError',
 ];

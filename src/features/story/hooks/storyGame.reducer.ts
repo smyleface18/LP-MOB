@@ -3,6 +3,7 @@ import {
   DraftInput,
   MyTurn,
   PanelConfirmedEvent,
+  PanelMediaReadyEvent,
   PanelReactionEvent,
   PanelReviewResult,
   ReviewManifest,
@@ -12,6 +13,7 @@ import {
   StoryGameState,
   StoryLobby,
   StoryPanelSummary,
+  StoryProcessingEvent,
   StoryRules,
   StoryStatus,
   StoryTurn,
@@ -40,6 +42,8 @@ export interface StoryState {
   /** Última viñeta confirmada (para mostrar su puntaje). */
   lastConfirmed: PanelConfirmedEvent | null;
   manifest: ReviewManifest | null;
+  /** Avance del audio y las imágenes mientras la partida está en PROCESSING. */
+  processing: StoryProcessingEvent | null;
   pending: StoryPendingAction | null;
   error: string | null;
   /** Aviso que no es un error del jugador (ej. lo expulsaron, la partida se abandonó). */
@@ -59,6 +63,7 @@ export const INITIAL_STORY_STATE: StoryState = {
   sharedDraft: null,
   lastConfirmed: null,
   manifest: null,
+  processing: null,
   pending: null,
   error: null,
   notice: null,
@@ -80,6 +85,8 @@ export type StoryStateAction =
   | { type: 'panelConfirmed'; event: PanelConfirmedEvent }
   | { type: 'reaction'; event: PanelReactionEvent }
   | { type: 'manifest'; manifest: ReviewManifest }
+  | { type: 'processing'; event: StoryProcessingEvent }
+  | { type: 'panelMedia'; event: PanelMediaReadyEvent }
   | { type: 'gameState'; state: StoryGameState }
   | { type: 'pending'; action: StoryPendingAction | null }
   | { type: 'error'; message: string | null }
@@ -276,10 +283,39 @@ export function storyGameReducer(state: StoryState, action: StoryStateAction): S
       return { ...state, storySoFar: withReaction(state.storySoFar, event) };
     }
 
+    case 'processing':
+      return state.lobby?.gameId === action.event.gameId
+        ? { ...state, processing: action.event }
+        : state;
+
+    // Llega en REVIEW para las viñetas que faltaban (la primera viene en el manifiesto).
+    case 'panelMedia': {
+      const { event } = action;
+      if (state.manifest?.gameId !== event.gameId) return state;
+      return {
+        ...state,
+        manifest: {
+          ...state.manifest,
+          panels: state.manifest.panels.map((panel) =>
+            panel.order === event.order
+              ? {
+                  ...panel,
+                  mediaStatus: event.mediaStatus,
+                  audioUrl: event.audioUrl,
+                  imageUrl: event.imageUrl,
+                  speechMarks: event.speechMarks,
+                }
+              : panel,
+          ),
+        },
+      };
+    }
+
     case 'manifest':
       return {
         ...state,
         manifest: action.manifest,
+        processing: null,
         turn: null,
         myTurn: null,
         sharedDraft: null,
