@@ -1,11 +1,9 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import UserDashboardScreen from '@/features/auth/screens/UserDashboard';
-import AdminDashboardScreen from '@/features/auth/screens/AdminDashboard';
-import ProfileScreen from '@/features/auth/screens/Profile';
-import RankingScreen from '@/features/ranking/screens/Ranking';
 import { UserRoles } from '@/features/auth/types';
 import { ArenaStack } from './ArenaStack';
+import { ExploreStack } from './ExploreStack';
+import { ProfileStack } from './ProfileStack';
 import { TabBarMobile } from './Tab-Bar-Mobile/TabBarMobile';
 
 const Tab = createBottomTabNavigator();
@@ -15,23 +13,23 @@ export interface MainTabsProps {
 }
 
 /**
- * Variante nativa (iOS/Android) del menú principal: los 4 tabs base con
- * bottom nav. Las secciones de administración (Categorías/Preguntas) son
- * solo de escritorio y viven en MainTabs.web.tsx — Metro resuelve ese
- * archivo en su lugar al bundlear para web, así que ManageCategories,
- * ManageQuestions, etc. nunca entran al bundle nativo.
+ * Variante nativa (iOS/Android) del menú principal, con bottom nav: Arena,
+ * Explorar (catálogo de historietas) y Perfil, el dashboard personal
+ * (estadísticas, sus historietas, cerrar sesión). Igual para jugadores y admins.
+ * Todo lo de administración (Dashboard de admin, Categorías, Preguntas,
+ * Historietas) es solo web, para el rol ADMIN, y vive en MainTabs.web.tsx:
+ * Metro resuelve ese archivo en su lugar al bundlear para web, así que nunca
+ * entra al bundle nativo. `role` se recibe igual que en web, pero acá no cambia nada.
  */
-export const MainTabs: React.FC<MainTabsProps> = ({ role }) => (
-  <Tab.Navigator
-    screenOptions={{ headerShown: false }}
-    tabBar={(props) => <TabBarMobile {...props} />}
-  >
-    <Tab.Screen
-      name="Dashboard"
-      component={role === UserRoles.ADMIN ? AdminDashboardScreen : UserDashboardScreen}
-    />
-    <Tab.Screen name="Arena" component={ArenaStack} />
-    <Tab.Screen name="Ranking" component={RankingScreen} />
-    <Tab.Screen name="Perfil" component={ProfileScreen} />
-  </Tab.Navigator>
-);
+export const MainTabs: React.FC<MainTabsProps> = () => {
+  return (
+    <Tab.Navigator
+      screenOptions={{ headerShown: false }}
+      tabBar={(props) => <TabBarMobile {...props} />}
+    >
+      <Tab.Screen name="Arena" component={ArenaStack} />
+      <Tab.Screen name="Explorar" component={ExploreStack} />
+      <Tab.Screen name="Perfil" component={ProfileStack} />
+    </Tab.Navigator>
+  );
+};

@@ -1,27 +1,26 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useGame } from '@/features/game/hooks/useGame';
+import { usePlayerStats } from '@/features/stats/useStats';
 import { useUser } from '../../hooks/useUser';
 import { useAuth } from '../../hooks/useAuth';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
-import { UserDashboardView, LevelProgress } from './UserDashboard.view';
+import { UserDashboardView } from './UserDashboard.view';
 
 // Racha con la que "Streak Power" llega al 100%.
 const STREAK_POWER_FULL = 10;
 
-// TODO: reemplazar por datos reales cuando el backend exponga estas métricas.
-const AVERAGE_SCORE = 76;
-
-const LEVEL_PROGRESS: LevelProgress[] = [
-  { label: 'Beginner', percentage: 65 },
-  { label: 'Intermediate', percentage: 25 },
-  { label: 'Advanced', percentage: 10 },
-];
-
+/**
+ * Tab "Perfil" (jugadores y admins): el dashboard personal con las
+ * estadísticas reales (`GET /stats/me`), el acceso a sus historietas y el
+ * cierre de sesión.
+ */
 const UserDashboardScreen = () => {
   const navigation = useNavigation();
   const { state } = useGame();
   const { user, getMe } = useUser();
+  // Se recargan solas al volver a esta pantalla (ej. después de una partida).
+  const stats = usePlayerStats();
   const [refreshing, setRefreshing] = useState(false);
 
   // getMe se recrea en cada render: el ref da siempre la versión actual sin
@@ -29,22 +28,23 @@ const UserDashboardScreen = () => {
   const getMeRef = useRef(getMe);
   getMeRef.current = getMe;
 
+  // El usuario (nombre y avatar) también se actualiza al volver.
+  useFocusEffect(
+    useCallback(() => {
+      void getMeRef.current();
+    }, []),
+  );
+
+  const { refresh: refreshStats } = stats;
   const refresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await getMeRef.current();
+      await Promise.all([getMeRef.current(), refreshStats()]);
     } finally {
       setRefreshing(false);
     }
-  }, []);
+  }, [refreshStats]);
 
-  // Al volver al dashboard (ej. después de una partida) las métricas se
-  // actualizan solas; el botón es para pedirlas a mano.
-  useFocusEffect(
-    useCallback(() => {
-      void refresh();
-    }, [refresh]),
-  );
   const { handleSignOut, loading: signOutLoading } = useAuth();
   const [confirmSignOutVisible, setConfirmSignOutVisible] = useState(false);
 
@@ -53,9 +53,8 @@ const UserDashboardScreen = () => {
     handleSignOut();
   };
 
-  const gamesWon = user?.gamesWon ?? 0;
-  const gamesPlayed = user?.gamesPlayed ?? 0;
-  const currentStreak = user?.currentStreak ?? 0;
+  const data = stats.data;
+  const currentStreak = data?.currentStreak ?? user?.currentStreak ?? 0;
 
   return (
     <>
@@ -64,23 +63,33 @@ const UserDashboardScreen = () => {
         avatarUrl={user?.avatar?.url}
         isConnected={state.user.isConnected}
         stats={{
-          scoreLabel: `${user?.score ?? 0} XP`,
-          gamesWon,
+          scoreLabel: `${data?.score ?? user?.score ?? 0} XP`,
+          gamesWon: data?.gamesWon ?? user?.gamesWon ?? 0,
           currentStreak,
-          categoriesCount: 0,
-          averageScore: AVERAGE_SCORE,
-          winRatePercentage: gamesPlayed > 0 ? Math.round((gamesWon / gamesPlayed) * 100) : 0,
+          categoriesCount: data?.trivia.categoriesPracticed ?? 0,
+          accuracyPercentage: data?.trivia.accuracy ?? 0,
+          winRatePercentage: data?.winRate ?? 0,
           streakPowerPercentage: Math.min(
             Math.round((currentStreak / STREAK_POWER_FULL) * 100),
             100,
           ),
         }}
-        levelProgress={LEVEL_PROGRESS}
-        onHowToPlay={() => navigation.navigate('GameScreen' as never)}
+        levelProgress={(data?.levels ?? []).map((level) => ({
+          label: `${level.level} · ${level.answered} answers`,
+          percentage: level.accuracy,
+        }))}
+        stories={{
+          played: data?.stories.played ?? 0,
+          panelsWritten: data?.stories.panelsWritten ?? 0,
+          averagePanelScore: data?.stories.averagePanelScore ?? 0,
+        }}
+        statsError={stats.error}
+        // El historial está en el stack de Perfil: "volver" regresa acá.
+        onOpenStories={() => navigation.navigate('StoryHistory' as never)}
         onSignOut={() => setConfirmSignOutVisible(true)}
         signOutLoading={signOutLoading}
         onRefresh={refresh}
-        refreshing={refreshing}
+        refreshing={refreshing || (stats.loading && !data)}
       />
 
       <ConfirmDialog

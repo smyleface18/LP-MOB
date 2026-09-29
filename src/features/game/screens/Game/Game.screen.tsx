@@ -1,10 +1,12 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Icon } from '@/shared/components/Icon';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/app/providers/theme.provider';
 import { withAlpha } from '@/shared/ui/theme/primitives';
 import { useGame } from '../../hooks/useGame';
 import { Loading } from '@/shared/components/Loading';
+import Button from '@/shared/components/Button/Button.component';
 import { ExitGameButton } from '../../components/ExitGameButton';
 import { useAnswerFeedback } from './useAnswerFeedback';
 import GameLobby from './GameLobby.view';
@@ -45,6 +47,9 @@ const GameScreen: React.FC = () => {
         <Text style={styles.loadingText}>Connecting to game server...</Text>
         <Text style={styles.userId}>Your ID: {state.user.userId}</Text>
         {state.error && <Text style={styles.errorText}>{state.error}</Text>}
+        {navigation.canGoBack() && (
+          <Button title="Back to Arena" variant="outlined" onPress={() => navigation.goBack()} />
+        )}
       </View>
     );
   }
@@ -56,6 +61,8 @@ const GameScreen: React.FC = () => {
         score={state.user.matchScore}
         roomId={state.roomId}
         onLeave={state.roomId ? actions.leaveRoom : undefined}
+        // Sin sala, se puede volver al inicio de Arena (elegir otro modo).
+        onBack={!state.roomId && navigation.canGoBack() ? () => navigation.goBack() : undefined}
       />
 
       {!state.roomId && !state.status && (
@@ -65,7 +72,6 @@ const GameScreen: React.FC = () => {
           onCreateSinglePlayer={() => actions.createGame(selectedLevel, ModeMatch.SINGLEPLAYER)}
           onCreateMultiplayer={() => actions.createGame(selectedLevel, ModeMatch.MULTIPLAYER)}
           onJoinGame={actions.joinGame}
-          onOpenStoryMode={() => navigation.navigate('Story' as never)}
         />
       )}
 
@@ -123,16 +129,32 @@ const GameHeader: React.FC<{
   score: number;
   roomId: string | null;
   onLeave?: () => void;
-}> = ({ connected, score, roomId, onLeave }) => {
+  onBack?: () => void;
+}> = ({ connected, score, roomId, onLeave, onBack }) => {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   return (
     <View style={styles.header}>
       <View style={styles.headerTopRow}>
-        <Text style={styles.headerTitle}>🎮 LinguaPlay</Text>
+        {onBack && (
+          <TouchableOpacity
+            onPress={onBack}
+            style={styles.backButton}
+            accessibilityRole="button"
+            accessibilityLabel="Back to Arena"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Icon name="ArrowLeftIcon" size="md" color={theme.color.onSecondary} />
+          </TouchableOpacity>
+        )}
+        <Text style={styles.headerTitle}>🎮 Trivia</Text>
         {onLeave && (
-          <ExitGameButton onPress={onLeave} color={theme.color.onSecondary} style={styles.exitButton} />
+          <ExitGameButton
+            onPress={onLeave}
+            color={theme.color.onSecondary}
+            style={styles.exitButton}
+          />
         )}
       </View>
       <View style={styles.statusContainer}>
@@ -175,11 +197,15 @@ const createStyles = (theme: ReturnType<typeof useTheme>) =>
     },
     headerTopRow: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
       alignItems: 'center',
+      gap: theme.spacing.sm,
       marginBottom: theme.spacing.sm,
     },
+    backButton: {
+      padding: theme.spacing.xs,
+    },
     headerTitle: {
+      flex: 1,
       fontSize: theme.fontSize.xl,
       fontFamily: theme.fontFamily.headingExtra,
       color: theme.color.onSecondary,

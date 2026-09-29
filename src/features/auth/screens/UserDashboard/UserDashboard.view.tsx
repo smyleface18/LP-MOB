@@ -32,15 +32,25 @@ export interface UserDashboardStats {
   scoreLabel: string;
   gamesWon: number;
   currentStreak: number;
+  /** Categorías de trivia en las que respondió al menos una pregunta. */
   categoriesCount: number;
-  averageScore: number;
+  /** Respuestas correctas de trivia (0–100). */
+  accuracyPercentage: number;
   winRatePercentage: number;
   streakPowerPercentage: number;
 }
 
+/** Precisión en las preguntas de un nivel CEFR (solo los niveles que practicó). */
 export interface LevelProgress {
   label: string;
   percentage: number;
+}
+
+/** Sus historietas terminadas. */
+export interface UserDashboardStories {
+  played: number;
+  panelsWritten: number;
+  averagePanelScore: number;
 }
 
 export interface UserDashboardViewProps {
@@ -49,7 +59,11 @@ export interface UserDashboardViewProps {
   isConnected: boolean;
   stats: UserDashboardStats;
   levelProgress: LevelProgress[];
-  onHowToPlay: () => void;
+  stories: UserDashboardStories;
+  /** Abre su historial de historietas. */
+  onOpenStories: () => void;
+  /** Error al cargar las estadísticas (se muestran las que haya). */
+  statsError?: string | null;
   onSignOut: () => void;
   signOutLoading?: boolean;
   /** Vuelve a pedir los datos del usuario (métricas actualizadas). */
@@ -63,7 +77,9 @@ const UserDashboardView: React.FC<UserDashboardViewProps> = ({
   isConnected,
   stats,
   levelProgress,
-  onHowToPlay,
+  stories,
+  onOpenStories,
+  statsError,
   onSignOut,
   signOutLoading = false,
   onRefresh,
@@ -112,6 +128,8 @@ const UserDashboardView: React.FC<UserDashboardViewProps> = ({
             </View>
           </View>
 
+          {statsError && <Text style={styles.errorText}>{statsError}</Text>}
+
           {/* Main Metrics */}
           <View style={styles.metricsGrid}>
             <MetricCard value={stats.scoreLabel} label="Score" />
@@ -125,8 +143,8 @@ const UserDashboardView: React.FC<UserDashboardViewProps> = ({
             <Text style={styles.sectionTitle}>Performance</Text>
             <View style={styles.chartsRow}>
               <CircularProgress
-                percentage={stats.averageScore}
-                label="Average Score"
+                percentage={stats.accuracyPercentage}
+                label="Accuracy"
                 colors={GRADIENT_PRESETS.secondaryToPrimary}
               />
               <CircularProgress
@@ -154,7 +172,27 @@ const UserDashboardView: React.FC<UserDashboardViewProps> = ({
                   colors={LEVEL_PROGRESS_GRADIENTS[index % LEVEL_PROGRESS_GRADIENTS.length]}
                 />
               ))}
+              {levelProgress.length === 0 && (
+                <Text style={styles.emptyText}>Play Trivia to see your progress per level.</Text>
+              )}
             </View>
+          </View>
+
+          {/* My Stories */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>My Stories</Text>
+            <View style={styles.metricsRow}>
+              <MetricCard value={stories.played} label="Stories" color="secondary" />
+              <MetricCard value={stories.panelsWritten} label="Panels" color="accent" />
+              <MetricCard value={stories.averagePanelScore} label="Pts / panel" color="success" />
+            </View>
+            <Button
+              title="My stories"
+              variant="outlinedSecondary"
+              icon="BookOpenIcon"
+              onPress={onOpenStories}
+              style={styles.storiesButton}
+            />
           </View>
 
           {/* Action Buttons */}
@@ -272,6 +310,24 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
       flexWrap: 'wrap',
       justifyContent: 'center',
       gap: theme.spacing.lg,
+    },
+    metricsRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: theme.spacing.sm,
+    },
+    storiesButton: {
+      marginTop: theme.spacing.md,
+    },
+    emptyText: {
+      fontSize: theme.fontSize.sm,
+      color: theme.color.textSecondary,
+    },
+    errorText: {
+      fontSize: theme.fontSize.sm,
+      color: theme.color.textError,
+      textAlign: 'center',
+      paddingHorizontal: theme.spacing.lg,
     },
     statsContainer: {
       gap: theme.spacing.xs,

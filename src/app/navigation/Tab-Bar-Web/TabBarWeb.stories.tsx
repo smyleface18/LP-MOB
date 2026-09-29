@@ -4,8 +4,16 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { TabBarWeb } from './TabBarWeb';
 import { createMockTabBarProps } from '../mockTabBarProps';
 
-const PLAYER_ROUTES = ['Dashboard', 'Arena', 'Ranking', 'Perfil'];
-const ADMIN_ROUTES = ['Dashboard', 'Arena', 'Ranking', 'Perfil', 'Categorias', 'Preguntas'];
+const PLAYER_ROUTES = ['Arena', 'Explorar', 'Perfil'];
+const ADMIN_ROUTES = [
+  'Dashboard',
+  'Arena',
+  'Explorar',
+  'Perfil',
+  'Categorias',
+  'Preguntas',
+  'Historietas',
+];
 
 const meta: Meta<typeof TabBarWeb> = {
   title: 'Navigation/TabBarWeb',
@@ -23,20 +31,20 @@ export default meta;
 
 type Story = StoryObj<typeof TabBarWeb>;
 
-export const DashboardActive: Story = {
-  args: createMockTabBarProps(PLAYER_ROUTES, PLAYER_ROUTES.indexOf('Dashboard')),
-};
-
 export const ArenaActive: Story = {
   args: createMockTabBarProps(PLAYER_ROUTES, PLAYER_ROUTES.indexOf('Arena')),
 };
 
-export const RankingActive: Story = {
-  args: createMockTabBarProps(PLAYER_ROUTES, PLAYER_ROUTES.indexOf('Ranking')),
+export const ExplorarActive: Story = {
+  args: createMockTabBarProps(PLAYER_ROUTES, PLAYER_ROUTES.indexOf('Explorar')),
 };
 
 export const PerfilActive: Story = {
   args: createMockTabBarProps(PLAYER_ROUTES, PLAYER_ROUTES.indexOf('Perfil')),
+};
+
+export const AdminDashboardActive: Story = {
+  args: createMockTabBarProps(ADMIN_ROUTES, ADMIN_ROUTES.indexOf('Dashboard')),
 };
 
 export const AdminWithCategoriasActive: Story = {

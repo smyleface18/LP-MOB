@@ -13,12 +13,13 @@ interface WebTabItem {
 }
 
 /** Orden e íconos fijos para el sidebar web — a propósito distinto de
- * TabBarMobile (acá "Dashboard" tiene ícono de grid y ese label, en mobile
- * es "Inicio" con ícono de casa), así que no comparten config. */
+ * TabBarMobile (acá Arena es "Arena / Jugar" y va primero), así que no
+ * comparten config. Solo se muestran los tabs que el rol tiene registrados
+ * (el Dashboard es solo del admin). */
 const BASE_ITEMS: WebTabItem[] = [
   { routeName: 'Arena', label: 'Arena / Jugar', icon: 'GameControllerIcon' },
   { routeName: 'Dashboard', label: 'Dashboard', icon: 'GridFourIcon' },
-  { routeName: 'Ranking', label: 'Ranking', icon: 'TrophyIcon' },
+  { routeName: 'Explorar', label: 'Explorar historietas', icon: 'BookOpenIcon' },
   { routeName: 'Perfil', label: 'Perfil', icon: 'UserIcon' },
 ];
 

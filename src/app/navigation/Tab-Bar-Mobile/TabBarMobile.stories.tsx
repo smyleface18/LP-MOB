@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { createMockTabBarProps } from '../mockTabBarProps';
 import { TabBarMobile } from './TabBarMobile';
 
-const ROUTE_NAMES = ['Dashboard', 'Arena', 'Ranking', 'Perfil'];
+const PLAYER_ROUTES = ['Arena', 'Explorar', 'Perfil'];
 
 const DEVICE_METRICS = {
   frame: { x: 0, y: 0, width: 390, height: 200 },
@@ -30,18 +30,14 @@ export default meta;
 
 type Story = StoryObj<typeof TabBarMobile>;
 
-export const InicioActive: Story = {
-  args: createMockTabBarProps(ROUTE_NAMES, 0),
-};
-
 export const ArenaActive: Story = {
-  args: createMockTabBarProps(ROUTE_NAMES, 1),
+  args: createMockTabBarProps(PLAYER_ROUTES, PLAYER_ROUTES.indexOf('Arena')),
 };
 
-export const RankingActive: Story = {
-  args: createMockTabBarProps(ROUTE_NAMES, 2),
+export const ExplorarActive: Story = {
+  args: createMockTabBarProps(PLAYER_ROUTES, PLAYER_ROUTES.indexOf('Explorar')),
 };
 
 export const PerfilActive: Story = {
-  args: createMockTabBarProps(ROUTE_NAMES, 3),
+  args: createMockTabBarProps(PLAYER_ROUTES, PLAYER_ROUTES.indexOf('Perfil')),
 };

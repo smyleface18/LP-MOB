@@ -12,21 +12,21 @@ const meta: Meta<typeof UserDashboardView> = {
       gamesWon: 18,
       currentStreak: 5,
       categoriesCount: 3,
-      averageScore: 76,
+      accuracyPercentage: 76,
       winRatePercentage: 40,
       streakPowerPercentage: 50,
     },
     levelProgress: [
-      { label: 'Beginner', percentage: 65 },
-      { label: 'Intermediate', percentage: 25 },
-      { label: 'Advanced', percentage: 10 },
+      { label: 'A1 · 34 answers', percentage: 74 },
+      { label: 'A2 · 12 answers', percentage: 58 },
     ],
-    onHowToPlay: () => {},
+    stories: { played: 4, panelsWritten: 9, averagePanelScore: 96.3 },
+    onOpenStories: () => {},
     onSignOut: () => {},
     signOutLoading: false,
   },
   argTypes: {
-    onHowToPlay: { action: 'how-to-play' },
+    onOpenStories: { action: 'open-stories' },
     onSignOut: { action: 'sign-out' },
   },
 };
@@ -57,9 +57,17 @@ export const NewPlayer: Story = {
       gamesWon: 0,
       currentStreak: 0,
       categoriesCount: 0,
-      averageScore: 0,
+      accuracyPercentage: 0,
       winRatePercentage: 0,
       streakPowerPercentage: 0,
     },
+    levelProgress: [],
+    stories: { played: 0, panelsWritten: 0, averagePanelScore: 0 },
+  },
+};
+
+export const StatsError: Story = {
+  args: {
+    statsError: 'Could not load your stats',
   },
 };

@@ -10,4 +10,5 @@ import type { IconName } from '@/shared/components/Icon';
 export const ADMIN_TAB_META: Record<string, { label: string; icon: IconName }> = {
   Categorias: { label: 'Categorías', icon: 'TagIcon' },
   Preguntas: { label: 'Preguntas', icon: 'QuestionIcon' },
+  Historietas: { label: 'Historietas', icon: 'BookOpenIcon' },
 };

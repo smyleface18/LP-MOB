@@ -38,5 +38,7 @@ export const OnDarkHeader: Story = {
       </View>
     ),
   ],
-  render: (args) => <ExitGameButton {...args} style={{ backgroundColor: 'rgba(255,255,255,0.12)' }} />,
+  render: (args) => (
+    <ExitGameButton {...args} style={{ backgroundColor: 'rgba(255,255,255,0.12)' }} />
+  ),
 };

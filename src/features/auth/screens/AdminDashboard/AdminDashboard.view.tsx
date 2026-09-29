@@ -9,6 +9,8 @@ import { CircularProgress } from '@/shared/components/CircularProgress/CircularP
 import { ProgressBar } from '@/shared/components/ProgressBar/ProgressBar.component';
 import { StatItem } from '@/shared/components/StatItem/Statitem.component';
 import Button from '@/shared/components/Button/Button.component';
+import { RefreshButton } from '@/shared/components/RefreshButton';
+import { AdminStats } from '@/features/stats/types';
 import { GRADIENT_PRESETS } from '@/shared/ui/theme/progressGradients';
 
 const LEVEL_USAGE_GRADIENTS = [
@@ -19,49 +21,28 @@ const LEVEL_USAGE_GRADIENTS = [
 
 const PAGE_MAX_WIDTH = 960;
 
-export interface AdminDashboardMetrics {
-  totalQuestions: number;
-  totalCategories: number;
-  totalUsers: number;
-  activeUsers: number;
-  totalGames: number;
-  questionsAnswered: number;
-  newUsersThisWeek: number;
-  averageScore: number;
-  completionRate: number;
-  retentionRate: number;
-}
-
-export interface LevelUsage {
-  label: string;
-  percentage: number;
-}
-
-export interface CategoryShare {
-  label: string;
-  percentage: number;
-}
-
 export interface AdminDashboardViewProps {
-  metrics: AdminDashboardMetrics;
-  levelUsage: LevelUsage[];
-  categoryDistribution: CategoryShare[];
-  onNavigateToQuestions: () => void;
-  onNavigateToCategories: () => void;
-  onSignOut: () => void;
-  signOutLoading?: boolean;
+  /** null mientras carga la primera vez. */
+  stats: AdminStats | null;
+  loading: boolean;
+  error: string | null;
+  onRefresh: () => void;
+  /** Solo en web: las secciones de administración no existen en el celular. */
+  onNavigateToQuestions?: () => void;
+  onNavigateToCategories?: () => void;
+  onNavigateToStories?: () => void;
 }
 
 const formatNumber = (value: number) => value.toLocaleString('en-US');
 
 const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
-  metrics,
-  levelUsage,
-  categoryDistribution,
+  stats,
+  loading,
+  error,
+  onRefresh,
   onNavigateToQuestions,
   onNavigateToCategories,
-  onSignOut,
-  signOutLoading = false,
+  onNavigateToStories,
 }) => {
   const theme = useTheme();
   const { isDesktop } = useBreakpoint();
@@ -86,135 +67,178 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     >
       <View style={styles.page}>
         {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Admin Dashboard</Text>
-          <Text style={styles.subtitle}>LinguaPlay Overview</Text>
-        </View>
-
-        {/* Main Metrics */}
-        <View style={styles.metricsGrid}>
-          <MetricCard
-            value={formatNumber(metrics.totalQuestions)}
-            label="Questions"
-            subLabel="+12 this week"
-          />
-          <MetricCard
-            value={formatNumber(metrics.totalCategories)}
-            label="Categories"
-            subLabel="3 levels"
-            color="secondary"
-          />
-          <MetricCard
-            value={formatNumber(metrics.totalUsers)}
-            label="Users"
-            subLabel="Total registered"
-            color="accent"
-          />
-          <MetricCard
-            value={formatNumber(metrics.activeUsers)}
-            label="Active"
-            subLabel="Last 7 days"
-            color="success"
-          />
-        </View>
-
-        {/* Performance Charts */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Overall Performance</Text>
-          <View style={styles.chartsRow}>
-            <CircularProgress
-              percentage={metrics.averageScore}
-              label="Average Score"
-              colors={GRADIENT_PRESETS.secondaryToPrimary}
-            />
-            <CircularProgress
-              percentage={metrics.completionRate}
-              label="Completion Rate"
-              colors={GRADIENT_PRESETS.successToPrimary}
-            />
-            <CircularProgress
-              percentage={metrics.retentionRate}
-              label="Retention"
-              colors={GRADIENT_PRESETS.tricolorEnergy}
-            />
+        <View style={[styles.header, styles.headerRow]}>
+          <View style={styles.headerText}>
+            <Text style={styles.title}>Admin Dashboard</Text>
+            <Text style={styles.subtitle}>LinguaPlay Overview</Text>
           </View>
+          <RefreshButton
+            onPress={onRefresh}
+            refreshing={loading}
+            accessibilityLabel="Actualizar estadísticas"
+          />
         </View>
 
-        {/* Usage Statistics */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Usage Statistics</Text>
-          <View style={styles.statsContainer}>
-            {levelUsage.map((level, index) => (
-              <ProgressBar
-                key={level.label}
-                percentage={level.percentage}
-                label={level.label}
-                colors={LEVEL_USAGE_GRADIENTS[index % LEVEL_USAGE_GRADIENTS.length]}
-              />
-            ))}
-          </View>
+        {error && <Text style={styles.errorText}>{error}</Text>}
 
-          <View style={styles.additionalStats}>
-            <StatItem value={formatNumber(metrics.totalGames)} label="Games Completed" />
-            <StatItem
-              value={formatNumber(metrics.questionsAnswered)}
-              label="Questions Answered"
-              color="secondary"
-            />
-            <StatItem
-              value={formatNumber(metrics.newUsersThisWeek)}
-              label="New This Week"
-              color="accent"
-            />
-          </View>
-        </View>
-
-        {/* Category Distribution */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Category Distribution</Text>
-          <View style={styles.categoryDistribution}>
-            {categoryDistribution.map((category, index) => (
-              <CategoryItem
-                key={category.label}
-                color={categoryColors[index % categoryColors.length]}
-                text={`${category.label} (${category.percentage}%)`}
-              />
-            ))}
-          </View>
-        </View>
-
-        {/* Action Buttons */}
-        <View style={styles.actionsSection}>
-          <Button
-            title="Manage Questions"
-            variant="primary"
-            size="large"
-            onPress={onNavigateToQuestions}
-            style={styles.actionButton}
-          />
-          <Button
-            title="Manage Categories"
-            variant="primary"
-            size="large"
-            onPress={onNavigateToCategories}
-            style={styles.actionButton}
-          />
-
-          <Button
-            title="Sign Out"
-            variant="outlined"
-            size="large"
-            onPress={onSignOut}
-            disabled={signOutLoading}
-            style={[styles.actionButton, styles.signOutButton]}
-          />
-          {signOutLoading && (
-            <View style={styles.loadingContainer}>
-              <Loading size={24} />
-              <Text style={styles.loadingText}>Signing out...</Text>
+        {!stats ? (
+          loading && (
+            <View style={styles.loadingState}>
+              <Loading size={64} />
             </View>
-          )}
-        </View>
+          )
+        ) : (
+          <>
+            {/* Main Metrics */}
+            <View style={styles.metricsGrid}>
+              <MetricCard
+                value={formatNumber(stats.content.questions)}
+                label="Questions"
+                subLabel={`${formatNumber(stats.content.categories)} categories`}
+              />
+              <MetricCard
+                value={formatNumber(stats.users.players)}
+                label="Players"
+                subLabel={`${formatNumber(stats.users.admins)} admins`}
+                color="secondary"
+              />
+              <MetricCard
+                value={formatNumber(stats.users.activeThisWeek)}
+                label="Active"
+                subLabel="Last 7 days"
+                color="success"
+              />
+              <MetricCard
+                value={formatNumber(stats.users.newThisWeek)}
+                label="New Users"
+                subLabel="Last 7 days"
+                color="accent"
+              />
+            </View>
+
+            {/* Performance Charts */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Overall Performance</Text>
+              <View style={styles.chartsRow}>
+                <CircularProgress
+                  percentage={stats.trivia.accuracy}
+                  label="Correct Answers"
+                  colors={GRADIENT_PRESETS.secondaryToPrimary}
+                />
+                <CircularProgress
+                  percentage={stats.trivia.winRate}
+                  label="Win Rate"
+                  colors={GRADIENT_PRESETS.successToPrimary}
+                />
+                <CircularProgress
+                  percentage={stats.users.activeRate}
+                  label="Active This Week"
+                  colors={GRADIENT_PRESETS.tricolorEnergy}
+                />
+              </View>
+            </View>
+
+            {/* Usage Statistics */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Usage by Level</Text>
+              <View style={styles.statsContainer}>
+                {stats.levelUsage.map((level, index) => (
+                  <ProgressBar
+                    key={level.level}
+                    percentage={level.percentage}
+                    label={`${level.level} · ${level.triviaGames} trivia · ${level.stories} stories`}
+                    colors={LEVEL_USAGE_GRADIENTS[index % LEVEL_USAGE_GRADIENTS.length]}
+                  />
+                ))}
+                {stats.levelUsage.length === 0 && (
+                  <Text style={styles.emptyText}>No games or stories yet.</Text>
+                )}
+              </View>
+
+              <View style={styles.additionalStats}>
+                <StatItem value={formatNumber(stats.trivia.games)} label="Trivia Games" />
+                <StatItem
+                  value={formatNumber(stats.trivia.questionsAnswered)}
+                  label="Questions Answered"
+                  color="secondary"
+                />
+                <StatItem
+                  value={formatNumber(stats.users.total)}
+                  label="Registered Users"
+                  color="accent"
+                />
+              </View>
+            </View>
+
+            {/* Stories */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Stories</Text>
+              <View style={styles.additionalStats}>
+                <StatItem value={formatNumber(stats.stories.published)} label="Published" />
+                <StatItem
+                  value={formatNumber(stats.stories.removed)}
+                  label="Removed"
+                  color="secondary"
+                />
+                <StatItem
+                  value={formatNumber(stats.stories.panels)}
+                  label="Panels Written"
+                  color="accent"
+                />
+              </View>
+            </View>
+
+            {/* Category Distribution */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Answers by Category</Text>
+              <View style={styles.categoryDistribution}>
+                {stats.categoryDistribution.map((category, index) => (
+                  <CategoryItem
+                    key={category.category}
+                    color={categoryColors[index % categoryColors.length]}
+                    text={`${category.category} (${category.percentage}%)`}
+                  />
+                ))}
+                {stats.categoryDistribution.length === 0 && (
+                  <Text style={styles.emptyText}>No answers yet.</Text>
+                )}
+              </View>
+            </View>
+          </>
+        )}
+
+        {/* Action Buttons (solo web) */}
+        {(onNavigateToQuestions || onNavigateToCategories || onNavigateToStories) && (
+          <View style={styles.actionsSection}>
+            {onNavigateToQuestions && (
+              <Button
+                title="Manage Questions"
+                variant="primary"
+                size="large"
+                onPress={onNavigateToQuestions}
+                style={styles.actionButton}
+              />
+            )}
+            {onNavigateToCategories && (
+              <Button
+                title="Manage Categories"
+                variant="primary"
+                size="large"
+                onPress={onNavigateToCategories}
+                style={styles.actionButton}
+              />
+            )}
+            {onNavigateToStories && (
+              <Button
+                title="Moderate Stories"
+                variant="primary"
+                size="large"
+                onPress={onNavigateToStories}
+                style={styles.actionButton}
+              />
+            )}
+          </View>
+        )}
       </View>
     </ScrollView>
   );
@@ -287,6 +311,28 @@ const createStyles = (theme: ReturnType<typeof useTheme>, isDesktop: boolean) =>
       flexWrap: 'wrap',
       justifyContent: 'center',
       gap: theme.spacing.md,
+    },
+    headerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.md,
+    },
+    headerText: {
+      flex: 1,
+    },
+    errorText: {
+      fontSize: theme.fontSize.md,
+      color: theme.color.textError,
+      textAlign: 'center',
+      padding: theme.spacing.md,
+    },
+    loadingState: {
+      alignItems: 'center',
+      padding: theme.spacing.xl,
+    },
+    emptyText: {
+      fontSize: theme.fontSize.sm,
+      color: theme.color.textSecondary,
     },
     categoryDistribution: {
       marginTop: theme.spacing.xs,

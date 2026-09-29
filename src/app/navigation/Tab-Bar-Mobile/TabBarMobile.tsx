@@ -12,13 +12,12 @@ interface MobileTabItem {
 }
 
 /** Orden e íconos fijos para el bottom nav mobile — a propósito distintos
- * de TabBarWeb (ahí "Dashboard" se llama "Dashboard" con ícono grid, acá es
- * "Inicio" con ícono de casa; el orden también difiere), así que no vale la
- * pena compartir una config genérica entre ambos. */
+ * de TabBarWeb (el label de Arena y el orden difieren), así que no vale la
+ * pena compartir una config genérica entre ambos. Solo se muestran los tabs
+ * registrados. El Dashboard de admin es solo web (TabBarWeb). */
 const ITEMS: MobileTabItem[] = [
-  { routeName: 'Dashboard', label: 'Inicio', icon: 'HouseIcon' },
   { routeName: 'Arena', label: 'Arena', icon: 'GameControllerIcon' },
-  { routeName: 'Ranking', label: 'Ranking', icon: 'TrophyIcon' },
+  { routeName: 'Explorar', label: 'Explorar', icon: 'BookOpenIcon' },
   { routeName: 'Perfil', label: 'Perfil', icon: 'UserIcon' },
 ];
 
