@@ -31,7 +31,6 @@ export interface ManageCategoriesViewProps {
   onCreatePress: () => void;
   onCategoryPress: (category: CategoryQuestion) => void;
   onDeleteCategory: (categoryId: string) => void;
-  onToggleActive: (categoryId: string) => void;
   onRetry: () => void;
   onRefresh: () => void;
 }
@@ -52,7 +51,6 @@ export const ManageCategoriesView: React.FC<ManageCategoriesViewProps> = ({
   onCreatePress,
   onCategoryPress,
   onDeleteCategory,
-  onToggleActive,
   onRetry,
   onRefresh,
 }) => {
@@ -69,12 +67,7 @@ export const ManageCategoriesView: React.FC<ManageCategoriesViewProps> = ({
 
   const renderCategoryItem = ({ item }: { item: CategoryQuestion }) => (
     <View style={styles.gridItem}>
-      <CategoryCard
-        category={item}
-        onDelete={onDeleteCategory}
-        onToggleActive={onToggleActive}
-        onPress={onCategoryPress}
-      />
+      <CategoryCard category={item} onDelete={onDeleteCategory} onPress={onCategoryPress} />
     </View>
   );
 

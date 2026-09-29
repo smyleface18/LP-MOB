@@ -12,12 +12,28 @@ export interface CategoryTypeMeta {
 /** Ícono, label legible y subtítulo por macrodestreza — usado en las tarjetas
  * de Gestión de Categorías y en el selector de tipo de Crear Categoría. */
 export const CATEGORY_TYPE_META: Record<TypeQuestionCategory, CategoryTypeMeta> = {
-  [TypeQuestionCategory.LISTENING]: { icon: 'HeadphonesIcon', label: 'Listening', subtitle: 'Comprensión' },
+  [TypeQuestionCategory.LISTENING]: {
+    icon: 'HeadphonesIcon',
+    label: 'Listening',
+    subtitle: 'Comprensión',
+  },
   [TypeQuestionCategory.GRAMMAR]: { icon: 'TextAaIcon', label: 'Grammar', subtitle: 'Estructuras' },
   [TypeQuestionCategory.READING]: { icon: 'BookOpenIcon', label: 'Reading', subtitle: 'Lectura' },
-  [TypeQuestionCategory.VOCABULARY]: { icon: 'TranslateIcon', label: 'Vocabulary', subtitle: 'Léxico' },
-  [TypeQuestionCategory.WRITING]: { icon: 'NotePencilIcon', label: 'Writing', subtitle: 'Redacción' },
-  [TypeQuestionCategory.SPEAKING]: { icon: 'MicrophoneIcon', label: 'Speaking', subtitle: 'Fluidez' },
+  [TypeQuestionCategory.VOCABULARY]: {
+    icon: 'TranslateIcon',
+    label: 'Vocabulary',
+    subtitle: 'Léxico',
+  },
+  [TypeQuestionCategory.WRITING]: {
+    icon: 'NotePencilIcon',
+    label: 'Writing',
+    subtitle: 'Redacción',
+  },
+  [TypeQuestionCategory.SPEAKING]: {
+    icon: 'MicrophoneIcon',
+    label: 'Speaking',
+    subtitle: 'Fluidez',
+  },
 };
 
 /** Subtítulo descriptivo por nivel CEFR — usado en el selector de nivel de
@@ -35,18 +51,20 @@ export const LEVEL_SUBTITLE: Record<Level, string> = {
  * Asigna un color del theme a un valor de enum de forma determinística
  * (mismo índice → mismo color siempre), para no inventar una paleta de
  * colores fuera del theme. El orden de `values` (ej. `Object.values(Level)`)
- * define qué color le toca a cada valor.
+ * define qué color le toca a cada valor. Usa `info` (índigo) y no `success`:
+ * el verde tenía poco contraste con el texto claro encima.
  */
 export const getCategoryPaletteColor = (
   theme: AppTheme,
   values: string[],
-  value: string,
+  value?: string,
 ): string => {
+  if (!value) return theme.color.textSecondary;
   const palette = [
     theme.color.primary,
     theme.color.secondary,
     theme.color.accent,
-    theme.color.success,
+    theme.color.info,
     theme.color.error,
     theme.color.textSecondary,
   ];

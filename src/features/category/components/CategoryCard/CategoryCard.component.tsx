@@ -1,14 +1,14 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, Switch, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/app/providers/theme.provider';
 import { Icon } from '@/shared/components/Icon';
+import { HoverCard } from '@/shared/components/HoverCard';
 import { CategoryQuestion, TypeQuestionCategory } from '@/shared/types/category-question';
 import { Level } from '@/shared/types/common';
 import { CATEGORY_TYPE_META, getCategoryPaletteColor } from '../../constants/categoryMeta';
 
 export interface CategoryCardProps {
   category: CategoryQuestion;
-  onToggleActive: (categoryId: string) => void;
   onDelete: (categoryId: string) => void;
   onPress?: (category: CategoryQuestion) => void;
 }
@@ -17,21 +17,20 @@ export interface CategoryCardProps {
  * de este tamaño (theme.iconSize llega hasta xl=32), es puramente ornamental. */
 const DECORATIVE_ICON_SIZE = 96;
 
-const CategoryCard: React.FC<CategoryCardProps> = ({
-  category,
-  onToggleActive,
-  onDelete,
-  onPress,
-}) => {
+const CategoryCard: React.FC<CategoryCardProps> = ({ category, onDelete, onPress }) => {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const levelColor = getCategoryPaletteColor(theme, Object.values(Level), category.level);
-  const typeColor = getCategoryPaletteColor(theme, Object.values(TypeQuestionCategory), category.type);
+  const typeColor = getCategoryPaletteColor(
+    theme,
+    Object.values(TypeQuestionCategory),
+    category.type,
+  );
   const typeMeta = CATEGORY_TYPE_META[category.type];
   const questionsCount = category.questions?.length ?? 0;
 
-  // La navegación al detalle y las acciones (switch/delete) son elementos
+  // La navegación al detalle y las acciones (editar/eliminar) son elementos
   // pulsables hermanos, nunca anidados: en react-native-web los toques SÍ
   // burbujean como eventos DOM normales, así que anidar un TouchableOpacity
   // dentro de otro dispararía ambos onPress con un solo tap.
@@ -53,58 +52,53 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
   );
 
   return (
-    <View style={[styles.card, { borderLeftColor: typeColor }]}>
-      <View style={styles.decorativeIconWrap} pointerEvents="none">
-        <Icon name={typeMeta.icon} size={DECORATIVE_ICON_SIZE} color={typeColor} />
-      </View>
+    <HoverCard>
+      <View style={[styles.card, { borderLeftColor: typeColor }]}>
+        <View style={styles.decorativeIconWrap} pointerEvents="none">
+          <Icon name={typeMeta.icon} size={DECORATIVE_ICON_SIZE} color={typeColor} />
+        </View>
 
-      <View style={styles.cardContent}>
-        <View style={styles.header}>
-          {onPress ? (
-            <TouchableOpacity style={styles.info} onPress={() => onPress(category)}>
-              <InfoBlock />
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.info}>
-              <InfoBlock />
+        <View style={styles.cardContent}>
+          <View style={styles.header}>
+            {onPress ? (
+              <TouchableOpacity style={styles.info} onPress={() => onPress(category)}>
+                <InfoBlock />
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.info}>
+                <InfoBlock />
+              </View>
+            )}
+          </View>
+
+          <View style={styles.footer}>
+            <View style={styles.questionsPill}>
+              <Icon name={typeMeta.icon} size="sm" color={typeColor} />
+              <Text style={styles.questionsPillText}>
+                Preguntas: <Text style={styles.questionsPillCount}>{questionsCount}</Text>
+              </Text>
             </View>
-          )}
 
-          <Switch
-            value={category.active}
-            onValueChange={() => onToggleActive(category.id)}
-            trackColor={{ false: theme.color.border, true: theme.color.primarySubtle }}
-            thumbColor={category.active ? theme.color.primary : theme.color.surfaceElevated}
-          />
-        </View>
-
-        <View style={styles.footer}>
-          <View style={styles.questionsPill}>
-            <Icon name={typeMeta.icon} size="sm" color={typeColor} />
-            <Text style={styles.questionsPillText}>
-              Preguntas: <Text style={styles.questionsPillCount}>{questionsCount}</Text>
-            </Text>
-          </View>
-
-          <View style={styles.footerActions}>
-            <TouchableOpacity
-              style={styles.iconButton}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Icon name="PencilSimpleIcon" size="sm" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.deleteButton}
-              onPress={() => onDelete(category.id)}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Icon name="TrashIcon" size="sm" color={theme.color.error} />
-              <Text style={styles.deleteButtonText}>Eliminar</Text>
-            </TouchableOpacity>
+            <View style={styles.footerActions}>
+              <TouchableOpacity
+                style={styles.iconButton}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Icon name="PencilSimpleIcon" size="sm" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => onDelete(category.id)}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Icon name="TrashIcon" size="sm" color={theme.color.error} />
+                <Text style={styles.deleteButtonText}>Eliminar</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </View>
-    </View>
+    </HoverCard>
   );
 };
 
@@ -134,7 +128,6 @@ const createStyles = (theme: ReturnType<typeof useTheme>) =>
     },
     info: {
       flex: 1,
-      marginRight: theme.spacing.sm,
     },
     badgesRow: {
       flexDirection: 'row',

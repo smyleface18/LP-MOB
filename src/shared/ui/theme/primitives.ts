@@ -14,6 +14,9 @@ export const colors = {
     green: '#39977B',
     greenLight: '#7EDABA',
     greenExtraLight: '#ECFDF5',
+
+    indigo: '#4338CA',
+    indigoLight: '#A5B4FC',
   },
   surfaceLight: {
     base: '#E5E7EB', // gray-200 — el más tintado de los tres (fondo de pantalla)

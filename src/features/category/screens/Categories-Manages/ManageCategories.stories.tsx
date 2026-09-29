@@ -76,7 +76,6 @@ const meta: Meta<typeof ManageCategoriesView> = {
     onCreatePress: () => {},
     onCategoryPress: () => {},
     onDeleteCategory: () => {},
-    onToggleActive: () => {},
     onRetry: () => {},
   },
   argTypes: {
@@ -88,7 +87,6 @@ const meta: Meta<typeof ManageCategoriesView> = {
     onCreatePress: { action: 'create-press' },
     onCategoryPress: { action: 'category-press' },
     onDeleteCategory: { action: 'delete-category' },
-    onToggleActive: { action: 'toggle-active' },
     onRetry: { action: 'retry' },
   },
 };

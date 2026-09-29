@@ -76,6 +76,14 @@ export interface ColorTheme {
   successSubtle: string;
 
   /**
+   * Índigo informativo, con buen contraste en ambos themes (con texto
+   * `textInverse` encima o como texto sobre `surface`). Úsalo para badges y
+   * etiquetas decorativas (ej. nivel o tipo de una categoría) en lugar de
+   * `success`, que es solo para estado.
+   */
+  info: string;
+
+  /**
    * Fondo base de toda pantalla (el más externo, detrás de todo).
    * Nunca le pongas texto directamente encima sin pasar antes por
    * `surface` — está pensado como lienzo, no como superficie de contenido.
@@ -175,6 +183,8 @@ export const lightColors: ColorTheme = {
   success: colors.brand.green,
   successSubtle: colors.brand.greenLight,
 
+  info: colors.brand.indigo,
+
   background: colors.surfaceLight.base,
   surface: colors.surfaceLight.raised,
   surfaceElevated: colors.surfaceLight.overlay2,
@@ -214,6 +224,8 @@ export const darkColors: ColorTheme = {
 
   success: colors.brand.green,
   successSubtle: withAlpha(colors.brand.green, 0.16),
+
+  info: colors.brand.indigoLight,
 
   background: colors.surfaceDark.base,
   surface: colors.surfaceDark.raised,

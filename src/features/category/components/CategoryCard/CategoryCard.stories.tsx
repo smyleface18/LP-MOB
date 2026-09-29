@@ -20,12 +20,10 @@ const meta: Meta<typeof CategoryCard> = {
   component: CategoryCard,
   args: {
     category,
-    onToggleActive: () => {},
     onDelete: () => {},
     onPress: () => {},
   },
   argTypes: {
-    onToggleActive: { action: 'toggle-active' },
     onDelete: { action: 'delete' },
     onPress: { action: 'press' },
   },

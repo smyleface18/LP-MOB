@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, Switch, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/app/providers/theme.provider';
+import { HoverCard } from '@/shared/components/HoverCard';
+import { getCategoryPaletteColor } from '@/features/category/constants/categoryMeta';
 import { Question } from '../../types';
 import { ContentType, Level } from '@/shared/types/common';
 import { TypeQuestionCategory } from '@/shared/types/category-question';
@@ -18,43 +20,24 @@ const describeContent = (contentType: ContentType, text?: string): string =>
 
 export interface QuestionCardProps {
   question: Question;
-  onToggleActive: (questionId: string) => void;
   onDelete: (questionId: string) => void;
   onPress?: (question: Question) => void;
 }
 
-const QuestionCard: React.FC<QuestionCardProps> = ({
-  question,
-  onToggleActive,
-  onDelete,
-  onPress,
-}) => {
+const QuestionCard: React.FC<QuestionCardProps> = ({ question, onDelete, onPress }) => {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const category = question.category;
 
-  const levelColors = useMemo(
-    () => [
-      theme.color.primary,
-      theme.color.secondary,
-      theme.color.accent,
-      theme.color.success,
-      theme.color.error,
-      theme.color.textSecondary,
-    ],
-    [theme],
+  // Misma paleta que las cards de categorías.
+  const levelColor = getCategoryPaletteColor(theme, Object.values(Level), category?.level);
+  const typeColor = getCategoryPaletteColor(
+    theme,
+    Object.values(TypeQuestionCategory),
+    category?.type,
   );
 
-  const getBadgeColor = (values: string[], value?: string) => {
-    if (!value) return theme.color.textSecondary;
-    const index = values.indexOf(value);
-    return levelColors[index % levelColors.length];
-  };
-
-  const levelColor = getBadgeColor(Object.values(Level), category?.level);
-  const typeColor = getBadgeColor(Object.values(TypeQuestionCategory), category?.type);
-
-  // La navegación al detalle y las acciones (switch/delete) son elementos
+  // La navegación al detalle y la acción de eliminar son elementos
   // pulsables hermanos, nunca anidados: en react-native-web los toques SÍ
   // burbujean como eventos DOM normales, así que anidar un TouchableOpacity
   // dentro de otro dispararía ambos onPress con un solo tap.
@@ -84,26 +67,20 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   );
 
   return (
-    <View style={styles.card}>
-      <View style={styles.cardContent}>
-        <View style={styles.header}>
-          {onPress ? (
-            <TouchableOpacity style={styles.info} onPress={() => onPress(question)}>
-              <InfoBlock />
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.info}>
-              <InfoBlock />
-            </View>
-          )}
+    <HoverCard>
+      <View style={styles.card}>
+        <View style={styles.cardContent}>
+          <View style={styles.header}>
+            {onPress ? (
+              <TouchableOpacity style={styles.info} onPress={() => onPress(question)}>
+                <InfoBlock />
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.info}>
+                <InfoBlock />
+              </View>
+            )}
 
-          <View style={styles.headerActions}>
-            <Switch
-              value={question.active}
-              onValueChange={() => onToggleActive(question.id)}
-              trackColor={{ false: theme.color.border, true: theme.color.primarySubtle }}
-              thumbColor={question.active ? theme.color.primary : theme.color.surfaceElevated}
-            />
             <TouchableOpacity
               style={styles.deleteButton}
               onPress={() => onDelete(question.id)}
@@ -112,21 +89,21 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
               <Text style={styles.deleteButtonText}>Delete</Text>
             </TouchableOpacity>
           </View>
+
+          {category && (
+            <Text style={styles.categoryText}>Category: {category.descriptionCategory}</Text>
+          )}
+
+          <Text style={styles.optionsText}>
+            {(question.options ?? []).length === 0
+              ? 'No options yet'
+              : `Options: ${(question.options ?? [])
+                  .map((op) => describeContent(op.contentType, op.text))
+                  .join(', ')}`}
+          </Text>
         </View>
-
-        {category && (
-          <Text style={styles.categoryText}>Category: {category.descriptionCategory}</Text>
-        )}
-
-        <Text style={styles.optionsText}>
-          {(question.options ?? []).length === 0
-            ? 'No options yet'
-            : `Options: ${(question.options ?? [])
-                .map((op) => describeContent(op.contentType, op.text))
-                .join(', ')}`}
-        </Text>
       </View>
-    </View>
+    </HoverCard>
   );
 };
 
@@ -152,10 +129,6 @@ const createStyles = (theme: ReturnType<typeof useTheme>) =>
     info: {
       flex: 1,
       marginRight: theme.spacing.sm,
-    },
-    headerActions: {
-      alignItems: 'center',
-      gap: theme.spacing.xs,
     },
     deleteButton: {
       paddingVertical: theme.spacing.xs / 2,

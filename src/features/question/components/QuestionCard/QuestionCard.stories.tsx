@@ -53,12 +53,10 @@ const meta: Meta<typeof QuestionCard> = {
   component: QuestionCard,
   args: {
     question,
-    onToggleActive: () => {},
     onDelete: () => {},
     onPress: () => {},
   },
   argTypes: {
-    onToggleActive: { action: 'toggle-active' },
     onDelete: { action: 'delete' },
     onPress: { action: 'press' },
   },

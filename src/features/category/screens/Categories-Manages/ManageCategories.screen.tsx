@@ -9,8 +9,7 @@ import { ManageCategoriesView } from './ManageCategories.view';
 const ManageCategoriesScreen = () => {
   const navigation = useNavigation();
   const appAlert = useAppAlert();
-  const { categories, loading, error, deleteCategory, toggleCategoryActive, loadCategories } =
-    useCategories();
+  const { categories, loading, error, deleteCategory, loadCategories } = useCategories();
 
   const [filtersVisible, setFiltersVisible] = useState(true);
   const [searchText, setSearchText] = useState('');
@@ -64,13 +63,6 @@ const ManageCategoriesScreen = () => {
     ]);
   };
 
-  const handleToggleActive = async (categoryId: string) => {
-    const response = await toggleCategoryActive(categoryId);
-    if (response && !response.ok) {
-      appAlert('Error', 'No se pudo actualizar la categoría');
-    }
-  };
-
   const handleClearFilters = () => {
     setSelectedLevels([]);
     setSelectedTypes([]);
@@ -94,7 +86,6 @@ const ManageCategoriesScreen = () => {
       onCreatePress={() => navigation.navigate('CreateCategory' as never)}
       onCategoryPress={handleCategoryPress}
       onDeleteCategory={handleDeleteCategory}
-      onToggleActive={handleToggleActive}
       onRetry={loadCategories}
       onRefresh={loadCategories}
     />

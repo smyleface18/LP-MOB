@@ -29,8 +29,7 @@ const ManageQuestionsScreen = () => {
   const navigation = useNavigation();
   const appAlert = useAppAlert();
 
-  const { questions, loading, error, deleteQuestion, updateQuestion, loadQuestions } =
-    useQuestions();
+  const { questions, loading, error, deleteQuestion, loadQuestions } = useQuestions();
   const { categories, loading: categoriesLoading, loadCategories } = useCategories();
 
   // Refresca preguntas y categorías (los filtros dependen de ambas).
@@ -143,15 +142,6 @@ const ManageQuestionsScreen = () => {
     ]);
   };
 
-  const handleToggleActive = async (questionId: string) => {
-    const question = questions.find((q) => q.id === questionId);
-    if (!question) return;
-    const response = await updateQuestion(questionId, { active: !question.active });
-    if (!response?.ok) {
-      appAlert('Error', 'Failed to update question');
-    }
-  };
-
   // Igual que en categorías: "Limpiar" también borra la búsqueda.
   const handleClearFilters = () => {
     setSelectedCategories([]);
@@ -162,12 +152,7 @@ const ManageQuestionsScreen = () => {
 
   const renderQuestionItem = ({ item }: { item: Question }) => (
     <View style={styles.gridItem}>
-      <QuestionCard
-        question={item}
-        onDelete={handleDeleteQuestion}
-        onToggleActive={handleToggleActive}
-        onPress={handleQuestionPress}
-      />
+      <QuestionCard question={item} onDelete={handleDeleteQuestion} onPress={handleQuestionPress} />
     </View>
   );
 
