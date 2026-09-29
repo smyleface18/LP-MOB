@@ -61,7 +61,9 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
       toValue: clamped,
       duration: theme.duration.normal,
       easing: theme.easing.decelerate,
-      useNativeDriver: true,
+      // JS a propósito: anima una prop de SVG (strokeDashoffset), que el driver
+      // nativo no maneja bien en react-native-svg ("...moved to native...").
+      useNativeDriver: false,
     }).start();
   }, [clamped]);
 
